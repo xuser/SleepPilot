@@ -1,8 +1,6 @@
 /**
+ * Contains all classes which controll the programm flow.
  * 
- */
-/**
- * @author Nils
- *
+ * @author Nils Finke
  */
 package controller;
