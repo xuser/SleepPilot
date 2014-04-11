@@ -12,6 +12,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class DataReaderController {
 	
@@ -33,7 +37,7 @@ public class DataReaderController {
 	private boolean useBigEndianOrder;
 	
 	// [Channel Infos]
-	private float channelResolution;
+	private double channelResolution;
 	
 	/**
 	 * Constructor which initialize this reader class.
@@ -109,9 +113,48 @@ public class DataReaderController {
 					numberOfChannels = Integer.parseInt(zeile.substring(17));
 				}
 				
+				// Read number of data points
+				if (zeile.startsWith("DataPoints=")) {
+					dataPoints = Integer.parseInt(zeile.substring(11));
+				}
+				
 				// Read sampling intervall
 				if (zeile.startsWith("SamplingInterval")) {
 					samplingInterval = Integer.parseInt(zeile.substring(17));
+				}
+				
+				// Read binary format
+				if (zeile.startsWith("BinaryFormat=")) {
+					switch (zeile.substring(13)) {
+					case "INT_16": binaryFormat = BinaryFormat.INT_16;
+						break;
+					case "IEEE_FLOAT_32": binaryFormat = BinaryFormat.IEEE_FLOAT_32;
+						break;
+					default: binaryFormat = BinaryFormat.UNKNOWN;
+						break;
+					}
+				}
+				
+				// Read endian order
+				if (zeile.startsWith("UseBigEndianOrder=")) {
+					switch (zeile.substring(18)) {
+					case "NO": useBigEndianOrder = false;
+						break;
+					case "YES": useBigEndianOrder = true;
+						break;
+					default: useBigEndianOrder = false;
+						break;
+					}
+				}
+				
+				// Read channel resolution
+				// IMPORTANT: It could be possible, that each channel has a different resolution!
+				if (zeile.startsWith("Ch1=")) {
+					String[] tmp = zeile.split(",");
+					
+					if (tmp.length == 4) {
+						channelResolution = Double.parseDouble(tmp[2]);
+					}
 				}
 				
 				
@@ -158,11 +201,18 @@ public class DataReaderController {
 	 * @param secondByte of the 16 Bit hex value
 	 * @return the decoded signed integer 16 bit value of the 16 bit hex coded value
 	 */
-	private short decodeInteger16(String firstByte, String secondByte) {
+	private double decodeInteger16(String firstByte, String secondByte) {
 		
-		String tmp = secondByte + firstByte;
+		String tmp = secondByte + firstByte;	
+		double value = (short) Integer.parseInt(tmp, 16);
 		
-		short value = (short) Integer.parseInt(tmp, 16);
+		// Converting the readed value to microvolt
+		value = value * channelResolution;
+		
+		// Rounded a mantisse with value 3
+		BigDecimal myDec = new BigDecimal(value);
+		myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+		value = myDec.doubleValue();
 		
 		return value;
 	}
@@ -171,7 +221,17 @@ public class DataReaderController {
 	 * Testfunction: Proof manually, if properties are correct.
 	 */
 	private void printProperties() {
-		// TODO: Alle eingelesenen Eigenschaften ausgeben
+		
+		System.out.println("DataFormat: " + dataFormat);
+		System.out.println("DataOrientation: " + dataOrientation);
+		System.out.println("DataType: " + dataType);
+		System.out.println("NumberOfChannels: " + numberOfChannels);
+		System.out.println("DataPoints: " + dataPoints);
+		System.out.println("SamplingIntervall: " + samplingInterval);
+		System.out.println("BinaryFormat: " + binaryFormat);
+		System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
+		System.out.println("ChannelResolution: " + channelResolution);
+		
 	}
 
 }
