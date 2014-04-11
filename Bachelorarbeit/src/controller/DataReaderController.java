@@ -1,6 +1,7 @@
 package controller;
 
 import help.BinaryFormat;
+import help.DataFormat;
 import help.DataOrientation;
 import help.DataType;
 
@@ -20,6 +21,7 @@ public class DataReaderController {
 	private File headerFile;
 	private File dataFile;
 	private File markerFile;
+	private DataFormat dataFormat;
 	private DataOrientation dataOrientation;
 	private DataType dataType;
 	private int numberOfChannels;
@@ -44,8 +46,13 @@ public class DataReaderController {
 		readHeaderFile();
 		
 		readDataFile(dataFile);
+		
+		printProperties();
 	}
 	
+	/**
+	 * Reads the header file and elect the necessary information.
+	 */
 	private void readHeaderFile() {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(headerFile));
@@ -62,6 +69,52 @@ public class DataReaderController {
 				if (zeile.startsWith("MarkerFile=")) {
 					markerFile = new File(headerFile.getParent() + File.separator + zeile.substring(11));
 				}
+				
+				// Read DataFormat
+				if (zeile.startsWith("DataFormat=")) {
+					switch (zeile.substring(11)) {
+					case "BINARY": dataFormat = DataFormat.BINARY;
+						break;
+					case "ASCII": dataFormat = DataFormat.ASCII;
+						break;
+					default: dataFormat = DataFormat.UNKNOWN;
+						break;
+					}
+				}
+				
+				// Read DataOrientation
+				if (zeile.startsWith("DataOrientation=")) {
+					switch (zeile.substring(16)) {
+					case "MULTIPLEXED": dataOrientation = DataOrientation.MULTIPLEXED;
+						break;
+					case "VECTORIZED": dataOrientation = DataOrientation.VECTORIZED;
+						break;
+					default: dataOrientation = DataOrientation.UNKNOWN;
+						break;
+					}
+				}
+				
+				// Read DataOrientation
+				if (zeile.startsWith("DataType=")) {
+					switch (zeile.substring(9)) {
+					case "TIMEDOMAIN": dataType = DataType.TIMEDOMAIN;
+						break;
+					default: dataType = DataType.UNKNOWN;
+						break;
+					}
+				}
+				
+				// Read number of channels
+				if (zeile.startsWith("NumberOfChannels=")) {
+					numberOfChannels = Integer.parseInt(zeile.substring(17));
+				}
+				
+				// Read sampling intervall
+				if (zeile.startsWith("SamplingInterval")) {
+					samplingInterval = Integer.parseInt(zeile.substring(17));
+				}
+				
+				
 			}
 			
 		} catch (FileNotFoundException e) {
@@ -112,6 +165,13 @@ public class DataReaderController {
 		short value = (short) Integer.parseInt(tmp, 16);
 		
 		return value;
+	}
+	
+	/**
+	 * Testfunction: Proof manually, if properties are correct.
+	 */
+	private void printProperties() {
+		// TODO: Alle eingelesenen Eigenschaften ausgeben
 	}
 
 }
