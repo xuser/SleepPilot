@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author Nils
- *
- */
-package biosig;

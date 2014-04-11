@@ -22,6 +22,7 @@ public class MainController {
 	 */
 	public static void main(String[] args) {
 		
+		// IMPORTANT: The absolute filepath on current filesystem is required.
 		try {
 			fileLocation = args[0];			
 		} catch (Exception e) {
