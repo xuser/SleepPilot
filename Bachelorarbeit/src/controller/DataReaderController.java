@@ -34,6 +34,10 @@ public class DataReaderController {
 	private BinaryFormat binaryFormat;
 	private boolean useBigEndianOrder;
 	
+	// [ASCII Infos]
+	private int skipLines;
+	private int skipColumns;
+	
 	// [Channel Infos]
 	private double channelResolution;
 	
@@ -46,6 +50,7 @@ public class DataReaderController {
 		
 		headerFile = new File(fileLocationPath);
 		readHeaderFile();
+		printProperties();
 		
 		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN)) {
 			
@@ -71,7 +76,6 @@ public class DataReaderController {
 			System.err.println("No supported data orientation or data type!");
 		}
 		
-		printProperties();
 	}
 	
 	/**
@@ -167,6 +171,16 @@ public class DataReaderController {
 					}
 				}
 				
+				// Read skip lines
+				if (zeile.startsWith("SkipLines=")) {
+					skipLines = Integer.parseInt(zeile.substring(10));
+				}
+				
+				// Read skip columns
+				if (zeile.startsWith("SkipColumns=")) {
+					skipColumns = Integer.parseInt(zeile.substring(12));
+				}
+				
 				// Read channel resolution
 				// IMPORTANT: It could be possible, that each channel has a different resolution!
 				if (zeile.startsWith("Ch1=")) {
@@ -179,16 +193,17 @@ public class DataReaderController {
 						channelResolution = Double.parseDouble(tmp[2]);
 						}
 					}
-				}
-				
-				
+				}				
 			}
+			
+		in.close();
 			
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	
@@ -213,6 +228,7 @@ public class DataReaderController {
 				writer.write(decodeInteger16(firstByte, secondByte) + " ");
 				writer.flush();
 				
+				// Modulo
 				if (i % numberOfChannels == 0) {
 					writer.write(System.getProperty("line.separator"));
 					writer.flush();
@@ -230,12 +246,85 @@ public class DataReaderController {
 				
 	}
 	
+	/**
+	 * Reads the given data file and prints it on hard disk
+	 * 
+	 * @param dataFile
+	 */
 	private void readDataFileFloat(File dataFile) {
+		try {
+			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
+			FileWriter writer = new FileWriter(file, true);
+			
+			InputStream in = new FileInputStream(dataFile);
+			
+			for (int i = 1; i <= (dataPoints * numberOfChannels); i++) {
+
+				String firstByte = Integer.toHexString(in.read());
+				String secondByte = Integer.toHexString(in.read());
+				String thirdByte = Integer.toHexString(in.read());
+				String fourthByte = Integer.toHexString(in.read());
+				
+				writer.write(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte) + " ");
+				writer.flush();
+				
+				// Modulo
+				if (i % numberOfChannels == 0) {
+					writer.write(System.getProperty("line.separator"));
+					writer.flush();
+				}
+			}
+			
+			in.close();
+			writer.close();
+
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
+
 	}
 	
+	/**
+	 * Reads the given ascii file and prints it on hard disk.
+	 * 
+	 * @param dataFile
+	 */
 	private void readDataFileAscii(File dataFile) {
-		
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(dataFile));
+			String zeile = null;
+
+			File file = new File("/Users/Nils/Desktop/Ascii Werte.txt");
+			FileWriter writer = new FileWriter(file, true);
+			
+			while ((zeile = in.readLine()) != null) {
+				
+				String[] tmp = zeile.split(" ");
+				
+				for (int i = 0; i < tmp.length; i++) {
+					writer.write(tmp[i] + " ");
+					writer.flush();
+				}
+				
+				writer.write(System.getProperty("line.separator"));
+				writer.flush();
+				
+			}
+			
+			in.close();
+			writer.close();	
+			
+			
+			
+		} catch (FileNotFoundException e) {
+			System.err.println("No file found on current location.");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -244,12 +333,57 @@ public class DataReaderController {
 	 * 
 	 * @param firstByte of the 16 Bit hex value
 	 * @param secondByte of the 16 Bit hex value
-	 * @return the decoded signed integer 16 bit value of the 16 bit hex coded value
+	 * @return the decoded signed integer 16 bit value of the 16 bit hex coded value.
 	 */
 	private double decodeInteger16(String firstByte, String secondByte) {
+		String tmp;
+		double value;
 		
-		String tmp = secondByte + firstByte;	
-		double value = (short) Integer.parseInt(tmp, 16);
+		if (useBigEndianOrder == false) {
+			tmp = secondByte + firstByte;	
+			value = (short) Integer.parseInt(tmp, 16);
+		} else {
+			tmp = firstByte + secondByte;
+			value = (short) Integer.parseInt(tmp, 16);
+		}
+		
+		// Converting the readed value to microvolt
+		value = value * channelResolution;
+		
+		// Rounded a mantisse with value 3
+		BigDecimal myDec = new BigDecimal(value);
+		myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+		value = myDec.doubleValue();
+		
+		return value;
+	}
+	
+	/**
+	 * This method decodes the given 32 bit hex value to the respective signed float value.
+	 * The four bytes changed their order because of little indian storage definded by Intel.
+	 * 
+	 * @param firstByte
+	 * @param secondByte
+	 * @param thirdByte
+	 * @param fourthByte
+	 * @return the decoded signed float 32 bit value of the 32 bit hex coded value.
+	 */
+	private double decodeFloat32(String firstByte, String secondByte, String thirdByte, String fourthByte) {
+		String tmp;
+		double value;
+		
+		if (useBigEndianOrder == false) {
+			tmp = fourthByte + thirdByte + secondByte + firstByte;
+
+			Long i = Long.parseLong(tmp, 16);
+			value = Float.intBitsToFloat(i.intValue());
+
+			
+		} else {
+			tmp = firstByte + secondByte + thirdByte + fourthByte;
+			Long i = Long.parseLong(tmp, 16);
+			value = Float.intBitsToFloat(i.intValue());
+		}
 		
 		// Converting the readed value to microvolt
 		value = value * channelResolution;
@@ -274,6 +408,8 @@ public class DataReaderController {
 		System.out.println("DataPoints: " + dataPoints);
 		System.out.println("SamplingIntervall: " + samplingInterval);
 		System.out.println("BinaryFormat: " + binaryFormat);
+		System.out.println("SkipLines: " + skipLines);
+		System.out.println("SkipColumns: " + skipColumns);
 		System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
 		System.out.println("ChannelResolution: " + channelResolution);
 		
