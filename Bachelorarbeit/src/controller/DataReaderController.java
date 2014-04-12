@@ -10,12 +10,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
 
 public class DataReaderController {
 	
@@ -49,7 +47,29 @@ public class DataReaderController {
 		headerFile = new File(fileLocationPath);
 		readHeaderFile();
 		
-		readDataFile(dataFile);
+		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN)) {
+			
+			if (dataFormat.equals(DataFormat.BINARY)) {
+				switch (binaryFormat) {
+				case INT_16: readDataFileInt(dataFile);
+					break;
+				case IEEE_FLOAT_32: readDataFileFloat(dataFile);
+					break;
+				default: System.err.println("No compatible binary format!");
+					break;
+				}
+				
+			} else if (dataFormat.equals(DataFormat.ASCII)) {
+				readDataFileAscii(dataFile);
+				
+			} else {
+				System.err.println("No compatible data format!");
+				
+			}
+			
+		} else {
+			System.err.println("No supported data orientation or data type!");
+		}
 		
 		printProperties();
 	}
@@ -153,7 +173,11 @@ public class DataReaderController {
 					String[] tmp = zeile.split(",");
 					
 					if (tmp.length == 4) {
+						if (tmp[2].isEmpty()) {
+							channelResolution = 1.0;
+						} else {
 						channelResolution = Double.parseDouble(tmp[2]);
+						}
 					}
 				}
 				
@@ -173,24 +197,45 @@ public class DataReaderController {
 	 * 
 	 * @param dataFile file with data content
 	 */
-	private void readDataFile(File dataFile) {		
+	private void readDataFileInt(File dataFile) {		
 
 		try {
+			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
+			FileWriter writer = new FileWriter(file, true);
+			
 			InputStream in = new FileInputStream(dataFile);
-		
-			String firstByte = Integer.toHexString(in.read());			
-			String secondByte = Integer.toHexString(in.read());
+
+			for (int i = 1; i <= (dataPoints * numberOfChannels); i++) {
 			
-			System.out.println(decodeInteger16(firstByte, secondByte));
+				String firstByte = Integer.toHexString(in.read());			
+				String secondByte = Integer.toHexString(in.read());
+				
+				writer.write(decodeInteger16(firstByte, secondByte) + " ");
+				writer.flush();
+				
+				if (i % numberOfChannels == 0) {
+					writer.write(System.getProperty("line.separator"));
+					writer.flush();
+				}
+				
+			}
+			in.close();	
+			writer.close();
 			
-			in.close();					
-					
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 				
+	}
+	
+	private void readDataFileFloat(File dataFile) {
+		
+	}
+	
+	private void readDataFileAscii(File dataFile) {
+		
 	}
 	
 	/**
