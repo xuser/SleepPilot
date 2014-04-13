@@ -2,6 +2,8 @@ package controller;
 
 import java.io.IOException;
 
+import model.DataPoints;
+
 /**
  * Starts the application and creates necessary initial controllers.
  * 
@@ -31,7 +33,9 @@ public class MainController {
 		
 		// Creats a new controller which reads the declared file
 		try {
-			new DataReaderController(fileLocation);
+			DataPoints dataPointsModel = new DataPoints();
+			new DataReaderController(fileLocation, dataPointsModel);
+			
 		} catch (IOException e) {
 			System.err.println("Unexpected error occured during reading the file.");
 			e.printStackTrace();

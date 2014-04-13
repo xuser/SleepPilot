@@ -7,7 +7,7 @@ package controller;
  * @author Nils Finke
  */
 public class FilterController {
-
+	
 	/**
 	 * Constructor for initializing this class.
 	 */

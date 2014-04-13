@@ -15,9 +15,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
+import sun.text.normalizer.CharTrie.FriendAgent;
+import model.DataPoints;
+
 public class DataReaderController {
 	
 	private String fileLocationPath;
+	private DataPoints respectiveModel;
 	
 	// [Common Infos]
 	private File headerFile;
@@ -26,9 +30,6 @@ public class DataReaderController {
 	private DataFormat dataFormat;
 	private DataOrientation dataOrientation;
 	private DataType dataType;
-	private int numberOfChannels;
-	private int dataPoints;
-	private int samplingInterval;
 	
 	// [Binary Infos]
 	private BinaryFormat binaryFormat;
@@ -45,8 +46,9 @@ public class DataReaderController {
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
 	 */
-	public DataReaderController(String fileLocation) throws IOException {
+	public DataReaderController(String fileLocation, DataPoints dataPointsModel) throws IOException {
 		fileLocationPath = fileLocation;
+		respectiveModel = dataPointsModel;
 		
 		headerFile = new File(fileLocationPath);
 		readHeaderFile();
@@ -134,17 +136,17 @@ public class DataReaderController {
 				
 				// Read number of channels
 				if (zeile.startsWith("NumberOfChannels=")) {
-					numberOfChannels = Integer.parseInt(zeile.substring(17));
+					respectiveModel.setNumberOfChannels(Integer.parseInt(zeile.substring(17)));
 				}
 				
 				// Read number of data points
 				if (zeile.startsWith("DataPoints=")) {
-					dataPoints = Integer.parseInt(zeile.substring(11));
+					respectiveModel.setNumberOfDataPoints(Integer.parseInt(zeile.substring(11)));
 				}
 				
 				// Read sampling intervall
 				if (zeile.startsWith("SamplingInterval")) {
-					samplingInterval = Integer.parseInt(zeile.substring(17));
+					respectiveModel.setSamplingIntervall(Integer.parseInt(zeile.substring(17)));
 				}
 				
 				// Read binary format
@@ -215,28 +217,63 @@ public class DataReaderController {
 	private void readDataFileInt(File dataFile) {		
 
 		try {
+			/* ---- Start just for testing ---- */
 			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
 			FileWriter writer = new FileWriter(file, true);
+			/* ---- End just for testing ---- */
 			
 			InputStream in = new FileInputStream(dataFile);
-
-			for (int i = 1; i <= (dataPoints * numberOfChannels); i++) {
+			int column = 0;
+			int row = 0;
 			
-				String firstByte = Integer.toHexString(in.read());			
-				String secondByte = Integer.toHexString(in.read());
+			// This function has to be called here, because you now know how big the matrix have to be
+			respectiveModel.createDataMatrix();
+
+			for (int i = 1; i <= (respectiveModel.getNumberOfDataPoints() * respectiveModel.getNumberOfChannels()); i++) {
 				
+				String firstByte = Integer.toHexString(in.read());
+				if (firstByte.length() < 2) {
+					firstByte = "0" + firstByte;
+				}
+				
+				String secondByte = Integer.toHexString(in.read());
+				if (secondByte.length() < 2) {
+					secondByte = "0" + secondByte;
+				}
+				
+				// Tmp holds the channel in which the data has to be stored.
+				if ((i % respectiveModel.getNumberOfChannels()) != 0) {
+					column =  i % respectiveModel.getNumberOfChannels();
+				} else {
+					column = respectiveModel.getNumberOfChannels();
+				}
+				
+				// - 1 is important, because the matrix starts at position [0][0]
+				column = column - 1;
+
+				respectiveModel.setDataPoints(decodeInteger16(firstByte, secondByte), row, column);
+								
+				// Check if one row of values has been filled into the channel matrix
+				if (i % respectiveModel.getNumberOfChannels() == 0) {
+					row = row + 1;
+				}
+				
+				/* ---- Start just for testing ---- */
 				writer.write(decodeInteger16(firstByte, secondByte) + " ");
 				writer.flush();
 				
 				// Modulo
-				if (i % numberOfChannels == 0) {
+				if (i % respectiveModel.getNumberOfChannels() == 0) {
 					writer.write(System.getProperty("line.separator"));
 					writer.flush();
 				}
+				/* ---- End just for testing ---- */
+
 				
 			}
-			in.close();	
-			writer.close();
+			in.close();
+									
+			writer.close();  // Just for testing
 			
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
@@ -258,18 +295,33 @@ public class DataReaderController {
 			
 			InputStream in = new FileInputStream(dataFile);
 			
-			for (int i = 1; i <= (dataPoints * numberOfChannels); i++) {
+			for (int i = 1; i <= (respectiveModel.getNumberOfDataPoints() * respectiveModel.getNumberOfChannels()); i++) {
 
 				String firstByte = Integer.toHexString(in.read());
+				if (firstByte.length() < 2) {
+					firstByte = "0" + firstByte;
+				}
+				
 				String secondByte = Integer.toHexString(in.read());
+				if (secondByte.length() < 2) {
+					secondByte = "0" + secondByte;
+				}
+				
 				String thirdByte = Integer.toHexString(in.read());
+				if (thirdByte.length() < 2) {
+					thirdByte = "0" + thirdByte;
+				}
+				
 				String fourthByte = Integer.toHexString(in.read());
+				if (fourthByte.length() < 2) {
+					fourthByte = "0" + fourthByte;
+				}
 				
 				writer.write(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte) + " ");
 				writer.flush();
 				
 				// Modulo
-				if (i % numberOfChannels == 0) {
+				if (i % respectiveModel.getNumberOfChannels() == 0) {
 					writer.write(System.getProperty("line.separator"));
 					writer.flush();
 				}
@@ -340,7 +392,7 @@ public class DataReaderController {
 		double value;
 		
 		if (useBigEndianOrder == false) {
-			tmp = secondByte + firstByte;	
+			tmp = secondByte + firstByte;
 			value = (short) Integer.parseInt(tmp, 16);
 		} else {
 			tmp = firstByte + secondByte;
@@ -404,9 +456,9 @@ public class DataReaderController {
 		System.out.println("DataFormat: " + dataFormat);
 		System.out.println("DataOrientation: " + dataOrientation);
 		System.out.println("DataType: " + dataType);
-		System.out.println("NumberOfChannels: " + numberOfChannels);
-		System.out.println("DataPoints: " + dataPoints);
-		System.out.println("SamplingIntervall: " + samplingInterval);
+		System.out.println("NumberOfChannels: " + respectiveModel.getNumberOfChannels());
+		System.out.println("DataPoints: " + respectiveModel.getNumberOfDataPoints());
+		System.out.println("SamplingIntervall: " + respectiveModel.getSamplingIntervall());
 		System.out.println("BinaryFormat: " + binaryFormat);
 		System.out.println("SkipLines: " + skipLines);
 		System.out.println("SkipColumns: " + skipColumns);
