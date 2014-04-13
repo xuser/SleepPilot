@@ -54,7 +54,7 @@ public class DataReaderController {
 		readHeaderFile();
 		printProperties();
 		
-		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN)) {
+		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 			
 			if (dataFormat.equals(DataFormat.BINARY)) {
 				switch (binaryFormat) {
@@ -75,7 +75,7 @@ public class DataReaderController {
 			}
 			
 		} else {
-			System.err.println("No supported data orientation or data type!");
+			System.err.println("No supported data orientation, data type or count of skip columns! ");
 		}
 		
 	}
@@ -218,8 +218,8 @@ public class DataReaderController {
 
 		try {
 			/* ---- Start just for testing ---- */
-			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
-			FileWriter writer = new FileWriter(file, true);
+//			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
+//			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
 			
 			InputStream in = new FileInputStream(dataFile);
@@ -241,7 +241,7 @@ public class DataReaderController {
 					secondByte = "0" + secondByte;
 				}
 				
-				// Tmp holds the channel in which the data has to be stored.
+				// column holds the channel in which the data has to be stored.
 				if ((i % respectiveModel.getNumberOfChannels()) != 0) {
 					column =  i % respectiveModel.getNumberOfChannels();
 				} else {
@@ -259,21 +259,21 @@ public class DataReaderController {
 				}
 				
 				/* ---- Start just for testing ---- */
-				writer.write(decodeInteger16(firstByte, secondByte) + " ");
-				writer.flush();
-				
-				// Modulo
-				if (i % respectiveModel.getNumberOfChannels() == 0) {
-					writer.write(System.getProperty("line.separator"));
-					writer.flush();
-				}
+//				writer.write(decodeInteger16(firstByte, secondByte) + " ");
+//				writer.flush();
+//				
+//				// Modulo
+//				if (i % respectiveModel.getNumberOfChannels() == 0) {
+//					writer.write(System.getProperty("line.separator"));
+//					writer.flush();
+//				}
 				/* ---- End just for testing ---- */
 
 				
 			}
 			in.close();
 									
-			writer.close();  // Just for testing
+//			writer.close();  // Just for testing
 			
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
@@ -290,10 +290,18 @@ public class DataReaderController {
 	 */
 	private void readDataFileFloat(File dataFile) {
 		try {
-			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
-			FileWriter writer = new FileWriter(file, true);
+			/* ---- Start just for testing ---- */
+//			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
+//			FileWriter writer = new FileWriter(file, true);
+			/* ---- End just for testing ---- */
+
 			
 			InputStream in = new FileInputStream(dataFile);
+			int column = 0;
+			int row = 0;
+			
+			// This function has to be called here, because you now know how big the matrix have to be
+			respectiveModel.createDataMatrix();
 			
 			for (int i = 1; i <= (respectiveModel.getNumberOfDataPoints() * respectiveModel.getNumberOfChannels()); i++) {
 
@@ -317,18 +325,39 @@ public class DataReaderController {
 					fourthByte = "0" + fourthByte;
 				}
 				
-				writer.write(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte) + " ");
-				writer.flush();
-				
-				// Modulo
-				if (i % respectiveModel.getNumberOfChannels() == 0) {
-					writer.write(System.getProperty("line.separator"));
-					writer.flush();
+				// column holds the channel in which the data has to be stored.
+				if ((i % respectiveModel.getNumberOfChannels()) != 0) {
+					column =  i % respectiveModel.getNumberOfChannels();
+				} else {
+					column = respectiveModel.getNumberOfChannels();
 				}
+				
+				// - 1 is important, because the matrix starts at position [0][0]
+				column = column - 1;
+				
+				respectiveModel.setDataPoints(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte), row, column);
+				
+				// Check if one row of values has been filled into the channel matrix
+				if (i % respectiveModel.getNumberOfChannels() == 0) {
+					row = row + 1;
+				}
+				
+				/* ---- Start just for testing ---- */
+//				writer.write(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte) + " ");
+//				writer.flush();
+//				
+//				// Modulo
+//				if (i % respectiveModel.getNumberOfChannels() == 0) {
+//					writer.write(System.getProperty("line.separator"));
+//					writer.flush();
+//				}
+				/* ---- End just for testing ---- */
+
 			}
+
 			
 			in.close();
-			writer.close();
+//			writer.close(); //Just for testing
 
 			
 		} catch (FileNotFoundException e) {
@@ -347,30 +376,50 @@ public class DataReaderController {
 	 */
 	private void readDataFileAscii(File dataFile) {
 		try {
+			/* ---- Start just for testing ---- */
+//			File file = new File("/Users/Nils/Desktop/Ascii Werte.txt");
+//			FileWriter writer = new FileWriter(file, true);
+			/* ---- End just for testing ---- */
+
 			BufferedReader in = new BufferedReader(new FileReader(dataFile));
 			String zeile = null;
-
-			File file = new File("/Users/Nils/Desktop/Ascii Werte.txt");
-			FileWriter writer = new FileWriter(file, true);
+			int row = 0;
+			
+			// This function has to be called here, because you now know how big the matrix have to be
+			respectiveModel.createDataMatrix();
+			
+			for (int i = 0; i < skipLines; i++) {
+				zeile = in.readLine();
+			}
 			
 			while ((zeile = in.readLine()) != null) {
 				
 				String[] tmp = zeile.split(" ");
 				
 				for (int i = 0; i < tmp.length; i++) {
-					writer.write(tmp[i] + " ");
-					writer.flush();
+					
+					tmp[i] = tmp[i].replaceAll(",", ".");
+					
+					/* ---- Start just for testing ---- */
+//					writer.write(Double.valueOf(tmp[i]) + " ");
+//					writer.flush();
+					/* ---- End just for testing ---- */
+					
+					respectiveModel.setDataPoints(Double.valueOf(tmp[i]), row, i);
+					
 				}
 				
-				writer.write(System.getProperty("line.separator"));
-				writer.flush();
+				row = row + 1;
+						
+				/* ---- Start just for testing ---- */
+//				writer.write(System.getProperty("line.separator"));
+//				writer.flush();
+				/* ---- End just for testing ---- */
 				
 			}
 			
 			in.close();
-			writer.close();	
-			
-			
+//			writer.close();		// Just for testing
 			
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
