@@ -60,13 +60,13 @@ public class MainController extends Application {
 		try {
 			dataPointsModel = new DataPoints();
 			new DataReaderController(fileLocation, dataPointsModel);
+			launch(args);
 			
 		} catch (IOException e) {
 			System.err.println("Unexpected error occured during reading the file.");
 			e.printStackTrace();
 		}
 		
-		launch(args);
 	}
 
 }
