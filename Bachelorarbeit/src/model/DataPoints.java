@@ -17,6 +17,8 @@ public class DataPoints {
 	// [Channel Infos]
 	private String[] channelNames;
 	
+	private double samplingRateConvertedToHertz;
+	
 	/**
 	 * @param dataPoints the dataPoints to set
 	 */
@@ -64,6 +66,16 @@ public class DataPoints {
 	 */
 	public void setSamplingIntervall(int samplingIntervall) {
 		this.samplingIntervall = samplingIntervall;
+		
+		samplingRateConvertedToHertz = (1000000 / samplingIntervall);
+		
+	}
+	
+	/**
+	 * @return the samplingRateConvertedToHertz
+	 */
+	public double getSamplingRateConvertedToHertz() {
+		return samplingRateConvertedToHertz;
 	}
 
 	/**

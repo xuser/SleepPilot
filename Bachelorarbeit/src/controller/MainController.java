@@ -2,6 +2,13 @@ package controller;
 
 import java.io.IOException;
 
+import javafx.application.Application;
+import view.ChartController;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import model.DataPoints;
 
 /**
@@ -9,12 +16,30 @@ import model.DataPoints;
  * 
  * @author Nils Finke
  */
-public class MainController {
+public class MainController extends Application {
 	
 	/**
 	 * Filepath of .vhdr header file.
 	 */
 	private static String fileLocation;
+	
+	private static Stage primaryStage;
+	
+	private static DataPoints dataPointsModel;
+	
+	/**
+	 * The main entry point for all JavaFX applications. 
+	 * The start method is called after the init method has returned, 
+	 * and after the system is ready for the application to begin running.
+	 */
+	@Override
+	public void start(final Stage stage) throws Exception {
+		
+		primaryStage = stage;
+		// Creating chart controller
+		new ChartController(primaryStage, dataPointsModel);
+	
+	}
 
 	/**
 	 * Starts the application with the needed parameters.
@@ -33,13 +58,15 @@ public class MainController {
 		
 		// Creats a new controller which reads the declared file
 		try {
-			DataPoints dataPointsModel = new DataPoints();
+			dataPointsModel = new DataPoints();
 			new DataReaderController(fileLocation, dataPointsModel);
 			
 		} catch (IOException e) {
 			System.err.println("Unexpected error occured during reading the file.");
 			e.printStackTrace();
 		}
+		
+		launch(args);
 	}
 
 }

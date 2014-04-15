@@ -26,7 +26,10 @@ public class DataReaderController {
 	// [Common Infos]
 	private File headerFile;
 	private File dataFile;
+	
+	@SuppressWarnings("unused")
 	private File markerFile;
+	
 	private DataFormat dataFormat;
 	private DataOrientation dataOrientation;
 	private DataType dataType;
@@ -513,6 +516,8 @@ public class DataReaderController {
 		System.out.println("SkipColumns: " + skipColumns);
 		System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
 		System.out.println("ChannelResolution: " + channelResolution);
+		
+		System.out.println("SamplingRate in Hertz: " + respectiveModel.getSamplingRateConvertedToHertz());
 		
 	}
 
