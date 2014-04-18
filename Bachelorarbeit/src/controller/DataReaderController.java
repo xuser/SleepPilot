@@ -18,10 +18,11 @@ import java.math.BigDecimal;
 import sun.text.normalizer.CharTrie.FriendAgent;
 import model.DataPoints;
 
-public class DataReaderController {
+public class DataReaderController extends  Thread {
 	
 	private String fileLocationPath;
 	private DataPoints respectiveModel;
+	private Thread t;
 	
 	// [Common Infos]
 	private File headerFile;
@@ -54,6 +55,7 @@ public class DataReaderController {
 		respectiveModel = dataPointsModel;
 		
 		headerFile = new File(fileLocationPath);
+		
 		readHeaderFile();
 		printProperties();
 		
@@ -520,5 +522,6 @@ public class DataReaderController {
 		System.out.println("SamplingRate in Hertz: " + respectiveModel.getSamplingRateConvertedToHertz());
 		
 	}
+
 
 }

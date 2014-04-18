@@ -80,6 +80,7 @@ public class ChartController implements Initializable {
         }
         
         for (int i = 1; i < tmp; i++) {
+        	// TODO: Bisher wird immer nur ein Channel zur Zeit geplottet.
         	series.getData().add(new XYChart.Data(i, respectiveModel.printValueFromData(i, 1)));
         }
 

@@ -51,7 +51,7 @@ public class MainController extends Application {
 		
 		// IMPORTANT: The absolute filepath on current filesystem is required.
 		try {
-			fileLocation = args[0];			
+			fileLocation = args[0];
 		} catch (Exception e) {
 			System.err.println("No valid file location for runtime argument.");
 		}
@@ -59,7 +59,14 @@ public class MainController extends Application {
 		// Creats a new controller which reads the declared file
 		try {
 			dataPointsModel = new DataPoints();
-			new DataReaderController(fileLocation, dataPointsModel);
+			
+			DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel);
+			dataReaderController.setPriority(Thread.MAX_PRIORITY);
+			dataReaderController.start();
+			
+			FilterController filterController = new FilterController(dataPointsModel);
+			filterController.start();
+			
 			launch(args);
 			
 		} catch (IOException e) {
