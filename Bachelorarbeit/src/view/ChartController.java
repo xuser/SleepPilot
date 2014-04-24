@@ -74,7 +74,7 @@ public class ChartController implements Initializable {
         // number of data points for one 30 seconds epoch
         double tmp = respectiveModel.getSamplingRateConvertedToHertz() * 30;
         
-        // Check if 
+        // Check if the number of data points for one epoch is smaller than the hole number of data points
         if (tmp > respectiveModel.getNumberOfDataPoints()) {
         	tmp = respectiveModel.getNumberOfDataPoints();
         }
