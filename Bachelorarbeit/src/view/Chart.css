@@ -1,1 +1,6 @@
-@CHARSET "UTF-8";
+
+.chart-series-line {
+
+	-fx-stroke-width: 2px;
+	-fx-effect: null;
+}

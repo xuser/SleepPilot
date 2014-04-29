@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.layout.*?>
@@ -8,7 +9,7 @@
 
 <GridPane fx:id="contentGrid" minHeight="600.0" minWidth="800.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <children>
-    <LineChart fx:id="lineChart" createSymbols="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" visible="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
+    <LineChart fx:id="lineChart" createSymbols="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" styleClass="chartLine" visible="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
       <xAxis>
         <NumberAxis autoRanging="true" label="30s epoche" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" visible="false" />
       </xAxis>
@@ -26,4 +27,7 @@
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
+  <stylesheets>
+    <URL value="@Chart.css" />
+  </stylesheets>
 </GridPane>
