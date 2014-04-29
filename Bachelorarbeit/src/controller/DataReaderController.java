@@ -40,8 +40,8 @@ public class DataReaderController extends  Thread {
 	private boolean useBigEndianOrder;
 	
 	// [ASCII Infos]
-	private int skipLines;
-	private int skipColumns;
+	private int skipLines = 0;
+	private int skipColumns = 0;
 	
 	// [Channel Infos]
 	private double channelResolution;
@@ -70,7 +70,6 @@ public class DataReaderController extends  Thread {
 				default: System.err.println("No compatible binary format!");
 					break;
 				}
-				
 			} else if (dataFormat.equals(DataFormat.ASCII)) {
 				readDataFileAscii(dataFile);
 				
