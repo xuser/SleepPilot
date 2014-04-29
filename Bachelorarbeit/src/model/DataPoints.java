@@ -101,6 +101,7 @@ public class DataPoints {
 	
 	/**
 	 * This method returns a value from a specific position in the data points.
+	 * IMPORTANT: Just use the function for printing a needed data point!
 	 * 
 	 * @param row
 	 * 			the row from where you want to get the value 
@@ -111,6 +112,21 @@ public class DataPoints {
 	 */
 	public double printValueFromData(int row, int channel) {
 		return dataPoints[row - 1][channel - 1];
+	}
+	
+	/**
+	 * This method returns a value from a specific position in the data points.
+	 * IMPORTANT: Just use this function for filtering and not, if you want to print the value!
+	 * 
+	 * @param row
+	 * 			the row from where you want to get the value 
+	 * @param channel
+	 * 			the channel from where you want to get the value
+	 * @return
+	 * 		the needed value
+	 */
+	public double getValueFromData(int row, int channel) {
+		return dataPoints[row][channel];
 	}
 
 }

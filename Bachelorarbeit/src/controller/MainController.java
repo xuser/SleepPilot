@@ -63,10 +63,10 @@ public class MainController extends Application {
 			DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel);
 			dataReaderController.setPriority(Thread.MAX_PRIORITY);
 			dataReaderController.start();
-			
+						
 			FilterController filterController = new FilterController(dataPointsModel);
 			filterController.start();
-			
+					
 			launch(args);
 			
 		} catch (IOException e) {

@@ -36,38 +36,43 @@ public class FilterController extends Thread {
 	 * Starts the thread. Will exist when the method reaches his end.
 	 */
 	public void run() {
-		int i = 1;
-		while (i <= respectiveModel.getNumberOfDataPoints()) {
-			// TODO: Bisher wird der Filter nur auf den ersten Channel angewandt.
+		
+		// Run over each channel
+		for (int y = 0; y < respectiveModel.getNumberOfChannels(); y++) {
+			
+			int i = 0;
 			
 			firstValueFromFilterWindow = 0;
 			secondValueFromFilterWindow = 0;
-			thirdValueFromFilterWindow = respectiveModel.printValueFromData(i, 1);
+			thirdValueFromFilterWindow = respectiveModel.getValueFromData(i, y);
 			
-			tmpFirst = ((b[0] * thirdValueFromFilterWindow) + (b[1] * secondValueFromFilterWindow) + (b[2] * firstValueFromFilterWindow));
-			// TODO: tmpSecond = ;
-			
-			filteredDataValue = tmpFirst - tmpSecond;
-			
-			respectiveModel.setDataPoints(filteredDataValue, i, 1);
-			
-			
-			
-			
-			
-			firstValueFromFilterWindow = respectiveModel.printValueFromData(i, 1);
-			
-			if (i+1 <= respectiveModel.getNumberOfDataPoints()) {
-				secondValueFromFilterWindow = respectiveModel.printValueFromData(i+1, 1);
+			// Run over each value from one channel
+			while (i < respectiveModel.getNumberOfDataPoints()) {
+				
+				tmpFirst = ((b[0] * thirdValueFromFilterWindow) + (b[1] * secondValueFromFilterWindow) + (b[2] * firstValueFromFilterWindow));
+				
+				if (i >= 2) {				
+					tmpSecond = ((a[1] * respectiveModel.getValueFromData(i-1, y)) + (a[2] * respectiveModel.getValueFromData(i-2, y)));
+				} else if (i == 1) {
+					tmpSecond = ((a[1] * respectiveModel.getValueFromData(i-1, y)) + (a[2] * y));
+				} else if (i == 0) {
+					tmpSecond = ((a[1] * 0) + (a[2] * 0));
+				}
+				
+				filteredDataValue = tmpFirst - tmpSecond;
+				
+				respectiveModel.setDataPoints(filteredDataValue, i, y);
+				
+				if (i < (respectiveModel.getNumberOfDataPoints() - 1)) {
+					firstValueFromFilterWindow = secondValueFromFilterWindow;
+					secondValueFromFilterWindow = thirdValueFromFilterWindow;
+					thirdValueFromFilterWindow = respectiveModel.getValueFromData(i+1, y);
+				}
+				
+				i++;
 			}
-			
-			if (i+2 <= respectiveModel.getNumberOfDataPoints()) {
-				thirdValueFromFilterWindow = respectiveModel.printValueFromData(i+2, 1);
-			}
-			
-
-			i++;
 		}
+		
 	}
 	
 	
