@@ -2,12 +2,13 @@ package controller;
 
 import help.MathFunctions;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import model.DataPoints;
 
 /**
  * This class calls the feature extraction methods for extracting relevant features to create 
@@ -18,13 +19,15 @@ import java.util.TreeMap;
  */
 public class FeatureExtractionController {
 	
+	private DataPoints respectiveModel;
+	
 	private List<Double> samples = new LinkedList<Double>();
 	
 	/**
 	 * This TreeMap holds all values for the current window.
 	 * The TreeMap automatically sorts the map by its key value in log(n) time.
 	 */
-	private TreeMap<Double, Integer> window = new TreeMap<Double, Integer>();
+	private Map<Double, Integer> window = new TreeMap<Double, Integer>();
 	
 	/**
 	 * This HashMap counts for each permutation the number of occurrences in the current set of samples.
@@ -34,10 +37,11 @@ public class FeatureExtractionController {
 	/**
 	 * Constructor which initializes the class.
 	 */
-	public FeatureExtractionController(){
+	public FeatureExtractionController(DataPoints dataPointsModel){
 		
-		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219
+		respectiveModel = dataPointsModel;
 		
+		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219		
 		samples.add(6.0);
 		samples.add(9.0);
 		samples.add(11.0);
@@ -77,8 +81,7 @@ public class FeatureExtractionController {
 		
 		List<Integer> tmp = new LinkedList<Integer>();
 		tmp.addAll(countPermutations.values());
-		
-		
+			
 		for(int x = 0; x < tmp.size(); x++) {		
 			float a = tmp.get(x);
 			relativeFrequency = (a / runIndex);	

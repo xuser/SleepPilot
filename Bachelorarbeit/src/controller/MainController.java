@@ -67,7 +67,8 @@ public class MainController extends Application {
 			FilterController filterController = new FilterController(dataPointsModel);
 			filterController.start();
 			
-			FeatureExtractionController featureExtractionController = new FeatureExtractionController();
+			
+			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel);
 			
 			launch(args);
 			
