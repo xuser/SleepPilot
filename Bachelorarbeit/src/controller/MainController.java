@@ -64,10 +64,10 @@ public class MainController extends Application {
 			dataReaderController.setPriority(Thread.MAX_PRIORITY);
 			dataReaderController.start();
 			
-			
 			FilterController filterController = new FilterController(dataPointsModel);
 			filterController.start();
-				
+			
+			FeatureExtractionController featureExtractionController = new FeatureExtractionController();
 			
 			launch(args);
 			
