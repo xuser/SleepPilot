@@ -79,11 +79,13 @@ public class FeatureExtractionController {
 			
 		}
 		
-		List<Integer> tmp = new LinkedList<Integer>();
+		LinkedList<Integer> tmp = new LinkedList<Integer>();
 		tmp.addAll(countPermutations.values());
-			
-		for(int x = 0; x < tmp.size(); x++) {		
-			float a = tmp.get(x);
+		
+		int tmpSize = tmp.size();
+		
+		for(int x = 0; x < tmpSize; x++) {		
+			float a = tmp.poll();
 			relativeFrequency = (a / runIndex);	
 			
 			permutationEntropy = (permutationEntropy + (float) (relativeFrequency * MathFunctions.lb(relativeFrequency)));
