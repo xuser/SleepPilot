@@ -38,40 +38,23 @@ public class FeatureExtractionController {
 		
 		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219
 		
-//		samples.add(6.0);
-//		samples.add(9.0);
-//		samples.add(11.0);
-//		samples.add(12.0);		
-//		samples.add(8.0);
-//		samples.add(13.0);
-//		samples.add(5.0);
-
-		samples.add(4.0);
-		samples.add(7.0);
-		samples.add(9.0);
-		samples.add(10.0);
 		samples.add(6.0);
+		samples.add(9.0);
 		samples.add(11.0);
-		samples.add(3.0);
+		samples.add(12.0);		
+		samples.add(8.0);
+		samples.add(13.0);
+		samples.add(5.0);
 		
-		// Über die Liste laufen und die eigentlichen Samples als Keys einsortieren, sodas dann basierend
-		// auf den Keys der Value, welcher die Position in der Liste kennzeichnet, herausgefunden werden kann.
-		// window.put(10.0, 0);
-		// window.put(8.0, 1);
-		// window.put(12.0, 2);
-	
-		// System.out.println(window.values().toString());
-		// System.out.println(window.toString());
-		
-		System.out.println(calculatePermutationEntropy(samples, 2, 1));
+		System.out.println(calculatePermutationEntropy(samples, 3, 1));
 	}
 	
-	private double calculatePermutationEntropy(List<Double> dataPoints, int orderOfPermutation, int tau){
+	private float calculatePermutationEntropy(List<Double> dataPoints, int orderOfPermutation, int tau){
 		
-		double permutationEntropy = 0;
+		float permutationEntropy = 0;
 		
-		int runIndex = (samples.size() - orderOfPermutation + 1);
-		double relativeFrequency;
+		float runIndex = (samples.size() - orderOfPermutation + 1);
+		float relativeFrequency;
 		
 		for(int i = 0; i < runIndex; i++) {
 			
@@ -95,15 +78,15 @@ public class FeatureExtractionController {
 		List<Integer> tmp = new LinkedList<Integer>();
 		tmp.addAll(countPermutations.values());
 		
-		for(int x = 0; x < tmp.size(); x++) {			
-			relativeFrequency = ( tmp.get(x) / runIndex);	
+		
+		for(int x = 0; x < tmp.size(); x++) {		
+			float a = tmp.get(x);
+			relativeFrequency = (a / runIndex);	
 			
-			permutationEntropy = permutationEntropy + (relativeFrequency * MathFunctions.lb(relativeFrequency));
-			
+			permutationEntropy = (permutationEntropy + (float) (relativeFrequency * MathFunctions.lb(relativeFrequency)));
 		}
 		
 		permutationEntropy = (permutationEntropy * (-1));
-
 		
 		return permutationEntropy;
 	}
