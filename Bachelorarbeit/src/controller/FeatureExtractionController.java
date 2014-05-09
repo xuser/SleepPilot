@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import model.DataPoints;
+import model.FeatureExtraxtionValues;
 
 /**
  * This class calls the feature extraction methods for extracting relevant features to create 
@@ -20,6 +21,8 @@ import model.DataPoints;
 public class FeatureExtractionController {
 	
 	private DataPoints respectiveModel;
+	
+	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
 	private List<Double> samples = new LinkedList<Double>();
 	
@@ -37,9 +40,10 @@ public class FeatureExtractionController {
 	/**
 	 * Constructor which initializes the class.
 	 */
-	public FeatureExtractionController(DataPoints dataPointsModel){
+	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel){
 		
 		respectiveModel = dataPointsModel;
+		respectiveFeatureExtractionModel = featureExtractionModel;
 		
 		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219		
 		samples.add(6.0);
@@ -50,7 +54,19 @@ public class FeatureExtractionController {
 		samples.add(13.0);
 		samples.add(5.0);
 		
-		System.out.println(calculatePermutationEntropy(samples, 3, 1));
+		System.out.println("Feature Extraction: " + calculatePermutationEntropy(samples, 3, 1));
+		
+		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
+		
+		if ((numberOfFeatureExtractionValues % 1) != 0) {
+			System.err.println("Not enough samples for an exact number of epochs!");
+		} else {
+			// TODO: Zum testen wird die folgenden Zeile auskommentiert.
+			//respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels() + 1));
+			
+			respectiveFeatureExtractionModel.createDataMatrix(1, 5);
+			
+		}
 	}
 	
 	private float calculatePermutationEntropy(List<Double> dataPoints, int orderOfPermutation, int tau){

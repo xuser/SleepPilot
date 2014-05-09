@@ -128,5 +128,9 @@ public class DataPoints {
 	public double getValueFromData(int row, int channel) {
 		return dataPoints[row][channel];
 	}
+	
+	public int getNumberOf30sEpochs() {
+		return (int) (numberOfDataPoints / (30 * samplingRateConvertedToHertz));
+	}
 
 }

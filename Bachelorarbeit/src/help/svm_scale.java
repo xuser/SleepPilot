@@ -1,10 +1,20 @@
+package help;
+
 import libsvm.*;
+import model.FeatureExtraxtionValues;
+
 import java.io.*;
 import java.util.*;
 import java.text.DecimalFormat;
 
-class svm_scale
-{
+/**
+ * This class sclaes the feature extraction values to a normalized range.
+ * This class comes form the LIVSVM framework, but has been modified by the 
+ * named author.
+ * 
+ * @author Nils Finke
+ */
+public class svm_scale {
 	private String line = null;
 	private double lower = -1.0;
 	private double upper = 1.0;
@@ -18,7 +28,17 @@ class svm_scale
 	private int max_index;
 	private long num_nonzeros = 0;
 	private long new_num_nonzeros = 0;
-
+	
+	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	
+	/**
+	 * This constructor initializes the class.
+	 */
+	public svm_scale(FeatureExtraxtionValues featureExtractionModel) {
+		respectiveFeatureExtractionModel = featureExtractionModel;
+		
+	}
+	
 	private static void exit_with_help()
 	{
 		System.out.print(
@@ -83,36 +103,41 @@ class svm_scale
 		return line;
 	}
 
-	private void run(String []argv) throws IOException
+	private void run(Double y_lower, Double y_upper) throws IOException
 	{
 		int i,index;
 		BufferedReader fp = null, fp_restore = null;
 		String save_filename = null;
 		String restore_filename = null;
 		String data_filename = null;
+		
+		this.y_lower = y_lower;
+		this.y_upper = y_upper;
+		this.y_scaling = true;
 
-
-		for(i=0;i<argv.length;i++)
-		{
-			if (argv[i].charAt(0) != '-')	break;
-			++i;
-			switch(argv[i-1].charAt(1))
-			{
-				case 'l': lower = Double.parseDouble(argv[i]);	break;
-				case 'u': upper = Double.parseDouble(argv[i]);	break;
-				case 'y':
-					  y_lower = Double.parseDouble(argv[i]);
-					  ++i;
-					  y_upper = Double.parseDouble(argv[i]);
-					  y_scaling = true;
-					  break;
-				case 's': save_filename = argv[i];	break;
-				case 'r': restore_filename = argv[i];	break;
-				default:
-					  System.err.println("unknown option");
-					  exit_with_help();
-			}
-		}
+		// Is now not necessary, because scaling will start during the start of the application.
+		
+//		for(i=0;i<argv.length;i++)
+//		{
+//			if (argv[i].charAt(0) != '-')	break;
+//			++i;
+//			switch(argv[i-1].charAt(1))
+//			{
+//				case 'l': lower = Double.parseDouble(argv[i]);	break;
+//				case 'u': upper = Double.parseDouble(argv[i]);	break;
+//				case 'y':
+//					  y_lower = Double.parseDouble(argv[i]);
+//					  ++i;
+//					  y_upper = Double.parseDouble(argv[i]);
+//					  y_scaling = true;
+//					  break;
+//				case 's': save_filename = argv[i];	break;
+//				case 'r': restore_filename = argv[i];	break;
+//				default:
+//					  System.err.println("unknown option");
+//					  exit_with_help();
+//			}
+//		}
 
 		if(!(upper > lower) || (y_scaling && !(y_upper > y_lower)))
 		{
@@ -125,8 +150,8 @@ class svm_scale
 			System.exit(1);
 		}
 
-		if(argv.length != i+1)
-			exit_with_help();
+//		if(argv.length != i+1)
+//			exit_with_help();
 
 		data_filename = argv[i];
 		try {
@@ -342,9 +367,9 @@ class svm_scale
 		fp.close();
 	}
 
-	public static void main(String argv[]) throws IOException
-	{
-		svm_scale s = new svm_scale();
-		s.run(argv);
-	}
+//	public static void main(String argv[]) throws IOException
+//	{
+//		svm_scale s = new svm_scale();
+//		s.run(argv);
+//	}
 }

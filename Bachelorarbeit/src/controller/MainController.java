@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import model.DataPoints;
+import model.FeatureExtraxtionValues;
 
 /**
  * Starts the application and creates necessary initial controllers.
@@ -26,6 +27,8 @@ public class MainController extends Application {
 	private static Stage primaryStage;
 	
 	private static DataPoints dataPointsModel;
+	
+	private static FeatureExtraxtionValues featureExtractionModel;
 	
 	/**
 	 * The main entry point for all JavaFX applications. 
@@ -67,8 +70,10 @@ public class MainController extends Application {
 			FilterController filterController = new FilterController(dataPointsModel);
 			filterController.start();
 			
+			featureExtractionModel = new FeatureExtraxtionValues();
+			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
 			
-			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel);
+			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel);
 			
 			launch(args);
 			
