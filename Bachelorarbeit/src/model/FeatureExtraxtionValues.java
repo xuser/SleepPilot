@@ -13,6 +13,11 @@ public class FeatureExtraxtionValues {
 	private int numberOfChannels;
 	
 	/**
+	 * This variable holds the actual positon in the PE matrix.
+	 */
+	private int rowPosition = 0;
+	
+	/**
 	 * Creates the feature value matrix with the needed size.
 	 * The first column holds the classified sleep stage.
 	 * Test mode: The first column has the default value 99.00
@@ -37,17 +42,19 @@ public class FeatureExtraxtionValues {
 	 * 
 	 * @return the featureValuePE for one epoche (Values for training)
 	 */
-	public String getFeatureValuePE(int row) {
+	public String getFeatureValuePE() {
 		
 		StringBuilder featureVector = new StringBuilder();
 		
-		featureVector.append((int)(featureValuesPE[row][0]));
+		featureVector.append((int)(featureValuesPE[rowPosition][0]));
 		
 		for(int i = 1; i <= numberOfChannels; i++) {
-			featureVector.append(" " + i + ":" + featureValuesPE[row][i]);
+			featureVector.append(" " + i + ":" + featureValuesPE[rowPosition][i]);
 		}
 		
-		String featureVectorString = featureVector.toString();	
+		rowPosition = rowPosition + 1;
+		
+		String featureVectorString = featureVector.toString();
 		return featureVectorString;
 	}
 
@@ -57,6 +64,12 @@ public class FeatureExtraxtionValues {
 	public void setFeatureValuesPE(int row, int column, float featureValuePE) {
 		this.featureValuesPE[row][column] = featureValuePE;
 	}
+	
+	
+	public void rewindRowPosition() {
+		rowPosition = 0;
+	}
+	
 	
 	
 }

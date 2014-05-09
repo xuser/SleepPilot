@@ -34,29 +34,36 @@ public class svm_scale {
 	/**
 	 * This constructor initializes the class.
 	 */
-	public svm_scale(FeatureExtraxtionValues featureExtractionModel) {
+	public svm_scale(FeatureExtraxtionValues featureExtractionModel, double l, double u) {
 		respectiveFeatureExtractionModel = featureExtractionModel;
+		
+		this.lower = l;
+		this.upper = u;
+		
+		try {
+			run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
-	private static void exit_with_help()
-	{
-		System.out.print(
-		 "Usage: svm-scale [options] data_filename\n"
-		+"options:\n"
-		+"-l lower : x scaling lower limit (default -1)\n"
-		+"-u upper : x scaling upper limit (default +1)\n"
-		+"-y y_lower y_upper : y scaling limits (default: no y scaling)\n"
-		+"-s save_filename : save scaling parameters to save_filename\n"
-		+"-r restore_filename : restore scaling parameters from restore_filename\n"
-		);
-		System.exit(1);
-	}
+//	private static void exit_with_help()
+//	{
+//		System.out.print(
+//		 "Usage: svm-scale [options] data_filename\n"
+//		+"options:\n"
+//		+"-l lower : x scaling lower limit (default -1)\n"
+//		+"-u upper : x scaling upper limit (default +1)\n"
+//		+"-y y_lower y_upper : y scaling limits (default: no y scaling)\n"
+//		+"-s save_filename : save scaling parameters to save_filename\n"
+//		+"-r restore_filename : restore scaling parameters from restore_filename\n"
+//		);
+//		System.exit(1);
+//	}
 
-	private BufferedReader rewind(BufferedReader fp, String filename) throws IOException
-	{
-		fp.close();
-		return new BufferedReader(new FileReader(filename));
+	private void rewind() {
+		respectiveFeatureExtractionModel.rewindRowPosition();
 	}
 
 	private void output_target(double value)
@@ -97,13 +104,12 @@ public class svm_scale {
 		}
 	}
 
-	private String readline(BufferedReader fp) throws IOException
-	{
-		line = fp.readLine();
+	private String readline() {
+		line = respectiveFeatureExtractionModel.getFeatureValuePE();
 		return line;
 	}
 
-	private void run(Double y_lower, Double y_upper) throws IOException
+	private void run() throws IOException
 	{
 		int i,index;
 		BufferedReader fp = null, fp_restore = null;
@@ -111,9 +117,6 @@ public class svm_scale {
 		String restore_filename = null;
 		String data_filename = null;
 		
-		this.y_lower = y_lower;
-		this.y_upper = y_upper;
-		this.y_scaling = true;
 
 		// Is now not necessary, because scaling will start during the start of the application.
 		
@@ -153,13 +156,13 @@ public class svm_scale {
 //		if(argv.length != i+1)
 //			exit_with_help();
 
-		data_filename = argv[i];
-		try {
-			fp = new BufferedReader(new FileReader(data_filename));
-		} catch (Exception e) {
-			System.err.println("can't open file " + data_filename);
-			System.exit(1);
-		}
+//		data_filename = argv[i];
+//		try {
+//			fp = new BufferedReader(new FileReader(data_filename));
+//		} catch (Exception e) {
+//			System.err.println("can't open file " + data_filename);
+//			System.exit(1);
+//		}
 
 		/* assumption: min index of attributes is 1 */
 		/* pass 1: find out max index of attributes */
@@ -192,10 +195,10 @@ public class svm_scale {
 				idx = Integer.parseInt(st2.nextToken());
 				max_index = Math.max(max_index, idx);
 			}
-			fp_restore = rewind(fp_restore, restore_filename);
+			fp_restore = rewind();
 		}
 
-		while (readline(fp) != null)
+		while (readline() != null)
 		{
 			StringTokenizer st = new StringTokenizer(line," \t\n\r\f:");
 			st.nextToken();
@@ -222,10 +225,10 @@ public class svm_scale {
 			feature_min[i] = Double.MAX_VALUE;
 		}
 
-		fp = rewind(fp, data_filename);
+		fp = rewind();
 
 		/* pass 2: find out min/max value */
-		while(readline(fp) != null)
+		while(readline() != null)
 		{
 			int next_index = 1;
 			double target;
@@ -259,7 +262,7 @@ public class svm_scale {
 			}
 		}
 
-		fp = rewind(fp, data_filename);
+		fp = rewind();
 
 		/* pass 2.5: save/restore feature_min/feature_max */
 		if(restore_filename != null)
@@ -335,7 +338,7 @@ public class svm_scale {
 		}
 
 		/* pass 3: scale */
-		while(readline(fp) != null)
+		while(readline() != null)
 		{
 			int next_index = 1;
 			double target;

@@ -40,9 +40,9 @@ public class SupportVectorMaschineController {
 		parameter.kernel_type = svm_parameter.RBF;
 		
 		// TODO: Start scalingData
-		// svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel);
+		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1);
 		
-		System.out.println(respectiveFeatureExtractionModel.getFeatureValuePE(0));
+		System.out.println(respectiveFeatureExtractionModel.getFeatureValuePE());
 		
 	}
 }
