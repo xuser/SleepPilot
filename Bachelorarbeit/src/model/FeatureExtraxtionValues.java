@@ -46,16 +46,22 @@ public class FeatureExtraxtionValues {
 		
 		StringBuilder featureVector = new StringBuilder();
 		
-		featureVector.append((int)(featureValuesPE[rowPosition][0]));
+		if (rowPosition < numberOfFeatureValues) {
+			
+			featureVector.append((int)(featureValuesPE[rowPosition][0]));
 		
-		for(int i = 1; i <= numberOfChannels; i++) {
-			featureVector.append(" " + i + ":" + featureValuesPE[rowPosition][i]);
+			for(int i = 1; i <= numberOfChannels; i++) {
+				featureVector.append(" " + i + ":" + featureValuesPE[rowPosition][i]);
+			}
+		
+			rowPosition = rowPosition + 1;
+		
+			String featureVectorString = featureVector.toString();
+			return featureVectorString;
+			
+		} else {
+			return null;
 		}
-		
-		rowPosition = rowPosition + 1;
-		
-		String featureVectorString = featureVector.toString();
-		return featureVectorString;
 	}
 
 	/**

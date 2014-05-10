@@ -65,6 +65,12 @@ public class svm_scale {
 	private void rewind() {
 		respectiveFeatureExtractionModel.rewindRowPosition();
 	}
+	
+	private BufferedReader rewindRestoredFP(BufferedReader fp, String filename) throws IOException
+	{
+		fp.close();
+		return new BufferedReader(new FileReader(filename));
+	}
 
 	private void output_target(double value)
 	{
@@ -96,7 +102,7 @@ public class svm_scale {
 			value = lower + (upper-lower) * 
 				(value-feature_min[index])/
 				(feature_max[index]-feature_min[index]);
-
+		
 		if(value != 0)
 		{
 			System.out.print(index + ":" + value + " ");
@@ -195,7 +201,7 @@ public class svm_scale {
 				idx = Integer.parseInt(st2.nextToken());
 				max_index = Math.max(max_index, idx);
 			}
-			fp_restore = rewind();
+			fp_restore = rewindRestoredFP(fp_restore, restore_filename);
 		}
 
 		while (readline() != null)
@@ -225,7 +231,7 @@ public class svm_scale {
 			feature_min[i] = Double.MAX_VALUE;
 		}
 
-		fp = rewind();
+		rewind();
 
 		/* pass 2: find out min/max value */
 		while(readline() != null)
@@ -262,7 +268,7 @@ public class svm_scale {
 			}
 		}
 
-		fp = rewind();
+		rewind();
 
 		/* pass 2.5: save/restore feature_min/feature_max */
 		if(restore_filename != null)
@@ -348,7 +354,7 @@ public class svm_scale {
 			target = Double.parseDouble(st.nextToken());
 			output_target(target);
 			while(st.hasMoreElements())
-			{
+			{	
 				index = Integer.parseInt(st.nextToken());
 				value = Double.parseDouble(st.nextToken());
 				for (i = next_index; i<index; i++)
@@ -367,7 +373,7 @@ public class svm_scale {
 			+"         new      #nonzeros " + new_num_nonzeros+"\n"
 			+"Use -l 0 if many original feature values are zeros\n");
 
-		fp.close();
+//		fp.close();
 	}
 
 //	public static void main(String argv[]) throws IOException

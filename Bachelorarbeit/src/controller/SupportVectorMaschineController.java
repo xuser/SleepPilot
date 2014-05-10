@@ -26,12 +26,18 @@ public class SupportVectorMaschineController {
 		//				This value describes the attachment to the correct sleep stage!
 		
 		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 0, 1F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 1, 1.5432F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 2, -0.8765F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 3, 0.4321F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 4, 1.1234F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 5, 2.7890F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 1, -2.3321208e-02F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 2, -2.3527015e-02F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 3, -2.2061187e-02F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 4, -2.2272816e-02F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 5, 18.7079211e-02F);
 		
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 0, 2F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 1, -1.3642082e-01F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 2, -9.2407016e-02F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 3, -1.3176912e-01F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 4, 5.7479941e-01F);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 5, -37.3130493e-02F);
 		
 		// Setup parameters
 		svm_parameter parameter = new svm_parameter();
@@ -42,7 +48,7 @@ public class SupportVectorMaschineController {
 		// TODO: Start scalingData
 		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1);
 		
-		System.out.println(respectiveFeatureExtractionModel.getFeatureValuePE());
+//		System.out.println(respectiveFeatureExtractionModel.getFeatureValuePE());
 		
 	}
 }

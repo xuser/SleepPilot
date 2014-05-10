@@ -64,7 +64,7 @@ public class FeatureExtractionController {
 			// TODO: Zum testen wird die folgenden Zeile auskommentiert.
 			//respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels() + 1));
 			
-			respectiveFeatureExtractionModel.createDataMatrix(1, 5);
+			respectiveFeatureExtractionModel.createDataMatrix(2, 5);
 			
 		}
 	}
