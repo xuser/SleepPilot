@@ -232,8 +232,10 @@ public class svm_scale {
 		}
 
 		rewind();
+		
 
 		/* pass 2: find out min/max value */
+		/* Find out the maximum and minimum label*/
 		while(readline() != null)
 		{
 			int next_index = 1;
@@ -245,13 +247,17 @@ public class svm_scale {
 			y_max = Math.max(y_max, target);
 			y_min = Math.min(y_min, target);
 
+			
 			while (st.hasMoreTokens())
 			{
 				index = Integer.parseInt(st.nextToken());
 				value = Double.parseDouble(st.nextToken());
 
-				for (i = next_index; i<index; i++)
+				//TODO: GETESTET BIS HIER: In diese For Schleife wird nicht gegangen. Hier evtl. <= austauschen
+				System.out.println("next_index < index: " + next_index + " < " + index);
+				for (i = next_index; i< index; i++)
 				{
+					System.out.println("TEST");
 					feature_max[i] = Math.max(feature_max[i], 0);
 					feature_min[i] = Math.min(feature_min[i], 0);
 				}
@@ -260,12 +266,15 @@ public class svm_scale {
 				feature_min[index] = Math.min(feature_min[index], value);
 				next_index = index + 1;
 			}
-
+			
+			// In diese For Schleife wird nicht gegangen
+			System.out.println("next_index <= max_index: " + next_index + " <= " + max_index);
 			for(i=next_index;i<=max_index;i++)
 			{
 				feature_max[i] = Math.max(feature_max[i], 0);
 				feature_min[i] = Math.min(feature_min[i], 0);
 			}
+			
 		}
 
 		rewind();
