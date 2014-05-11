@@ -28,17 +28,21 @@ public class svm_scale {
 	private int max_index;
 	private long num_nonzeros = 0;
 	private long new_num_nonzeros = 0;
+	private String save_filename = null;
+	private String restore_filename = null;
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
 	/**
 	 * This constructor initializes the class.
 	 */
-	public svm_scale(FeatureExtraxtionValues featureExtractionModel, double l, double u) {
+	public svm_scale(FeatureExtraxtionValues featureExtractionModel, double l, double u, String save_filename, String restore_filename) {
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		
 		this.lower = l;
 		this.upper = u;
+		this.save_filename = save_filename;
+		this.restore_filename = restore_filename;
 		
 		try {
 			run();
@@ -118,10 +122,10 @@ public class svm_scale {
 	private void run() throws IOException
 	{
 		int i,index;
-		BufferedReader fp = null, fp_restore = null;
-		String save_filename = null;
-		String restore_filename = null;
-		String data_filename = null;
+		BufferedReader fp_restore = null;
+//		String save_filename = null;
+//		String restore_filename = null;
+//		String data_filename = null;
 		
 
 		// Is now not necessary, because scaling will start during the start of the application.
@@ -253,8 +257,6 @@ public class svm_scale {
 				index = Integer.parseInt(st.nextToken());
 				value = Double.parseDouble(st.nextToken());
 
-				//TODO: GETESTET BIS HIER: In diese For Schleife wird nicht gegangen. Hier evtl. <= austauschen
-				System.out.println("next_index < index: " + next_index + " < " + index);
 				for (i = next_index; i< index; i++)
 				{
 					System.out.println("TEST");
@@ -267,8 +269,6 @@ public class svm_scale {
 				next_index = index + 1;
 			}
 			
-			// In diese For Schleife wird nicht gegangen
-			System.out.println("next_index <= max_index: " + next_index + " <= " + max_index);
 			for(i=next_index;i<=max_index;i++)
 			{
 				feature_max[i] = Math.max(feature_max[i], 0);
