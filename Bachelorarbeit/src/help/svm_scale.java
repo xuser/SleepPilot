@@ -6,6 +6,7 @@ import model.FeatureExtraxtionValues;
 import java.io.*;
 import java.util.*;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * This class sclaes the feature extraction values to a normalized range.
@@ -326,6 +327,8 @@ public class svm_scale {
 		if(save_filename != null)
 		{
 			Formatter formatter = new Formatter(new StringBuilder());
+			NumberFormat formatter2 = NumberFormat.getNumberInstance();
+
 			BufferedWriter fp_save = null;
 
 			try {
@@ -348,7 +351,9 @@ public class svm_scale {
 				if(feature_min[i] != feature_max[i]) 
 					formatter.format("%d %.16g %.16g\n", i, feature_min[i], feature_max[i]);
 			}
-			fp_save.write(formatter.toString());
+			String tmp = formatter.toString();
+			tmp = tmp.replace(",", ".");
+			fp_save.write(tmp);
 			fp_save.close();
 		}
 

@@ -46,16 +46,21 @@ public class SupportVectorMaschineController {
 		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 4, 53.7479941F);
 		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 5, -37.3130493F);
 		
+		
 		// Setup parameters
 		svm_parameter parameter = new svm_parameter();
 		
-		// Register the kernel function
+		// 1. Start scalingData
+		String store = "range";
+		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
+		
+		// 2. Register the kernel function
 		parameter.kernel_type = svm_parameter.RBF;
 		
-		// Start scalingData
-		String store = "range";
-		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, null, store);
+		// 3. Cross-validation to find best parameter C and Gamma
 		
-		
+		// 4. Train with whole training set by using the parameters c and gamma
+	
+		// 5. Classify whole testing set by using the trained model
 	}
 }
