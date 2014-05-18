@@ -52,6 +52,7 @@ public class SupportVectorMaschineController {
 		
 		// 1. Start scalingData
 		String store = "range";
+		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
 		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
 		
 		// 2. Register the kernel function
