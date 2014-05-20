@@ -73,7 +73,8 @@ public class MainController extends Application {
 			featureExtractionModel = new FeatureExtraxtionValues();
 			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
 			
-			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel);
+			// TODO: Im nächsten Schritt wieder einkommentieren.
+//			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, false);
 			
 			launch(args);
 			

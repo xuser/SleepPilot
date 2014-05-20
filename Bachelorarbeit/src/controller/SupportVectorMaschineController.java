@@ -12,14 +12,19 @@ import model.FeatureExtraxtionValues;
 public class SupportVectorMaschineController {
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
-
+	
+	/**
+	 * True, if you want to activate the trainigsMode and false, if you want to classify with the current model.
+	 */
+	private boolean trainMode = false;
 	
 	/**
 	 * This constructor initializes the class.
 	 */
-	public SupportVectorMaschineController(FeatureExtraxtionValues featureExtractionModel) {
+	public SupportVectorMaschineController(FeatureExtraxtionValues featureExtractionModel, boolean trainMode) {
 		
 		respectiveFeatureExtractionModel = featureExtractionModel;
+		this.trainMode = trainMode;
 		
 		// Five Example values for one epoche. Each column represents the feature for one channel.	
 		// IMPORTANT:	The first column is important for traning of the SVM. 
@@ -53,6 +58,7 @@ public class SupportVectorMaschineController {
 		// 1. Start scalingData
 		String store = "range";
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
+		
 		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
 		
 		// 2. Register the kernel function

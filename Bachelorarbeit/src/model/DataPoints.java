@@ -1,7 +1,10 @@
 package model;
 
+import java.util.List;
+
 /**
  * This class holds the data, that has been read by the DataReaderController.
+ * Model for the DataReaderController and the FilterController.
  * 
  * @author Nils Finke
  */
@@ -127,6 +130,35 @@ public class DataPoints {
 	 */
 	public double getValueFromData(int row, int channel) {
 		return dataPoints[row][channel];
+	}
+	
+	
+	/**
+	 * Use this method to get all samples from one 30s epoch. The iteration over
+	 * the different epochs have to be done in the controller class.
+	 * 
+	 * IMPORTANT: The first epoch is epoch #0. So start iterating from zero.
+	 * 
+	 * @param numberOfEpoch
+	 * 			the row from which on the needed values have to be returned.
+	 * @param channel
+	 * 			the channel from which the List have to be returned
+	 * @return
+	 * 		a list of double values of all samples from one 30s epoch.
+	 */
+	public List<Double> getAllSamplesFromOneEpoche(int numberOfEpoch, int channel) {
+		
+		List<Double> samples = null;
+		
+		// Calculate the startingSample for the needed epoch.
+		int startingPoint = numberOfEpoch * 30 * samplingIntervall;
+		int endPoint = (numberOfEpoch+1) * 30 * samplingIntervall;
+			
+		for (int i = startingPoint; i < endPoint; i++) {
+			samples.add(dataPoints[i][channel]);
+		}
+		
+		return samples;
 	}
 	
 	public int getNumberOf30sEpochs() {

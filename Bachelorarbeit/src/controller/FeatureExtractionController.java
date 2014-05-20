@@ -24,6 +24,7 @@ public class FeatureExtractionController {
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
+	// This List is just for testing. Can be deleted after testphase.
 	private List<Double> samples = new LinkedList<Double>();
 	
 	/**
@@ -45,6 +46,9 @@ public class FeatureExtractionController {
 		respectiveModel = dataPointsModel;
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		
+		
+		// START JUST FOR TESTING
+		// TODO: Can be deleted after test phase.
 		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219		
 		samples.add(6.0);
 		samples.add(9.0);
@@ -53,33 +57,48 @@ public class FeatureExtractionController {
 		samples.add(8.0);
 		samples.add(13.0);
 		samples.add(5.0);
+		// END JUST FOR TESTING
+				
 		
-		System.out.println("Feature Extraction: " + calculatePermutationEntropy(samples, 3, 1));
-		
+		// Create data matrics in modell to keep the calculated feature values.
 		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
+		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels() + 1));			
 		
-		if ((numberOfFeatureExtractionValues % 1) != 0) {
-			System.err.println("Not enough samples for an exact number of epochs!");
-		} else {
-			// TODO: Zum testen wird die folgenden Zeile auskommentiert.
-			//respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels() + 1));
+		
+		// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
+		// Zurzeit wird lediglich über den 0ten Channel iteriert.
+		for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
+			float tmp = calculatePermutationEntropy(respectiveModel.getAllSamplesFromOneEpoche(i, 0), 3, 1);
 			
-			respectiveFeatureExtractionModel.createDataMatrix(3, 5);
-			
+			// Set the PE value into the 1. column and not into the 0. column.
+			// For more information see the FeatureExtractionValues.java
+			featureExtractionModel.setFeatureValuesPE(i, 1, tmp);
 		}
 	}
 	
+	/**
+	 * This method claculates the unweighted permutation entropy.
+	 * 
+	 * @param dataPoints
+	 * 				List of samples from which the PE have to be calculated.
+	 * @param orderOfPermutation
+	 * 				Window size for calculation.
+	 * @param tau
+	 * 				Not used here. Normally tau is set to 1.
+	 * @return
+	 * 		claculated PE entropy. Float value.
+	 */
 	private float calculatePermutationEntropy(List<Double> dataPoints, int orderOfPermutation, int tau){
 		
 		float permutationEntropy = 0;
 		
-		float runIndex = (samples.size() - orderOfPermutation + 1);
+		float runIndex = (dataPoints.size() - orderOfPermutation + 1);
 		float relativeFrequency;
 		
 		for(int i = 0; i < runIndex; i++) {
 			
 			for(int y = 0; y < orderOfPermutation; y++) {
-				window.put(samples.get(i + y), y);				
+				window.put(dataPoints.get(i + y), y);				
 			}
 			
 			String permutaion = window.values().toString();

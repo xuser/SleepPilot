@@ -1,11 +1,19 @@
 package model;
 
+/**
+ * This class is the respective model for the FeatureExtractionController.
+ * 
+ * @author Nils Finke
+ *
+ */
 public class FeatureExtraxtionValues {
 	
 	/**
 	 * This matrix saves continuously for each epoch their permutation entropies.
 	 * The first value (y-axis) represent the PE values for the different epochs
 	 * and the second value (x-axis) represent the different channels.
+	 * 
+	 * IMPORTANT: The first column is for training mode. Holds the manual classified sleep stage.
 	 */
 	private float[][] featureValuesPE;
 	
