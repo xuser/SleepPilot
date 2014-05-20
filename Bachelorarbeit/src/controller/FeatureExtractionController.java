@@ -68,11 +68,15 @@ public class FeatureExtractionController {
 		// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
 		// Zurzeit wird lediglich über den 0ten Channel iteriert.
 		for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
-			float tmp = calculatePermutationEntropy(respectiveModel.getAllSamplesFromOneEpoche(i, 0), 3, 1);
-			
-			// Set the PE value into the 1. column and not into the 0. column.
-			// For more information see the FeatureExtractionValues.java
-			featureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+		
+			if (!(respectiveModel.getAllSamplesFromOneEpoche(i, 0) == null)) {
+				
+				float tmp = calculatePermutationEntropy(respectiveModel.getAllSamplesFromOneEpoche(i, 0), 3, 1);
+				
+				// Set the PE value into the 1. column and not into the 0. column.
+				// For more information see the FeatureExtractionValues.java
+				featureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+			}
 		}
 	}
 	

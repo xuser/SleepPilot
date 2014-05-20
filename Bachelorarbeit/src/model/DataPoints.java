@@ -150,15 +150,24 @@ public class DataPoints {
 		
 		List<Double> samples = null;
 		
+		// Es wird an dieser Stelle zu weit gegangen.
+		// Also in der letzten Epoche extieren nicht genügend Datenpunkte
+		
 		// Calculate the startingSample for the needed epoch.
 		int startingPoint = numberOfEpoch * 30 * samplingIntervall;
 		int endPoint = (numberOfEpoch+1) * 30 * samplingIntervall;
+		
+		if (!(endPoint == numberOfDataPoints)) {
+			return null;
+		} else {
 			
-		for (int i = startingPoint; i < endPoint; i++) {
-			samples.add(dataPoints[i][channel]);
-		}
+			for (int i = startingPoint; i < endPoint; i++) {
+				System.out.println(dataPoints[i][channel]);
+				samples.add(dataPoints[i][channel]);
+			}
 		
 		return samples;
+		}
 	}
 	
 	public int getNumberOf30sEpochs() {
