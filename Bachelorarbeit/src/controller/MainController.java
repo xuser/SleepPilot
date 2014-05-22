@@ -40,7 +40,7 @@ public class MainController extends Application {
 		
 		primaryStage = stage;
 		// Creating chart controller
-		new ChartController(primaryStage, dataPointsModel);
+//		new ChartController(primaryStage, dataPointsModel);
 	
 	}
 

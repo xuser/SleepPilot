@@ -76,7 +76,7 @@ public class DataReaderController extends Thread {
 				switch (binaryFormat) {
 				case INT_16: readDataFileInt(dataFile);
 					break;
-				case IEEE_FLOAT_32: //readDataFileFloat(dataFile);
+				case IEEE_FLOAT_32: readDataFileFloat(dataFile);
 					break;
 				default: System.err.println("No compatible binary format!");
 					break;
@@ -307,76 +307,69 @@ public class DataReaderController extends Thread {
 	 * 
 	 * @param dataFile
 	 */
-	private void readDataFileFloat(File dataFile) {
+	private void readDataFileFloat(RandomAccessFile dataFile) {
 		try {
 			/* ---- Start just for testing ---- */
-//			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
-//			FileWriter writer = new FileWriter(file, true);
+			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
+			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
-
 			
-			InputStream in = new FileInputStream(dataFile);
+			FileChannel inChannel = dataFile.getChannel();
 			int column = 0;
 			int row = 0;
+			
+			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+			
+			int bytesRead = inChannel.read(buf);
 			
 			// This function has to be called here, because you now know how big the matrix have to be
 			respectiveModel.createDataMatrix();
 			
-			for (int i = 1; i <= (respectiveModel.getNumberOfDataPoints() * respectiveModel.getNumberOfChannels()); i++) {
+			while (bytesRead != -1) {
 
-				String firstByte = Integer.toHexString(in.read());
-				if (firstByte.length() < 2) {
-					firstByte = "0" + firstByte;
-				}
+				//Make buffer ready for read
+				buf.flip();
 				
-				String secondByte = Integer.toHexString(in.read());
-				if (secondByte.length() < 2) {
-					secondByte = "0" + secondByte;
-				}
-				
-				String thirdByte = Integer.toHexString(in.read());
-				if (thirdByte.length() < 2) {
-					thirdByte = "0" + thirdByte;
-				}
-				
-				String fourthByte = Integer.toHexString(in.read());
-				if (fourthByte.length() < 2) {
-					fourthByte = "0" + fourthByte;
-				}
-				
-				// column holds the channel in which the data has to be stored.
-				if ((i % respectiveModel.getNumberOfChannels()) != 0) {
-					column =  i % respectiveModel.getNumberOfChannels();
-				} else {
-					column = respectiveModel.getNumberOfChannels();
-				}
-				
-				// - 1 is important, because the matrix starts at position [0][0]
-				column = column - 1;
-				
-				respectiveModel.setDataPoints(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte), row, column);
-				
-				// Check if one row of values has been filled into the channel matrix
-				if (i % respectiveModel.getNumberOfChannels() == 0) {
-					row = row + 1;
-				}
+				while (buf.hasRemaining()) {
+					
+					Double value = (buf.getFloat() * channelResolution);
+					
+					// Rounded a mantisse with value 3
+					BigDecimal myDec = new BigDecimal(value);
+					myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+					value = myDec.doubleValue();
+					
+					if (row < respectiveModel.getNumberOfDataPoints()) {
+						respectiveModel.setDataPoints(value, row, column);
+					}
+					
+					if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
+						column = 0;
+						row = row + 1;
+					} else {
+						column = column + 1;
+					}			
 				
 				/* ---- Start just for testing ---- */
-//				writer.write(decodeFloat32(firstByte, secondByte, thirdByte, fourthByte) + " ");
-//				writer.flush();
-//				
-//				// Modulo
-//				if (i % respectiveModel.getNumberOfChannels() == 0) {
-//					writer.write(System.getProperty("line.separator"));
-//					writer.flush();
-//				}
+				writer.write(value + " ");
+				writer.flush();
+				
+				// Modulo
+				if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
+					writer.write(System.getProperty("line.separator"));
+					writer.flush();
+				}
 				/* ---- End just for testing ---- */
-
+					
+				}
+				
+				buf.clear(); //make buffer ready for writing
+				bytesRead = inChannel.read(buf);
 			}
-
 			
-			in.close();
-//			writer.close(); //Just for testing
+			dataFile.close();
+			writer.close(); //Just for testing
 
 			
 		} catch (FileNotFoundException e) {
@@ -445,37 +438,6 @@ public class DataReaderController extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * This method decodes the given 16 bit hex value to the respective signed integer value.
-	 * The two bytes changed their order because of little indian storage definded by Intel.
-	 * 
-	 * @param firstByte of the 16 Bit hex value
-	 * @param secondByte of the 16 Bit hex value
-	 * @return the decoded signed integer 16 bit value of the 16 bit hex coded value.
-	 */
-	private double decodeInteger16(String firstByte, String secondByte) {
-		String tmp;
-		double value;
-		
-		if (useBigEndianOrder == false) {
-			tmp = secondByte + firstByte;
-			value = (short) Integer.parseInt(tmp, 16);
-		} else {
-			tmp = firstByte + secondByte;
-			value = (short) Integer.parseInt(tmp, 16);
-		}
-		
-		// Converting the readed value to microvolt
-		value = value * channelResolution;
-		
-		// Rounded a mantisse with value 3
-		BigDecimal myDec = new BigDecimal(value);
-		myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
-		value = myDec.doubleValue();
-		
-		return value;
 	}
 	
 	/**
