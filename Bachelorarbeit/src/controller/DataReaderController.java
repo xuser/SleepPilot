@@ -18,7 +18,9 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +37,7 @@ public class DataReaderController extends Thread {
 	// [Common Infos]
 	private File headerFile;
 	private RandomAccessFile dataFile;
+	private File dataFileForAscii;
 	
 	@SuppressWarnings("unused")
 	private File markerFile;
@@ -82,7 +85,7 @@ public class DataReaderController extends Thread {
 					break;
 				}
 			} else if (dataFormat.equals(DataFormat.ASCII)) {
-				//readDataFileAscii(dataFile);
+				readDataFileAscii(dataFileForAscii);
 				
 			} else {
 				System.err.println("No compatible data format!");
@@ -103,12 +106,14 @@ public class DataReaderController extends Thread {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(headerFile));
 			String zeile = null;
+			String dataFileLocation = null;
 			
 			while ((zeile = in.readLine()) != null) {
 				
 				// Open DataFile
 				if (zeile.startsWith("DataFile=")) {
-					dataFile = new RandomAccessFile(headerFile.getParent() + File.separator + zeile.substring(9), "rw");
+					dataFileLocation = headerFile.getParent() + File.separator + zeile.substring(9);
+					dataFile = new RandomAccessFile(dataFileLocation, "rw");
 				}
 				
 				// Open MarkerFile
@@ -122,6 +127,7 @@ public class DataReaderController extends Thread {
 					case "BINARY": dataFormat = DataFormat.BINARY;
 						break;
 					case "ASCII": dataFormat = DataFormat.ASCII;
+								dataFileForAscii = new File(dataFileLocation);
 						break;
 					default: dataFormat = DataFormat.UNKNOWN;
 						break;
@@ -310,8 +316,8 @@ public class DataReaderController extends Thread {
 	private void readDataFileFloat(RandomAccessFile dataFile) {
 		try {
 			/* ---- Start just for testing ---- */
-			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
-			FileWriter writer = new FileWriter(file, true);
+//			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
+//			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
 			
 			FileChannel inChannel = dataFile.getChannel();
@@ -352,14 +358,14 @@ public class DataReaderController extends Thread {
 					}			
 				
 				/* ---- Start just for testing ---- */
-				writer.write(value + " ");
-				writer.flush();
-				
-				// Modulo
-				if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
-					writer.write(System.getProperty("line.separator"));
-					writer.flush();
-				}
+//				writer.write(value + " ");
+//				writer.flush();
+//				
+//				// Modulo
+//				if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
+//					writer.write(System.getProperty("line.separator"));
+//					writer.flush();
+//				}
 				/* ---- End just for testing ---- */
 					
 				}
@@ -369,7 +375,7 @@ public class DataReaderController extends Thread {
 			}
 			
 			dataFile.close();
-			writer.close(); //Just for testing
+//			writer.close(); //Just for testing
 
 			
 		} catch (FileNotFoundException e) {
@@ -438,44 +444,6 @@ public class DataReaderController extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * This method decodes the given 32 bit hex value to the respective signed float value.
-	 * The four bytes changed their order because of little indian storage definded by Intel.
-	 * 
-	 * @param firstByte
-	 * @param secondByte
-	 * @param thirdByte
-	 * @param fourthByte
-	 * @return the decoded signed float 32 bit value of the 32 bit hex coded value.
-	 */
-	private double decodeFloat32(String firstByte, String secondByte, String thirdByte, String fourthByte) {
-		String tmp;
-		double value;
-		
-		if (useBigEndianOrder == false) {
-			tmp = fourthByte + thirdByte + secondByte + firstByte;
-
-			Long i = Long.parseLong(tmp, 16);
-			value = Float.intBitsToFloat(i.intValue());
-
-			
-		} else {
-			tmp = firstByte + secondByte + thirdByte + fourthByte;
-			Long i = Long.parseLong(tmp, 16);
-			value = Float.intBitsToFloat(i.intValue());
-		}
-		
-		// Converting the readed value to microvolt
-		value = value * channelResolution;
-		
-		// Rounded a mantisse with value 3
-		BigDecimal myDec = new BigDecimal(value);
-		myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
-		value = myDec.doubleValue();
-		
-		return value;
 	}
 	
 	/**
