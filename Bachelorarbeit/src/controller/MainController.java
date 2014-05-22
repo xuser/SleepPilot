@@ -64,14 +64,17 @@ public class MainController extends Application {
 			dataPointsModel = new DataPoints();
 			
 			DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel);
-			dataReaderController.setPriority(Thread.MAX_PRIORITY);
+			dataReaderController.setPriority(10);
 			dataReaderController.start();
 			
-			FilterController filterController = new FilterController(dataPointsModel);
-			filterController.start();
-			
-			featureExtractionModel = new FeatureExtraxtionValues();
-			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
+//			FilterController filterController = new FilterController(dataPointsModel);
+//			filterController.setPriority(9);
+//			filterController.start();
+//			
+//			featureExtractionModel = new FeatureExtraxtionValues();
+//			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
+//			featureExtractionController.setPriority(8);
+//			featureExtractionController.start();
 			
 			// TODO: Im nächsten Schritt wieder einkommentieren.
 //			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, false);

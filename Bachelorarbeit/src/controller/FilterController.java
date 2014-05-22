@@ -12,6 +12,8 @@ public class FilterController extends Thread {
 	
 	DataPoints respectiveModel;
 	
+	private Thread t;
+	
 	private double firstValueFromFilterWindow;
 	private double secondValueFromFilterWindow;
 	private double thirdValueFromFilterWindow;
@@ -29,7 +31,6 @@ public class FilterController extends Thread {
 	 */
 	public FilterController(DataPoints dataPointsFromModel) {
 		respectiveModel = dataPointsFromModel;
-		run();
 	}
 	
 	/**
@@ -74,6 +75,16 @@ public class FilterController extends Thread {
 		}
 		
 	}
+	
+	public void start()
+	   {
+	      System.out.println("Starting Filter Thread");
+	      if (t == null)
+	      {
+	         t = new Thread (this, "Filter");
+	         t.start ();
+	      }
+	   }
 	
 	
 }

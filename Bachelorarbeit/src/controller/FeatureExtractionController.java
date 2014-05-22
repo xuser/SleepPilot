@@ -18,9 +18,11 @@ import model.FeatureExtraxtionValues;
  * @author Nils Finke
  *
  */
-public class FeatureExtractionController {
+public class FeatureExtractionController extends Thread {
 	
 	private DataPoints respectiveModel;
+	
+	private Thread t;
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
@@ -58,8 +60,10 @@ public class FeatureExtractionController {
 		samples.add(13.0);
 		samples.add(5.0);
 		// END JUST FOR TESTING
-				
-		
+	
+	}
+	
+	public void run() {
 		// Create data matrics in modell to keep the calculated feature values.
 		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
 		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels()));			
@@ -73,16 +77,16 @@ public class FeatureExtractionController {
 			
 			if (!(samples == null)) {
 				
-				float tmp = calculatePermutationEntropy(samples, 3, 1);
+				float tmp = calculatePermutationEntropy(samples, 6, 1);
 				
 				// Set the PE value into the 1. column and not into the 0. column.
 				// For more information see the FeatureExtractionValues.java
-				featureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+				respectiveFeatureExtractionModel.setFeatureValuesPE(i, 1, tmp);
 			}
 
 		}
 		
-		System.out.println("Feature Value: " + featureExtractionModel.getFeatureValuePE(0, 1));
+		System.out.println("Feature Value: " + respectiveFeatureExtractionModel.getFeatureValuePE(0, 1));
 	}
 	
 	/**
@@ -140,5 +144,15 @@ public class FeatureExtractionController {
 		return permutationEntropy;
 	}
 	
+	
+	public void start ()
+	   {
+	      System.out.println("Starting Feature Extraction Thread");
+	      if (t == null)
+	      {
+	         t = new Thread (this, "FeatureExtraction");
+	         t.start ();
+	      }
+	   }
 
 }

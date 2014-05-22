@@ -13,12 +13,20 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import sun.text.normalizer.CharTrie.FriendAgent;
 import model.DataPoints;
 
-public class DataReaderController extends  Thread {
+public class DataReaderController extends Thread {
 	
 	private String fileLocationPath;
 	private DataPoints respectiveModel;
@@ -26,7 +34,7 @@ public class DataReaderController extends  Thread {
 	
 	// [Common Infos]
 	private File headerFile;
-	private File dataFile;
+	private RandomAccessFile dataFile;
 	
 	@SuppressWarnings("unused")
 	private File markerFile;
@@ -53,7 +61,10 @@ public class DataReaderController extends  Thread {
 	public DataReaderController(String fileLocation, DataPoints dataPointsModel) throws IOException {
 		fileLocationPath = fileLocation;
 		respectiveModel = dataPointsModel;
-		
+	
+	}
+	
+	public void run() {
 		headerFile = new File(fileLocationPath);
 		
 		readHeaderFile();
@@ -65,13 +76,13 @@ public class DataReaderController extends  Thread {
 				switch (binaryFormat) {
 				case INT_16: readDataFileInt(dataFile);
 					break;
-				case IEEE_FLOAT_32: readDataFileFloat(dataFile);
+				case IEEE_FLOAT_32: //readDataFileFloat(dataFile);
 					break;
 				default: System.err.println("No compatible binary format!");
 					break;
 				}
 			} else if (dataFormat.equals(DataFormat.ASCII)) {
-				readDataFileAscii(dataFile);
+				//readDataFileAscii(dataFile);
 				
 			} else {
 				System.err.println("No compatible data format!");
@@ -82,6 +93,7 @@ public class DataReaderController extends  Thread {
 			System.err.println("No supported data orientation, data type or count of skip columns! ");
 		}
 		
+		System.out.println("Finished Reading!!");
 	}
 	
 	/**
@@ -96,7 +108,7 @@ public class DataReaderController extends  Thread {
 				
 				// Open DataFile
 				if (zeile.startsWith("DataFile=")) {
-					dataFile = new File(headerFile.getParent() + File.separator + zeile.substring(9));
+					dataFile = new RandomAccessFile(headerFile.getParent() + File.separator + zeile.substring(9), "rw");
 				}
 				
 				// Open MarkerFile
@@ -188,7 +200,7 @@ public class DataReaderController extends  Thread {
 				}
 				
 				// Read channel resolution
-				// IMPORTANT: It could be possible, that each channel has a different resolution!
+				// TODO: IMPORTANT: It could be possible, that each channel has a different resolution!
 				if (zeile.startsWith("Ch1=")) {
 					String[] tmp = zeile.split(",");
 					
@@ -218,7 +230,7 @@ public class DataReaderController extends  Thread {
 	 * 
 	 * @param dataFile file with data content
 	 */
-	private void readDataFileInt(File dataFile) {		
+	private void readDataFileInt(RandomAccessFile dataFile) {		
 
 		try {
 			/* ---- Start just for testing ---- */
@@ -226,56 +238,59 @@ public class DataReaderController extends  Thread {
 //			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
 			
-			InputStream in = new FileInputStream(dataFile);
+			FileChannel inChannel = dataFile.getChannel();
 			int column = 0;
 			int row = 0;
 			
+			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+			
+			int bytesRead = inChannel.read(buf);
+					
 			// This function has to be called here, because you now know how big the matrix have to be
 			respectiveModel.createDataMatrix();
 
-			for (int i = 1; i <= (respectiveModel.getNumberOfDataPoints() * respectiveModel.getNumberOfChannels()); i++) {
+			while (bytesRead != -1) {
 				
-				String firstByte = Integer.toHexString(in.read());
-				if (firstByte.length() < 2) {
-					firstByte = "0" + firstByte;
-				}
+				// Make buffer ready for read
+				buf.flip();
 				
-				String secondByte = Integer.toHexString(in.read());
-				if (secondByte.length() < 2) {
-					secondByte = "0" + secondByte;
-				}
-				
-				// column holds the channel in which the data has to be stored.
-				if ((i % respectiveModel.getNumberOfChannels()) != 0) {
-					column =  i % respectiveModel.getNumberOfChannels();
-				} else {
-					column = respectiveModel.getNumberOfChannels();
-				}
-				
-				// - 1 is important, because the matrix starts at position [0][0]
-				column = column - 1;
-
-				respectiveModel.setDataPoints(decodeInteger16(firstByte, secondByte), row, column);
-								
-				// Check if one row of values has been filled into the channel matrix
-				if (i % respectiveModel.getNumberOfChannels() == 0) {
-					row = row + 1;
-				}
-				
+				while (buf.hasRemaining()) {
+					Double value = (buf.getShort() * channelResolution);
+					
+					// Rounded a mantisse with value 3
+					BigDecimal myDec = new BigDecimal(value);
+					myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+					value = myDec.doubleValue();
+					
+					if (row < respectiveModel.getNumberOfDataPoints()) {
+						respectiveModel.setDataPoints(value, row, column);
+					}
+					
+					if ((buf.position()/2) % respectiveModel.getNumberOfChannels() == 0) {
+						column = 0;
+						row = row + 1;
+					} else {
+						column = column + 1;
+					}
+									
 				/* ---- Start just for testing ---- */
-//				writer.write(decodeInteger16(firstByte, secondByte) + " ");
+//				writer.write(value + " ");
 //				writer.flush();
 //				
 //				// Modulo
-//				if (i % respectiveModel.getNumberOfChannels() == 0) {
+//				if ((buf.position()/2) % respectiveModel.getNumberOfChannels() == 0) {
 //					writer.write(System.getProperty("line.separator"));
 //					writer.flush();
 //				}
 				/* ---- End just for testing ---- */
-
+					
+				}
 				
-			}
-			in.close();
+				buf.clear(); //make buffer ready for writing
+				bytesRead = inChannel.read(buf);
+			}	
+			dataFile.close();
 									
 //			writer.close();  // Just for testing
 			
@@ -521,6 +536,16 @@ public class DataReaderController extends  Thread {
 		System.out.println("SamplingRate in Hertz: " + respectiveModel.getSamplingRateConvertedToHertz());
 		
 	}
+	
+	   public void start ()
+	   {
+	      System.out.println("Starting Data Reader Thread");
+	      if (t == null)
+	      {
+	         t = new Thread (this, "DataReader");
+	         t.start ();
+	      }
+	   }
 
 
 }
