@@ -79,6 +79,18 @@ public class FeatureExtraxtionValues {
 		this.featureValuesPE[row][column] = featureValuePE;
 	}
 	
+	/**
+	 * @param row
+	 * 			the row position of the value.
+	 * @param channel
+	 * 			the channel of the value.
+	 * @return
+	 * 		the needed PE feature value
+	 */
+	public float getFeatureValuePE(int row, int channel) {
+		return featureValuesPE[row][channel];
+	}
+	
 	
 	public void rewindRowPosition() {
 		rowPosition = 0;

@@ -1,5 +1,6 @@
 package model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
 public class DataPoints {
 	
 	private Double[][] dataPoints;
-	
+		
 	// [Common Infos]
 	private int numberOfDataPoints;
 	private int numberOfChannels;
@@ -20,7 +21,7 @@ public class DataPoints {
 	// [Channel Infos]
 	private String[] channelNames;
 	
-	private double samplingRateConvertedToHertz;
+	private int samplingRateConvertedToHertz;
 	
 	/**
 	 * @param dataPoints the dataPoints to set
@@ -146,24 +147,28 @@ public class DataPoints {
 	 * @return
 	 * 		a list of double values of all samples from one 30s epoch.
 	 */
-	public List<Double> getAllSamplesFromOneEpoche(int numberOfEpoch, int channel) {
+	public List<Double> getAllSamplesFromOneEpoche(int numberOfEpoch, int channel, int numberOf30sEpochs) {
 		
-		List<Double> samples = null;
+		List<Double> samples = new LinkedList<Double>();
 		
 		// Es wird an dieser Stelle zu weit gegangen.
 		// Also in der letzten Epoche extieren nicht genügend Datenpunkte
 		
 		// Calculate the startingSample for the needed epoch.
-		int startingPoint = numberOfEpoch * 30 * samplingIntervall;
-		int endPoint = (numberOfEpoch+1) * 30 * samplingIntervall;
+		int startingPoint = numberOfEpoch * 30 * samplingRateConvertedToHertz;
+		int endPoint = (numberOfEpoch+1) * 30 * samplingRateConvertedToHertz;
 		
-		if (!(endPoint == numberOfDataPoints)) {
+		if (((numberOfEpoch + 1) == numberOf30sEpochs) && (endPoint != numberOfDataPoints)) {
 			return null;
 		} else {
 			
 			for (int i = startingPoint; i < endPoint; i++) {
-				System.out.println(dataPoints[i][channel]);
 				samples.add(dataPoints[i][channel]);
+			}
+			
+			// TODO: Dies ist nur eine Testausgabe. Kann später entfernt werden.
+			if (numberOfEpoch % 10 == 0) {
+				System.out.println("Epoche # " + numberOfEpoch);
 			}
 		
 		return samples;

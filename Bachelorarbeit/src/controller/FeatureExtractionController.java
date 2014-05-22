@@ -62,22 +62,27 @@ public class FeatureExtractionController {
 		
 		// Create data matrics in modell to keep the calculated feature values.
 		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
-		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels() + 1));			
+		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels()));			
 		
 		
 		// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
 		// Zurzeit wird lediglich über den 0ten Channel iteriert.
 		for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
 		
-			if (!(respectiveModel.getAllSamplesFromOneEpoche(i, 0) == null)) {
+			List<Double> samples = respectiveModel.getAllSamplesFromOneEpoche(i, 0, numberOfFeatureExtractionValues);
+			
+			if (!(samples == null)) {
 				
-				float tmp = calculatePermutationEntropy(respectiveModel.getAllSamplesFromOneEpoche(i, 0), 3, 1);
+				float tmp = calculatePermutationEntropy(samples, 3, 1);
 				
 				// Set the PE value into the 1. column and not into the 0. column.
 				// For more information see the FeatureExtractionValues.java
 				featureExtractionModel.setFeatureValuesPE(i, 1, tmp);
 			}
+
 		}
+		
+		System.out.println("Feature Value: " + featureExtractionModel.getFeatureValuePE(0, 1));
 	}
 	
 	/**
