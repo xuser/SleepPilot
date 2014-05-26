@@ -52,7 +52,6 @@ public class FeatureExtraxtionValues {
 	
 	/**
 	 * This method builds the needed string for using the svm_scale method.
-	 * TODO: Maybe its better to return explicit values due to performance reasons.
 	 * 
 	 * @return the featureValuePE for one epoche (Values for training)
 	 */
@@ -62,8 +61,10 @@ public class FeatureExtraxtionValues {
 		
 		if (rowPosition < numberOfFeatureValues) {
 			
+			// Get class label.
 			featureVector.append((int)(featureValuesPE[rowPosition][0]));
 		
+			// Get feature values.
 			for(int i = 1; i <= numberOfChannels; i++) {
 				featureVector.append(" " + i + ":" + featureValuesPE[rowPosition][i]);
 			}
@@ -95,6 +96,17 @@ public class FeatureExtraxtionValues {
 	 */
 	public float getFeatureValuePE(int row, int channel) {
 		return featureValuesPE[row][channel];
+	}
+	
+	/**
+	 * Set the scored class label for a feature vector in the matrix.
+	 * @param row
+	 * 			the number of scored feature value.
+	 * @param label
+	 * 			the class label to set.
+	 */
+	public void setFeatureClassLabel(int row, double label) {
+		featureValuesPE[row][0] =  (float) label;
 	}
 	
 	/**

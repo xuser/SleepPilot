@@ -83,7 +83,7 @@ public class svm_scale {
 	 * @param value
 	 * 			class label which have to be scaled or saved.
 	 */
-	private void output_target(double value)
+	private void output_target(double value, int row)
 	{
 		if(y_scaling)
 		{
@@ -97,10 +97,18 @@ public class svm_scale {
 		}
 		
 		// Save the scaled values into the PE model.
-		System.out.print(value + " ");
+		respectiveFeatureExtractionModel.setFeatureClassLabel(row, value);
+//		System.out.print(value + " ");
 	}
-
-	private void output(int index, double value)
+	
+	/**
+	 * This method stores one scaled value with the given index.
+	 * @param index
+	 * 			position in feature vector. First index is 1.
+	 * @param value
+	 * 			the scaled value, which have to be stored.
+	 */
+	private void output(int index, double value, int row)
 	{
 		/* skip single-valued attribute */
 		if(feature_max[index] == feature_min[index])
@@ -115,11 +123,16 @@ public class svm_scale {
 				(value-feature_min[index])/
 				(feature_max[index]-feature_min[index]);
 		
-		if(value != 0)
-		{
-			System.out.print(index + ":" + value + " ");
-			new_num_nonzeros++;
-		}
+		// Contrary to the original implementation I keep the zero values
+		// and ignore them later during creating of the svm_nodes.
+		// This is the best solution to keep memory cell low.
+		respectiveFeatureExtractionModel.setFeatureValuesPE(row, index, (float)(value));
+		
+//		if(value != 0)
+//		{
+//			System.out.print(index + ":" + value + " ");
+//			new_num_nonzeros++;
+//		}
 	}
 
 	private String readline() {
@@ -367,26 +380,30 @@ public class svm_scale {
 		/* pass 3: scale */
 		while(readline() != null)
 		{
+			int row = 0;
 			int next_index = 1;
 			double target;
 			double value;
 
 			StringTokenizer st = new StringTokenizer(line," \t\n\r\f:");
 			target = Double.parseDouble(st.nextToken());
-			output_target(target);
+			output_target(target, row);
 			while(st.hasMoreElements())
 			{	
 				index = Integer.parseInt(st.nextToken());
 				value = Double.parseDouble(st.nextToken());
 				for (i = next_index; i<index; i++)
-					output(i, 0);
-				output(index, value);
+					output(i, 0, row);
+				output(index, value, row);
 				next_index = index + 1;
 			}
 
 			for(i=next_index;i<= max_index;i++)
-				output(i, 0);
+				output(i, 0, row);
 			System.out.print("\n");
+			
+			row = row + 1;
+			
 		}
 		if (new_num_nonzeros > num_nonzeros)
 			System.err.print(
