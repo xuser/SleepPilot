@@ -45,11 +45,11 @@ public class FeatureExtraxtionValues {
 	 * Test mode: The first column has the default value 99.00
 	 * Traing mode: The first column has the respective value for the actual sleep stage
 	 * 
-	 * NOTATION: 	1		Sleep stage 1
-	 * 				2		Sleep stage 2
-	 * 				3		Sleep stage 3
-	 * 				4		Wake
-	 * 				0		REM sleep stage
+	 * NOTATION: 	1		Wake
+	 * 				2		Sleep stage 1
+	 * 				3		Sleep stage 2
+	 * 				4		Sleep stage 3
+	 * 				5		REM sleep stage
 	 * 				99		Unscored
 	 */
 	public void createDataMatrix(int rows, int columns) {

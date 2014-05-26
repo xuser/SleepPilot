@@ -94,6 +94,23 @@ public class SupportVectorMaschineController extends Thread {
 		
 		if (trainMode == true) {
 			
+			// Create new SVM problem
+		    svm_problem prob = new svm_problem();
+		    
+		    // Length of traning file (number of feature vectors)
+		    int dataCount = respectiveFeatureExtractionModel.getNumberOfFeatureValues();
+		    
+		    // Create array of labels for the feature vector
+		    prob.y = new double[dataCount];
+		    
+		    // Length of vector with the labels
+		    prob.l = dataCount;
+		    
+		    // Create a matrix of SVM Nodes. Each row is one feature vector.
+		    prob.x = new svm_node[dataCount][];    
+			
+		    //....
+			
 		} else {
 			// Run over each feature vector
 			for(int i = 0; i < respectiveFeatureExtractionModel.getNumberOfFeatureValues(); i++) {
