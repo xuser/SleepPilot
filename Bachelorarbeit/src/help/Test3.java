@@ -8,8 +8,6 @@ import libsvm.svm_problem;
 
 public class Test3 {
 	static double[][] train = new double[1000][];
-
-
 	
 	/**
 	 * @return

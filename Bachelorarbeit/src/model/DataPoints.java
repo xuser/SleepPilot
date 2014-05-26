@@ -12,7 +12,24 @@ import java.util.List;
 public class DataPoints {
 	
 	private Double[][] dataPoints;
-		
+	
+	/**
+	 * This variable holds the status if the reader has finsihed his work
+	 */
+	private boolean readingComplete = false;
+	
+	private boolean filteringComplete = false;
+	
+	/**
+	 * This variable holds the value which number of the samples has been read.
+	 */
+	private int rowInSampleFile = 0;
+	
+	/**
+	 * This variable holds the value of the row to which filtering is done.
+	 */
+	private int rowFilteredValues = 0;
+	
 	// [Common Infos]
 	private int numberOfDataPoints;
 	private int numberOfChannels;
@@ -177,6 +194,38 @@ public class DataPoints {
 	
 	public int getNumberOf30sEpochs() {
 		return (int) (numberOfDataPoints / (30 * samplingRateConvertedToHertz));
+	}
+	
+	public void setReadingComplete(boolean value) {
+		readingComplete = value;
+	}
+	
+	public boolean getReadingCompleteStatus() {
+		return readingComplete;
+	}
+	
+	public void setRowInSampleFile(int value) {
+		rowInSampleFile = value;
+	}
+	
+	public int getRowInSampleFile() {
+		return rowInSampleFile;
+	}
+	
+	public void setFilteringComplete(boolean value) {
+		filteringComplete = value;
+	}
+	
+	public boolean getFilteringComplete() {
+		return filteringComplete;
+	}
+	
+	public void setRowFilteredValues(int value) {
+		rowFilteredValues = value;
+	}
+	
+	public int getRowFilteredValues() {
+		return rowFilteredValues;
 	}
 
 }

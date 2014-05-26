@@ -76,7 +76,13 @@ public class svm_scale {
 		fp.close();
 		return new BufferedReader(new FileReader(filename));
 	}
-
+	
+	/**
+	 * This method scales, if class label scaling is activated, or just saves
+	 * the value of the class label.
+	 * @param value
+	 * 			class label which have to be scaled or saved.
+	 */
 	private void output_target(double value)
 	{
 		if(y_scaling)
@@ -89,7 +95,8 @@ public class svm_scale {
 				value = y_lower + (y_upper-y_lower) *
 				(value-y_min) / (y_max-y_min);
 		}
-
+		
+		// Save the scaled values into the PE model.
 		System.out.print(value + " ");
 	}
 

@@ -34,6 +34,10 @@ public class DataReaderController extends Thread {
 	private DataPoints respectiveModel;
 	private Thread t;
 	
+	// These two variables are necessary for setting the value into the right dataPoint position.
+	int column = 0;
+	int row = 0;
+	
 	// [Common Infos]
 	private File headerFile;
 	private RandomAccessFile dataFile;
@@ -66,7 +70,6 @@ public class DataReaderController extends Thread {
 		respectiveModel = dataPointsModel;
 	
 	}
-	
 	public void run() {
 		headerFile = new File(fileLocationPath);
 		
@@ -98,6 +101,7 @@ public class DataReaderController extends Thread {
 		
 		System.out.println("Finished Reading!!");
 	}
+
 	
 	/**
 	 * Reads the header file and elect the necessary information.
@@ -237,7 +241,7 @@ public class DataReaderController extends Thread {
 	 * @param dataFile file with data content
 	 */
 	private void readDataFileInt(RandomAccessFile dataFile) {		
-
+					
 		try {
 			/* ---- Start just for testing ---- */
 //			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
@@ -245,8 +249,8 @@ public class DataReaderController extends Thread {
 			/* ---- End just for testing ---- */
 			
 			FileChannel inChannel = dataFile.getChannel();
-			int column = 0;
-			int row = 0;
+
+			
 			
 			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
@@ -276,6 +280,7 @@ public class DataReaderController extends Thread {
 					if ((buf.position()/2) % respectiveModel.getNumberOfChannels() == 0) {
 						column = 0;
 						row = row + 1;
+						respectiveModel.setRowInSampleFile(row);
 					} else {
 						column = column + 1;
 					}
@@ -305,7 +310,8 @@ public class DataReaderController extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-				
+	
+		respectiveModel.setReadingComplete(true);
 	}
 	
 	/**
@@ -321,8 +327,6 @@ public class DataReaderController extends Thread {
 			/* ---- End just for testing ---- */
 			
 			FileChannel inChannel = dataFile.getChannel();
-			int column = 0;
-			int row = 0;
 			
 			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
@@ -353,6 +357,7 @@ public class DataReaderController extends Thread {
 					if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
 						column = 0;
 						row = row + 1;
+						respectiveModel.setRowInSampleFile(row);
 					} else {
 						column = column + 1;
 					}			
@@ -384,7 +389,7 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 		
-
+		respectiveModel.setReadingComplete(true);
 	}
 	
 	/**
@@ -401,7 +406,6 @@ public class DataReaderController extends Thread {
 
 			BufferedReader in = new BufferedReader(new FileReader(dataFile));
 			String zeile = null;
-			int row = 0;
 			
 			// This function has to be called here, because you now know how big the matrix have to be
 			respectiveModel.createDataMatrix();
@@ -428,6 +432,7 @@ public class DataReaderController extends Thread {
 				}
 				
 				row = row + 1;
+				respectiveModel.setRowInSampleFile(row);
 						
 				/* ---- Start just for testing ---- */
 //				writer.write(System.getProperty("line.separator"));
@@ -444,6 +449,8 @@ public class DataReaderController extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		respectiveModel.setReadingComplete(true);
 	}
 	
 	/**
@@ -467,15 +474,15 @@ public class DataReaderController extends Thread {
 		
 	}
 	
-	   public void start ()
-	   {
-	      System.out.println("Starting Data Reader Thread");
-	      if (t == null)
-	      {
-	         t = new Thread (this, "DataReader");
-	         t.start ();
-	      }
-	   }
-
+	/**
+	 * This method starts the Data Reader Thread.
+	 */
+	public void start() {
+		System.out.println("Starting Data Reader Thread");
+		if (t == null) {
+			t = new Thread(this, "DataReader");
+			t.start();
+		}
+	}
 
 }

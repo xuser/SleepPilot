@@ -30,6 +30,10 @@ public class MainController extends Application {
 	
 	private static FeatureExtraxtionValues featureExtractionModel;
 	
+	private static boolean filterThreadStartedFlag = false;
+	private static boolean featureExtractionThreadStartedFlag = false;
+	private static boolean supportVectorMaschineThreadStartedFlag = false;
+	
 	/**
 	 * The main entry point for all JavaFX applications. 
 	 * The start method is called after the init method has returned, 
@@ -49,8 +53,9 @@ public class MainController extends Application {
 	 * 
 	 * @param args
 	 * 			no starting arguments are needed.
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		
 		// IMPORTANT: The absolute filepath on current filesystem is required.
 		try {
@@ -63,21 +68,80 @@ public class MainController extends Application {
 		try {
 			dataPointsModel = new DataPoints();
 			
+			// Start Data Reader Controller
 			DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel);
 			dataReaderController.setPriority(10);
 			dataReaderController.start();
 			
-//			FilterController filterController = new FilterController(dataPointsModel);
-//			filterController.setPriority(9);
-//			filterController.start();
-//			
-//			featureExtractionModel = new FeatureExtraxtionValues();
-//			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
-//			featureExtractionController.setPriority(8);
-//			featureExtractionController.start();
+			// Start Filter Controller
+			FilterController filterController = new FilterController(dataPointsModel, dataReaderController);
+			filterController.setPriority(9);
 			
-			// TODO: Im nächsten Schritt wieder einkommentieren.
-//			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, false);
+			while (filterThreadStartedFlag == false) {
+				if (dataPointsModel.getRowInSampleFile() >= 1) {
+					filterController.start();		
+					
+					filterThreadStartedFlag = true;
+				}
+			}
+			
+			// During hole reading process we pause the reading process to avoid nullpointer exceptions.
+			while(dataPointsModel.getReadingCompleteStatus() == false) {
+				
+				// Synchronize the access on readed data.
+				if (((dataPointsModel.getRowInSampleFile() + 1) % 4) == 0) {
+					synchronized (filterController) {
+						filterController.proceed();
+					}
+				}		
+				 else {
+					synchronized (filterController) {
+						filterController.pause();
+					}
+					
+				}		
+			}
+			
+			synchronized (filterController) {
+				filterController.proceed();
+			}
+			
+			// Start Feature Extraction Controller
+			featureExtractionModel = new FeatureExtraxtionValues();
+			FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
+			featureExtractionController.setPriority(8);
+			
+			while (featureExtractionThreadStartedFlag == false) {
+				if (dataPointsModel.getRowFilteredValues() > (dataPointsModel.getSamplingRateConvertedToHertz() * 30)) {
+					featureExtractionController.start();
+					
+					featureExtractionThreadStartedFlag = true;
+				}
+			}
+			
+			while (dataPointsModel.getFilteringComplete() == false) {
+				synchronized (featureExtractionController) {
+					featureExtractionController.pause();
+				}
+			}
+			
+			synchronized (featureExtractionController) {
+				featureExtractionController.proceed();
+			}
+			
+			
+			// Start Support Vector Maschine Controller
+			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, false);
+			svmController.setPriority(7);
+			
+			while(supportVectorMaschineThreadStartedFlag == false) {
+				if (featureExtractionModel.getNumberOfcalculatedEpoch() >= dataPointsModel.getNumberOf30sEpochs()) {
+					svmController.start();
+					
+					supportVectorMaschineThreadStartedFlag = true;
+				}
+			}
+			
 			
 			launch(args);
 			

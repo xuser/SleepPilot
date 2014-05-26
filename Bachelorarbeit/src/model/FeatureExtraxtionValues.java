@@ -17,6 +17,12 @@ public class FeatureExtraxtionValues {
 	 */
 	private float[][] featureValuesPE;
 	
+	/**
+	 * This variable keeps the number of the epoch to which the calculation of the PE
+	 * has been done.
+	 */
+	private int numberOfcalculatedEpoch = 0;
+	
 	private int numberOfFeatureValues;
 	private int numberOfChannels;
 	
@@ -91,9 +97,27 @@ public class FeatureExtraxtionValues {
 		return featureValuesPE[row][channel];
 	}
 	
-	
+	/**
+	 * Rewind the row in data matrics. This is needed in scaling of the data.
+	 */
 	public void rewindRowPosition() {
 		rowPosition = 0;
+	}
+	
+	/**
+	 * Set the number of the epoch from which the PE has been calculated.
+	 * @param value
+	 * 			number of the epoch
+	 */
+	public void setNumberOfcalculatedEpoch(int value) {
+		numberOfcalculatedEpoch = value;
+	}
+	
+	/**
+	 * @return	the number of the epoch from which the PE has been calculated.
+	 */
+	public int getNumberOfcalculatedEpoch() {
+		return numberOfcalculatedEpoch;
 	}
 	
 	

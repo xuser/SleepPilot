@@ -23,11 +23,12 @@ public class FeatureExtractionController extends Thread {
 	private DataPoints respectiveModel;
 	
 	private Thread t;
+	private boolean fPause = false;
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
 	// This List is just for testing. Can be deleted after testphase.
-	private List<Double> samples = new LinkedList<Double>();
+//	private List<Double> samples = new LinkedList<Double>();
 	
 	/**
 	 * This TreeMap holds all values for the current window.
@@ -52,15 +53,15 @@ public class FeatureExtractionController extends Thread {
 		// START JUST FOR TESTING
 		// TODO: Can be deleted after test phase.
 		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219		
-		samples.add(6.0);
-		samples.add(9.0);
-		samples.add(11.0);
-		samples.add(12.0);		
-		samples.add(8.0);
-		samples.add(13.0);
-		samples.add(5.0);
+//		samples.add(6.0);
+//		samples.add(9.0);
+//		samples.add(11.0);
+//		samples.add(12.0);		
+//		samples.add(8.0);
+//		samples.add(13.0);
+//		samples.add(5.0);
 		// END JUST FOR TESTING
-	
+		
 	}
 	
 	public void run() {
@@ -73,6 +74,17 @@ public class FeatureExtractionController extends Thread {
 		// Zurzeit wird lediglich über den 0ten Channel iteriert.
 		for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
 		
+			//Check if thread have to pause.
+			synchronized (this) {
+				while (fPause) {
+					try {
+						wait();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
 			List<Double> samples = respectiveModel.getAllSamplesFromOneEpoche(i, 0, numberOfFeatureExtractionValues);
 			
 			if (!(samples == null)) {
@@ -83,9 +95,11 @@ public class FeatureExtractionController extends Thread {
 				// For more information see the FeatureExtractionValues.java
 				respectiveFeatureExtractionModel.setFeatureValuesPE(i, 1, tmp);
 			}
-
+			
+			respectiveFeatureExtractionModel.setNumberOfcalculatedEpoch(i+1);
+			
 		}
-		
+		System.out.println("Finished PE Calculation!!");
 		System.out.println("Feature Value: " + respectiveFeatureExtractionModel.getFeatureValuePE(0, 1));
 	}
 	
@@ -145,14 +159,21 @@ public class FeatureExtractionController extends Thread {
 	}
 	
 	
-	public void start ()
-	   {
-	      System.out.println("Starting Feature Extraction Thread");
-	      if (t == null)
-	      {
-	         t = new Thread (this, "FeatureExtraction");
-	         t.start ();
-	      }
-	   }
+	public void start() {
+		System.out.println("Starting Feature Extraction Thread");
+		if (t == null) {
+			t = new Thread(this, "FeatureExtraction");
+			t.start();
+		}
+	}
+	
+	public void pause() {
+		fPause = true;
+	}
+
+	public void proceed() {
+		fPause = false;
+		notify();
+	}
 
 }

@@ -13,6 +13,7 @@ public class FilterController extends Thread {
 	DataPoints respectiveModel;
 	
 	private Thread t;
+	private boolean fPause = false;
 	
 	private double firstValueFromFilterWindow;
 	private double secondValueFromFilterWindow;
@@ -29,7 +30,7 @@ public class FilterController extends Thread {
 	/**
 	 * Constructor for initializing this class.
 	 */
-	public FilterController(DataPoints dataPointsFromModel) {
+	public FilterController(DataPoints dataPointsFromModel, DataReaderController controller) {
 		respectiveModel = dataPointsFromModel;
 	}
 	
@@ -50,6 +51,17 @@ public class FilterController extends Thread {
 			// Run over each value from one channel
 			while (i < respectiveModel.getNumberOfDataPoints()) {
 				
+				//Check if thread have to pause.
+				synchronized (this) {
+					while (fPause) {
+						try {
+							wait();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
 				tmpFirst = ((b[0] * thirdValueFromFilterWindow) + (b[1] * secondValueFromFilterWindow) + (b[2] * firstValueFromFilterWindow));
 				
 				if (i >= 2) {				
@@ -67,13 +79,20 @@ public class FilterController extends Thread {
 				if (i < (respectiveModel.getNumberOfDataPoints() - 1)) {
 					firstValueFromFilterWindow = secondValueFromFilterWindow;
 					secondValueFromFilterWindow = thirdValueFromFilterWindow;
+					Thread.yield();
 					thirdValueFromFilterWindow = respectiveModel.getValueFromData(i+1, y);
+					
 				}
 				
+				respectiveModel.setRowFilteredValues(i);
 				i++;
+				
+
 			}
 		}
 		
+		respectiveModel.setFilteringComplete(true);
+		System.out.println("Finished Filtering!");
 	}
 	
 	public void start()
@@ -86,5 +105,13 @@ public class FilterController extends Thread {
 	      }
 	   }
 	
+	public void pause() {
+		fPause = true;
+	}
+
+	public void proceed() {
+		fPause = false;
+		notify();
+	}
 	
 }

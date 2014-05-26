@@ -9,9 +9,12 @@ import model.FeatureExtraxtionValues;
  * 
  * @author Nils Finke
  */
-public class SupportVectorMaschineController {
+public class SupportVectorMaschineController extends Thread {
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	
+	private Thread t;
+	private boolean fPause = false;
 	
 	/**
 	 * True, if you want to activate the trainigsMode and false, if you want to classify with the current model.
@@ -30,6 +33,8 @@ public class SupportVectorMaschineController {
 		// IMPORTANT:	The first column is important for traning of the SVM. 
 		//				This value describes the attachment to the correct sleep stage!
 		
+		// Code is just for testing
+		/*
 		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 0, 1F);
 		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 1, -2.3321208F);
 		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 2, -2.3527015F);
@@ -50,15 +55,32 @@ public class SupportVectorMaschineController {
 		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 3, -12.3176912F);
 		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 4, 53.7479941F);
 		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 5, -37.3130493F);
+		*/
 		
+	}
+	
+	/**
+	 * Starts the thread. Will exist when the method reaches his end.
+	 */
+	public void run() {
 		
 		// Setup parameters
 		svm_parameter parameter = new svm_parameter();
 		
+//		//Check if thread have to pause.
+//		synchronized (this) {
+//			while (fPause) {
+//				try {
+//					wait();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+		
 		// 1. Start scalingData
 		String store = "range";
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
-		
 		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
 		
 		// 2. Register the kernel function
@@ -69,5 +91,23 @@ public class SupportVectorMaschineController {
 		// 4. Train with whole training set by using the parameters c and gamma
 	
 		// 5. Classify whole testing set by using the trained model
+	}
+	
+	
+	public void start() {
+		System.out.println("Starting Support Vector Maschine Thread");
+		if (t == null) {
+			t = new Thread(this, "SVM");
+			t.start();
+		}
+	}
+	
+	public void pause() {
+		fPause = true;
+	}
+
+	public void proceed() {
+		fPause = false;
+		notify();
 	}
 }
