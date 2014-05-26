@@ -23,8 +23,16 @@ public class FeatureExtraxtionValues {
 	 */
 	private int numberOfcalculatedEpoch = 0;
 	
+	/**
+	 * Keeps the number of feature vectors.
+	 */
 	private int numberOfFeatureValues;
+	
+	/**
+	 * Keeps the number of channels from input data.
+	 */
 	private int numberOfChannels;
+	
 	
 	/**
 	 * This variable holds the actual positon in the PE matrix.
@@ -40,6 +48,7 @@ public class FeatureExtraxtionValues {
 	 * NOTATION: 	1		Sleep stage 1
 	 * 				2		Sleep stage 2
 	 * 				3		Sleep stage 3
+	 * 				4		Wake
 	 * 				0		REM sleep stage
 	 * 				99		Unscored
 	 */
@@ -130,6 +139,20 @@ public class FeatureExtraxtionValues {
 	 */
 	public int getNumberOfcalculatedEpoch() {
 		return numberOfcalculatedEpoch;
+	}
+	
+	/**
+	 * @return	the number of feature vectors in the matrix.
+	 */
+	public int getNumberOfFeatureValues() {
+		return numberOfFeatureValues;
+	}
+	
+	/**
+	 * @return	the number of channels for the input data.
+	 */
+	public int getNumberOfChannels() {
+		return numberOfChannels;
 	}
 	
 	

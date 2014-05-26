@@ -57,6 +57,9 @@ public class MainController extends Application {
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		
+		//TODO: Hier sollte eine if/else Abfrage vorgeschaltet werden, die
+		// prüft, ob trainiert, getestet oder classifiziert werden soll.
+		
 		// IMPORTANT: The absolute filepath on current filesystem is required.
 		try {
 			fileLocation = args[0];

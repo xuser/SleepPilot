@@ -1,5 +1,7 @@
 package controller;
 
+import java.util.LinkedList;
+
 import help.svm_scale;
 import libsvm.*;
 import model.FeatureExtraxtionValues;
@@ -15,6 +17,11 @@ public class SupportVectorMaschineController extends Thread {
 	
 	private Thread t;
 	private boolean fPause = false;
+	
+	/**
+	 * This is the trained model for classification.
+	 */
+	private svm_model model;
 	
 	/**
 	 * True, if you want to activate the trainigsMode and false, if you want to classify with the current model.
@@ -64,9 +71,6 @@ public class SupportVectorMaschineController extends Thread {
 	 */
 	public void run() {
 		
-		// Setup parameters
-		svm_parameter parameter = new svm_parameter();
-		
 //		//Check if thread have to pause.
 //		synchronized (this) {
 //			while (fPause) {
@@ -83,14 +87,55 @@ public class SupportVectorMaschineController extends Thread {
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
 		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
 		
-		// 2. Register the kernel function
-		parameter.kernel_type = svm_parameter.RBF;
-		
+		// 2. Register the kernel function		
 		// 3. Cross-validation to find best parameter C and Gamma
-		
 		// 4. Train with whole training set by using the parameters c and gamma
-	
 		// 5. Classify whole testing set by using the trained model
+		
+		if (trainMode == true) {
+			
+		} else {
+			// Run over each feature vector
+			for(int i = 0; i < respectiveFeatureExtractionModel.getNumberOfFeatureValues(); i++) {
+				
+				// This step is needed to delete zero values.
+				LinkedList<Double> featureVector = new LinkedList<Double>();
+				LinkedList<Integer> indiciesFeatureVector = new LinkedList<Integer>();
+				
+				// Run over each value from one feature vector
+				for(int y = 1; y <= (respectiveFeatureExtractionModel.getNumberOfChannels() + 1); y++) {
+					
+					double tmp = (double) respectiveFeatureExtractionModel.getFeatureValuePE(i, y);
+					if (tmp != 0.0) {
+						featureVector.add(tmp);
+						indiciesFeatureVector.add(y);
+					}
+				}
+				
+				// Create array of nodes.
+				svm_node[] nodes = new svm_node[featureVector.size()];
+			    for (int x = 0; x < featureVector.size(); x++)
+			    {
+			        svm_node node = new svm_node();
+			        node.index = indiciesFeatureVector.pollFirst();
+			        node.value = featureVector.pollFirst();
+
+			        nodes[x] = node;
+			    }
+			    
+			    // Predict probabilities and predict class
+			    int totalClasses = 5;
+			    int[] labels = new int[totalClasses];
+			    svm.svm_get_labels(model,labels);
+			    
+			    double[] prob_estimates = new double[totalClasses];
+			    double v = svm.svm_predict_probability(model, nodes, prob_estimates);
+			    
+			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
+			}
+			
+		}
+		
 	}
 	
 	
