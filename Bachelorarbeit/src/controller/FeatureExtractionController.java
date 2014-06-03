@@ -124,10 +124,15 @@ public class FeatureExtractionController extends Thread {
 					}
 				}
 				
-				List<Double> samples = respectiveTrainDataPointsModel.getSamplesFromCurrentEpoch();
-			
-				float tmp = calculatePermutationEntropy(samples, 6, 1);
 				int currentEpoch = respectiveTrainDataPointsModel.getNumberOfCurrentEpoch();
+				
+				List<Double> samples = respectiveTrainDataPointsModel.getSamplesFromCurrentEpoch();
+				
+				double label = samples.get(0);
+				samples.remove(0);
+				respectiveFeatureExtractionModel.setFeatureClassLabel(currentEpoch, label);
+				
+				float tmp = calculatePermutationEntropy(samples, 6, 1);
 				respectiveFeatureExtractionModel.setFeatureValuesPE(currentEpoch, 1, tmp);
 				
 				// The current epoch which have been read/calculated.
