@@ -160,6 +160,7 @@ public class MainController extends Application {
 					}
 				}
 				
+				System.out.println("Finished process in Test Mode!");
 				
 				launch(args);
 				
@@ -182,7 +183,7 @@ public class MainController extends Application {
 			
 			// Start Feature Extraction Controller
 			FeatureExtractionController featureExtractionController = new FeatureExtractionController(null, featureExtractionModel, trainDataPointsModel, trainMode);
-			featureExtractionController.setPriority(8);
+			featureExtractionController.setPriority(9);
 			
 			while(trainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
 				
@@ -203,7 +204,10 @@ public class MainController extends Application {
 				}
 			}
 			
+			
+			System.out.println("Finished process in Training Mode!");
 		}
+		
 		
 	}
 

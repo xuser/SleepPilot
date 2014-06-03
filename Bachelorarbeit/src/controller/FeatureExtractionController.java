@@ -130,6 +130,7 @@ public class FeatureExtractionController extends Thread {
 				
 				double label = samples.get(0);
 				samples.remove(0);
+				System.out.println("Label: " + label);
 				respectiveFeatureExtractionModel.setFeatureClassLabel(currentEpoch, label);
 				
 				float tmp = calculatePermutationEntropy(samples, 6, 1);

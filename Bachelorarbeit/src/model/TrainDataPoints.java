@@ -1,5 +1,6 @@
 package model;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public class TrainDataPoints {
 	/**
 	 * Holds all samples from the current epoch.
 	 */
-	private List<Double> samplesFromCurrentEpoch;
+	private List<Double> samplesFromCurrentEpoch = new LinkedList<Double>();
 	
 	/**
 	 * The number of the current epoch.

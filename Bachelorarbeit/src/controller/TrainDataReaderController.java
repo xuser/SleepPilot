@@ -31,8 +31,8 @@ public class TrainDataReaderController extends Thread {
 	private int numberOfEpochs;
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
-	private List<Double> samplesFromCurrentEpoch; 
-
+	private int numberOfReadSamples = 0;
+	
 	
 	public TrainDataReaderController(TrainDataPoints trainModel, String fileLocation, int numberOfDataPointsForOneEpoche, int numberOfEpochs, FeatureExtraxtionValues featureExtractionModel) {
 		
@@ -96,16 +96,19 @@ public class TrainDataReaderController extends Thread {
 					
 					// Rounded a mantisse with value 3
 					BigDecimal myDec = new BigDecimal(value);
-					myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+					myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
 					value = myDec.doubleValue();
 					
-					samplesFromCurrentEpoch.add(value);
+					respectiveTrainDataPointsModel.setSamplesFromCurrentEpoch(value);
 					
-					if (respectiveTrainDataPointsModel.getSizeOfSampleList() == numberOfDataPointsForOneEpoche) {
+					numberOfReadSamples++;
+					
+					if (numberOfReadSamples == numberOfDataPointsForOneEpoche) {
 						synchronized (this) {
 							this.pause();
 						}
 						
+						numberOfReadSamples = 0;
 						respectiveTrainDataPointsModel.setEpochHasBeenReadFlag(true);
 							
 					}
