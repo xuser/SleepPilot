@@ -37,7 +37,7 @@ public class Test3 {
 	            node.index = j;
 	            node.value = features[j];
 	            prob.x[i][j-1] = node;
-	        }           
+	        }            
 	        prob.y[i] = features[0];
 	    }               
 	    

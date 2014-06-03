@@ -1,0 +1,147 @@
+package controller;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.util.List;
+
+import model.FeatureExtraxtionValues;
+import model.TrainDataPoints;
+
+/**
+ * This controller is only for reading training data with special format
+ * specification.
+ * 
+ * @author Nils Finke
+ */
+public class TrainDataReaderController extends Thread {
+	
+	private Thread t;
+	private boolean fPause = false;
+	
+	private RandomAccessFile trainDataFile;
+	
+	private TrainDataPoints respectiveTrainDataPointsModel;
+	private String fileLocationPath;
+	private int numberOfDataPointsForOneEpoche;
+	private int numberOfEpochs;
+	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	
+	private List<Double> samplesFromCurrentEpoch; 
+
+	
+	public TrainDataReaderController(TrainDataPoints trainModel, String fileLocation, int numberOfDataPointsForOneEpoche, int numberOfEpochs, FeatureExtraxtionValues featureExtractionModel) {
+		
+		respectiveTrainDataPointsModel = trainModel;
+		fileLocationPath = fileLocation;
+		this.numberOfDataPointsForOneEpoche = numberOfDataPointsForOneEpoche;
+		this.numberOfEpochs = numberOfEpochs;		
+		respectiveFeatureExtractionModel = featureExtractionModel;
+		
+		try {
+			trainDataFile = new RandomAccessFile(fileLocationPath, "rw");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			
+			System.err.println("Could not find the TrainDataFile!");
+		}
+		
+		// TODO: Hier muss noch eine genaue Anzahl der benötigten Spalten angegeben werden.
+		respectiveFeatureExtractionModel.createDataMatrix(numberOfEpochs, 2);
+		
+	}
+	
+	public void run(){
+		readTrainDataFile(trainDataFile);
+	}
+	
+	/**
+	 * Reads the given train data file and prints it on hard disk
+	 * 
+	 * @param dataFile
+	 */
+	private void readTrainDataFile(RandomAccessFile trainDataFile) {
+		
+		try {
+			FileChannel inChannel = trainDataFile.getChannel();
+						
+			ByteBuffer buf = ByteBuffer.allocate((int) trainDataFile.length());
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+		
+			int bytesRead = inChannel.read(buf);
+			
+			while (bytesRead != -1) {
+
+				//Make buffer ready for read
+				buf.flip();
+				
+				while (buf.hasRemaining()) {
+					
+					//Check if thread have to pause.
+					synchronized (this) {
+						while (fPause) {
+							try {
+								wait();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
+					Double value = (double) buf.getFloat();
+					
+					// Rounded a mantisse with value 3
+					BigDecimal myDec = new BigDecimal(value);
+					myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
+					value = myDec.doubleValue();
+					
+					samplesFromCurrentEpoch.add(value);
+					
+					if (respectiveTrainDataPointsModel.getSizeOfSampleList() == numberOfDataPointsForOneEpoche) {
+						synchronized (this) {
+							this.pause();
+						}
+						
+						respectiveTrainDataPointsModel.setEpochHasBeenReadFlag(true);
+							
+					}
+								
+
+				}
+				
+				respectiveTrainDataPointsModel.setReadingHasBeenFinishedFlag(true);
+				
+				buf.clear(); //make buffer ready for writing
+				bytesRead = inChannel.read(buf);
+			}
+			
+			trainDataFile.close();
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Error during reading the training data file!");
+		}
+	}
+	
+	public void start() {
+		System.out.println("Starting Train Data Reader Thread");
+		if (t == null) {
+			t = new Thread(this, "TrainDataReader");
+			t.start();
+		}
+	}
+	
+	public void pause() {
+		fPause = true;
+	}
+
+	public void proceed() {
+		fPause = false;
+		notify();
+	}
+	
+}

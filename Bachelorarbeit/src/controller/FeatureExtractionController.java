@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import model.DataPoints;
 import model.FeatureExtraxtionValues;
+import model.TrainDataPoints;
 
 /**
  * This class calls the feature extraction methods for extracting relevant features to create 
@@ -26,6 +27,9 @@ public class FeatureExtractionController extends Thread {
 	private boolean fPause = false;
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	private TrainDataPoints respectiveTrainDataPointsModel;
+	
+	private boolean trainMode;
 	
 	// This List is just for testing. Can be deleted after testphase.
 //	private List<Double> samples = new LinkedList<Double>();
@@ -44,11 +48,12 @@ public class FeatureExtractionController extends Thread {
 	/**
 	 * Constructor which initializes the class.
 	 */
-	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel){
+	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel, TrainDataPoints trainModel, boolean trainMode){
 		
 		respectiveModel = dataPointsModel;
 		respectiveFeatureExtractionModel = featureExtractionModel;
-		
+		respectiveTrainDataPointsModel = trainModel;
+		this.trainMode = trainMode;
 		
 		// START JUST FOR TESTING
 		// TODO: Can be deleted after test phase.
@@ -65,42 +70,77 @@ public class FeatureExtractionController extends Thread {
 	}
 	
 	public void run() {
-		// Create data matrics in modell to keep the calculated feature values.
-		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
-		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels()));			
 		
+		if (trainMode == false) {
 		
-		// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
-		// Zurzeit wird lediglich über den 0ten Channel iteriert.
-		for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
-		
-			//Check if thread have to pause.
-			synchronized (this) {
-				while (fPause) {
-					try {
-						wait();
-					} catch (Exception e) {
-						e.printStackTrace();
+			// Create data matrics in modell to keep the calculated feature values.
+			int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
+			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels()));			
+			
+			
+			// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
+			// Zurzeit wird lediglich über den 0ten Channel iteriert.
+			for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
+			
+				//Check if thread have to pause.
+				synchronized (this) {
+					while (fPause) {
+						try {
+							wait();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			}
-			
-			List<Double> samples = respectiveModel.getAllSamplesFromOneEpoche(i, 0, numberOfFeatureExtractionValues);
-			
-			if (!(samples == null)) {
 				
+				List<Double> samples = respectiveModel.getAllSamplesFromOneEpoche(i, 0, numberOfFeatureExtractionValues);
+				
+				if (!(samples == null)) {
+					
+					float tmp = calculatePermutationEntropy(samples, 6, 1);
+					
+					// Set the PE value into the 1. column and not into the 0. column.
+					// For more information see the FeatureExtractionValues.java
+					respectiveFeatureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+				}
+				
+				respectiveFeatureExtractionModel.setNumberOfcalculatedEpoch(i+1);
+				
+			}
+			System.out.println("Finished PE Calculation!!");
+			System.out.println("Feature Value: " + respectiveFeatureExtractionModel.getFeatureValuePE(0, 1));
+		
+		} else {
+			while (respectiveTrainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
+				
+				//Check if thread have to pause.
+				synchronized (this) {
+					while (fPause) {
+						try {
+							wait();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				List<Double> samples = respectiveTrainDataPointsModel.getSamplesFromCurrentEpoch();
+			
 				float tmp = calculatePermutationEntropy(samples, 6, 1);
+				int currentEpoch = respectiveTrainDataPointsModel.getNumberOfCurrentEpoch();
+				respectiveFeatureExtractionModel.setFeatureValuesPE(currentEpoch, 1, tmp);
 				
-				// Set the PE value into the 1. column and not into the 0. column.
-				// For more information see the FeatureExtractionValues.java
-				respectiveFeatureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+				// The current epoch which have been read/calculated.
+				respectiveTrainDataPointsModel.setNumberOfCurrentEpoch(currentEpoch+1);	
+				
+				respectiveTrainDataPointsModel.setEpochHasBeenReadFlag(false);
+				respectiveTrainDataPointsModel.clearSampleList();
+				
+				synchronized (this) {
+					this.pause();
+				}
 			}
-			
-			respectiveFeatureExtractionModel.setNumberOfcalculatedEpoch(i+1);
-			
 		}
-		System.out.println("Finished PE Calculation!!");
-		System.out.println("Feature Value: " + respectiveFeatureExtractionModel.getFeatureValuePE(0, 1));
 	}
 	
 	/**
