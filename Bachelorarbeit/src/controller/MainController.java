@@ -74,7 +74,7 @@ public class MainController extends Application {
 			// TODO: These three parameters have to be set by the user!!!
 			trainMode = true;
 			numberOfDataPointsForOneEpoche = 3001;
-			numberOfEpochs = 32834;
+			numberOfEpochs = 17227;
 			
 		} catch (Exception e) {
 			System.err.println("No valid file location for runtime argument.");
@@ -176,30 +176,33 @@ public class MainController extends Application {
 			// Create feature extraction model
 			featureExtractionModel = new FeatureExtraxtionValues();
 			
-			// Start/ Create Train Data Reader Controller
-			TrainDataReaderController trainDataReaderController = new TrainDataReaderController(trainDataPointsModel, fileLocation, numberOfDataPointsForOneEpoche, numberOfEpochs, featureExtractionModel);
-			trainDataReaderController.setPriority(10);
-			trainDataReaderController.start();
-			
 			// Start Feature Extraction Controller
 			FeatureExtractionController featureExtractionController = new FeatureExtractionController(null, featureExtractionModel, trainDataPointsModel, trainMode);
 			featureExtractionController.setPriority(9);
 			
+			// Start/ Create Train Data Reader Controller
+			TrainDataReaderController trainDataReaderController = new TrainDataReaderController(trainDataPointsModel, fileLocation, numberOfDataPointsForOneEpoche, numberOfEpochs, featureExtractionModel, featureExtractionController);
+			trainDataReaderController.setPriority(10);
+			trainDataReaderController.start();
+			
+			
 			while(trainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
 				
 				if (trainDataPointsModel.getEpochHasBeenReadFlag() == true) {
+					
 					if (featureExtractionThreadStartedFlag == false) {					
 						featureExtractionController.start();
 						featureExtractionThreadStartedFlag = true;
-					} else {
-						synchronized (featureExtractionController) {
-							featureExtractionController.proceed();
-						}	
+						
 					}				
 					
 				} else {
-					synchronized (trainDataReaderController) {						
-						trainDataReaderController.proceed();
+					
+					if (trainDataPointsModel.getSizeOfSampleList() == 0) {
+				
+						synchronized (trainDataReaderController) {						
+							trainDataReaderController.proceed();
+						}
 					}
 				}
 			}

@@ -57,6 +57,13 @@ public class TrainDataPoints {
 	}
 	
 	/**
+	 * @return	the size of the list with the samples from the current epoch.
+	 */
+	public int sizeOfSampleLis() {
+		return samplesFromCurrentEpoch.size();
+	}
+	
+	/**
 	 * @return	the current number of samples in the list.
 	 */
 	public int getSizeOfSampleList() {

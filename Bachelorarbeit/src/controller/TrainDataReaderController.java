@@ -30,17 +30,19 @@ public class TrainDataReaderController extends Thread {
 	private int numberOfDataPointsForOneEpoche;
 	private int numberOfEpochs;
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	private FeatureExtractionController featureExtractionController;
 	
 	private int numberOfReadSamples = 0;
 	
 	
-	public TrainDataReaderController(TrainDataPoints trainModel, String fileLocation, int numberOfDataPointsForOneEpoche, int numberOfEpochs, FeatureExtraxtionValues featureExtractionModel) {
+	public TrainDataReaderController(TrainDataPoints trainModel, String fileLocation, int numberOfDataPointsForOneEpoche, int numberOfEpochs, FeatureExtraxtionValues featureExtractionModel, FeatureExtractionController featureExtractionController) {
 		
 		respectiveTrainDataPointsModel = trainModel;
 		fileLocationPath = fileLocation;
 		this.numberOfDataPointsForOneEpoche = numberOfDataPointsForOneEpoche;
 		this.numberOfEpochs = numberOfEpochs;		
 		respectiveFeatureExtractionModel = featureExtractionModel;
+		this.featureExtractionController = featureExtractionController;
 		
 		try {
 			trainDataFile = new RandomAccessFile(fileLocationPath, "rw");
@@ -74,6 +76,9 @@ public class TrainDataReaderController extends Thread {
 		
 			int bytesRead = inChannel.read(buf);
 			
+			// Just for testing:
+			int test = 0;
+			
 			while (bytesRead != -1) {
 
 				//Make buffer ready for read
@@ -104,12 +109,22 @@ public class TrainDataReaderController extends Thread {
 					numberOfReadSamples++;
 					
 					if (numberOfReadSamples == numberOfDataPointsForOneEpoche) {
+						test++;
+						
+						System.out.println("Reading Epoch: " + test);
+						
+//						System.out.println(numberOfReadSamples + " == " + numberOfDataPointsForOneEpoche);
+
 						synchronized (this) {
-							this.pause();
+							pause();
 						}
 						
 						numberOfReadSamples = 0;
 						respectiveTrainDataPointsModel.setEpochHasBeenReadFlag(true);
+						
+						synchronized (featureExtractionController) {
+							featureExtractionController.proceed();
+						}
 							
 					}
 								
