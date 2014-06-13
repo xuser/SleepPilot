@@ -1,7 +1,9 @@
 package controller;
 
+import help.LPC;
 import help.MathFunctions;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,8 +79,12 @@ public class FeatureExtractionController extends Thread {
 		
 			// Create data matrics in modell to keep the calculated feature values.
 			int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
-			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (respectiveModel.getNumberOfChannels()));			
 			
+			// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
+			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+11));			
+			
+			// Create instance of LPC class
+			LPC lpcExtraction = new LPC(10);
 			
 			// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
 			// Zurzeit wird lediglich über den 0ten Channel iteriert.
@@ -104,15 +110,38 @@ public class FeatureExtractionController extends Thread {
 					// Set the PE value into the 1. column and not into the 0. column.
 					// For more information see the FeatureExtractionValues.java
 					respectiveFeatureExtractionModel.setFeatureValuesPE(i, 1, tmp);
+					
+					
+					// Convert the list of samples to an array
+					Double[] epoch = samples.toArray(new Double[samples.size()]);
+					
+					// Array for the autocorrelation values
+					long[] R = new long[11];
+					
+					LPC.createAutoCorrelation(R, epoch, epoch.length, 0, 1, 10);
+					LPC.calculate(lpcExtraction, R);
+					
+					double[] coefficients = lpcExtraction.getCoefficients();
+					
+					for(int y = 0; y < coefficients.length; y++){
+						
+						// Rounded a mantisse with value 4
+						BigDecimal myDec = new BigDecimal(coefficients[y]);
+						myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
+						
+						// Insert in column y+2 because first column if for the class label and second column for the PE
+						respectiveFeatureExtractionModel.setFeatureValuesPE(i, y+2, myDec.floatValue());
+						
+					}
 				}
 				
 				respectiveFeatureExtractionModel.setNumberOfcalculatedEpoch(i+1);
 				
 			}
-			System.out.println("Finished PE Calculation!!");
-			System.out.println("Feature Value: " + respectiveFeatureExtractionModel.getFeatureValuePE(0, 1));
+			System.out.println("Finished PE and LPC Calculation!!");
 		
 		} else {
+			//********************* START TRAIN MODE *********************
 			while (respectiveTrainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
 				
 				//Check if thread have to pause.
@@ -131,7 +160,7 @@ public class FeatureExtractionController extends Thread {
 				
 				System.out.println("Calculation Epoch: " + currentEpoch);
 				
-				
+				// TODO: Hier muss wie im not else Fall auch auf null überprüft werden.
 				List<Double> samples = respectiveTrainDataPointsModel.getSamplesFromCurrentEpoch();
 //				System.out.println("Sample size: " + samples.size());
 				
@@ -157,6 +186,8 @@ public class FeatureExtractionController extends Thread {
 				}
 			}
 		}
+		
+		//********************* END TRAIN MODE *********************
 	}
 	
 	/**

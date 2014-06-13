@@ -99,7 +99,7 @@ public class TrainDataReaderController extends Thread {
 					
 					Double value = (double) buf.getFloat();
 					
-					// Rounded a mantisse with value 3
+					// Rounded a mantisse with value 4
 					BigDecimal myDec = new BigDecimal(value);
 					myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
 					value = myDec.doubleValue();

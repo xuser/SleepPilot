@@ -72,7 +72,7 @@ public class MainController extends Application {
 		try {
 			fileLocation = args[0];
 			// TODO: These three parameters have to be set by the user!!!
-			trainMode = true;
+			trainMode = false;
 			numberOfDataPointsForOneEpoche = 3001;
 			numberOfEpochs = 17227;
 			
@@ -154,6 +154,7 @@ public class MainController extends Application {
 				
 				while(supportVectorMaschineThreadStartedFlag == false) {
 					if (featureExtractionModel.getNumberOfcalculatedEpoch() >= dataPointsModel.getNumberOf30sEpochs()) {
+						
 						svmController.start();
 						
 						supportVectorMaschineThreadStartedFlag = true;
