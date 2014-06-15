@@ -52,8 +52,8 @@ public class TrainDataReaderController extends Thread {
 			System.err.println("Could not find the TrainDataFile!");
 		}
 		
-		// TODO: Hier muss noch eine genaue Anzahl der benötigten Spalten angegeben werden.
-		respectiveFeatureExtractionModel.createDataMatrix(numberOfEpochs, 2);
+		// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
+		respectiveFeatureExtractionModel.createDataMatrix(numberOfEpochs, 1+11);
 		
 	}
 	

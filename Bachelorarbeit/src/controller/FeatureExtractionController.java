@@ -142,6 +142,10 @@ public class FeatureExtractionController extends Thread {
 		
 		} else {
 			//********************* START TRAIN MODE *********************
+			
+			// Create instance of LPC class
+			LPC lpcExtraction = new LPC(10);
+			
 			while (respectiveTrainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
 				
 				//Check if thread have to pause.
@@ -163,15 +167,41 @@ public class FeatureExtractionController extends Thread {
 				// TODO: Hier muss wie im not else Fall auch auf null überprüft werden.
 				List<Double> samples = respectiveTrainDataPointsModel.getSamplesFromCurrentEpoch();
 //				System.out.println("Sample size: " + samples.size());
-				
-				double label = samples.get(0);
-				samples.remove(0);
-//				System.out.println("Label: " + label);
-				respectiveFeatureExtractionModel.setFeatureClassLabel(currentEpoch, label);
-				
-				currentPEValue = calculatePermutationEntropy(samples, 6, 1);
-//				System.out.println("PE: " + currentPEValue);
-				respectiveFeatureExtractionModel.setFeatureValuesPE(currentEpoch, 1, currentPEValue);
+								
+				if (!(samples == null)) {
+					
+					double label = samples.get(0);
+					samples.remove(0);
+//					System.out.println("Label: " + label);
+					respectiveFeatureExtractionModel.setFeatureClassLabel(currentEpoch, label);
+					
+					currentPEValue = calculatePermutationEntropy(samples, 6, 1);
+//					System.out.println("PE: " + currentPEValue);
+					respectiveFeatureExtractionModel.setFeatureValuesPE(currentEpoch, 1, currentPEValue);
+						
+					// Convert the list of samples to an array
+					Double[] epoch = samples.toArray(new Double[samples.size()]);
+					
+					// Array for the autocorrelation values
+					long[] R = new long[11];
+					
+					LPC.createAutoCorrelation(R, epoch, epoch.length, 0, 1, 10);
+					LPC.calculate(lpcExtraction, R);
+					
+					double[] coefficients = lpcExtraction.getCoefficients();
+					
+					for(int y = 0; y < coefficients.length; y++){
+						
+						// Rounded a mantisse with value 4
+						BigDecimal myDec = new BigDecimal(coefficients[y]);
+						myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
+						
+						// Insert in column y+2 because first column if for the class label and second column for the PE
+						respectiveFeatureExtractionModel.setFeatureValuesPE(currentEpoch, y+2, myDec.floatValue());
+						
+					}
+					
+				}
 				
 				respectiveTrainDataPointsModel.clearSampleList();		
 				

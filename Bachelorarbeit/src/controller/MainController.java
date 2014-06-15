@@ -72,7 +72,7 @@ public class MainController extends Application {
 		try {
 			fileLocation = args[0];
 			// TODO: These three parameters have to be set by the user!!!
-			trainMode = false;
+			trainMode = true;
 			numberOfDataPointsForOneEpoche = 3001;
 			numberOfEpochs = 17227;
 			
@@ -210,6 +210,12 @@ public class MainController extends Application {
 			
 			
 			System.out.println("Finished process in Training Mode!");
+			
+			
+			for(int x = 0; x < 12; x++) {
+				
+				System.out.println("Feature Vector, Pos. " + x + " : " + featureExtractionModel.getFeatureValuePE(17227, x));
+			}
 		}
 		
 		
