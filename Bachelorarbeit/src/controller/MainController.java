@@ -171,51 +171,17 @@ public class MainController extends Application {
 			}
 		} else {
 			
-			// Create train data model
-			trainDataPointsModel = new TrainDataPoints();
+			FeatureExtraxtionValues featureExtractionModel = new FeatureExtraxtionValues();
 			
-			// Create feature extraction model
-			featureExtractionModel = new FeatureExtraxtionValues();
-			
-			// Start Feature Extraction Controller
-			FeatureExtractionController featureExtractionController = new FeatureExtractionController(null, featureExtractionModel, trainDataPointsModel, trainMode);
-			featureExtractionController.setPriority(9);
+			// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
+			featureExtractionModel.createDataMatrix(numberOfEpochs, (1 + 11));
 			
 			// Start/ Create Train Data Reader Controller
-			TrainDataReaderController trainDataReaderController = new TrainDataReaderController(trainDataPointsModel, fileLocation, numberOfDataPointsForOneEpoche, numberOfEpochs, featureExtractionModel, featureExtractionController);
-			trainDataReaderController.setPriority(10);
-			trainDataReaderController.start();
+			TrainController trainController = new TrainController(trainDataPointsModel, fileLocation, numberOfDataPointsForOneEpoche, numberOfEpochs, featureExtractionModel);
+			trainController.setPriority(10);
+			trainController.start();
+
 			
-			
-			while(trainDataPointsModel.getReadingHasBeenFinishedFlag() == false) {
-				
-				if (trainDataPointsModel.getEpochHasBeenReadFlag() == true) {
-					
-					if (featureExtractionThreadStartedFlag == false) {					
-						featureExtractionController.start();
-						featureExtractionThreadStartedFlag = true;
-						
-					}				
-					
-				} else {
-					
-					if (trainDataPointsModel.getSizeOfSampleList() == 0) {
-				
-						synchronized (trainDataReaderController) {						
-							trainDataReaderController.proceed();
-						}
-					}
-				}
-			}
-			
-			
-			System.out.println("Finished process in Training Mode!");
-			
-			
-			for(int x = 0; x < 12; x++) {
-				
-				System.out.println("Feature Vector, Pos. " + x + " : " + featureExtractionModel.getFeatureValuePE(17227, x));
-			}
 		}
 		
 		
