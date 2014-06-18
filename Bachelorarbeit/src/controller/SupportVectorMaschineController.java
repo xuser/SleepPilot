@@ -167,6 +167,8 @@ public class SupportVectorMaschineController extends Thread {
 				e.printStackTrace();
 			}
 		    
+		    System.out.println("Finished training of the SVM!");
+		    
 		} else {
 			
 			try {
