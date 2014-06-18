@@ -40,6 +40,11 @@ public class FeatureExtraxtionValues {
 	private int rowPosition = 0;
 	
 	/**
+	 * Keeps the status, if the TrainController has finished reading and calculating.
+	 */
+	private boolean readingAndCalculatingDone = false;
+	
+	/**
 	 * Creates the feature value matrix with the needed size.
 	 * The first column holds the classified sleep stage.
 	 * Test mode: The first column has the default value 99.00
@@ -153,6 +158,38 @@ public class FeatureExtraxtionValues {
 	 */
 	public int getNumberOfChannels() {
 		return numberOfChannels;
+	}
+	
+	/**
+	 * @return	if the TrainController has finished reading and calculating.
+	 */
+	public boolean getReadingAndCalculatingDone() {
+		return readingAndCalculatingDone;
+	}
+	
+	/**
+	 * Set the status of the readingAndCalculatingDone Flag.
+	 * @param status
+	 * 			if the TrainController has finished reading and calculating.
+	 */
+	public void setReadingAndCalculatingDone(boolean status) {
+		readingAndCalculatingDone = status;
+	}
+	
+	/**
+	 * @param row
+	 * 			the needed epoch (row) from the matrix.	
+	 * @return	the feature vector from needed epoch (row).
+	 */
+	public double[] getFeatureVector(int row) {
+		
+		double[] features = new double[numberOfChannels+1];
+		
+		for(int i = 0; i < (numberOfChannels+1); i++) {
+			features[i] = featureValuesPE[row][i];
+		}
+		
+		return features;
 	}
 	
 	

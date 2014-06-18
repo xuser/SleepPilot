@@ -180,7 +180,18 @@ public class MainController extends Application {
 			TrainController trainController = new TrainController(trainDataPointsModel, fileLocation, numberOfDataPointsForOneEpoche, numberOfEpochs, featureExtractionModel);
 			trainController.setPriority(10);
 			trainController.start();
-
+			
+			// Start Support Vector Maschine Controller
+			SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, true);
+			svmController.setPriority(9);
+			
+			while (supportVectorMaschineThreadStartedFlag == false) {
+				if (featureExtractionModel.getReadingAndCalculatingDone() == true) {
+					
+					svmController.start();
+					supportVectorMaschineThreadStartedFlag = true;
+				}
+			}
 			
 		}
 		

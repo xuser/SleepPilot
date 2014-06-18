@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import help.svm_scale;
@@ -71,16 +72,16 @@ public class SupportVectorMaschineController extends Thread {
 	 */
 	public void run() {
 		
-//		//Check if thread have to pause.
-//		synchronized (this) {
-//			while (fPause) {
-//				try {
-//					wait();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
+		//Check if thread have to pause.
+		synchronized (this) {
+			while (fPause) {
+				try {
+					wait();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		
 		// 1. Start scalingData
 		String store = "range";
@@ -107,11 +108,74 @@ public class SupportVectorMaschineController extends Thread {
 		    prob.l = dataCount;
 		    
 		    // Create a matrix of SVM Nodes. Each row is one feature vector.
-		    prob.x = new svm_node[dataCount][];    
+		    prob.x = new svm_node[dataCount][]; 
 			
-		    //....
+		    // Create a matrix of SVM nodes. Each row is one feature vector.
+		    for (int i = 0; i < dataCount; i++) {
+		    	double[] features = respectiveFeatureExtractionModel.getFeatureVector(i);
+		    	prob.x[i] = new svm_node[features.length-1];
+		    	
+		    	for (int j = 1; j < features.length; j++) {
+		    		svm_node node = new svm_node();
+		    		node.index = j;
+		    		node.value = features[j];
+		    		prob.x[i][j-1] = node;
+		    	}
+		    	
+		    	prob.y[i] = features[0];
+		    }
+		    
+		    // Create SVM parameters
+		    svm_parameter param = new svm_parameter();
+		    param.probability = 1;
+		    param.gamma = 0.5;
+		    param.C = 100;
+		    param.svm_type = svm_parameter.C_SVC;
+		    param.kernel_type = svm_parameter.RBF;
+		    param.cache_size = 20000;
+		    param.eps = 0.001;
+		    
+		    
+		    // *************** START OF CROSSVALIDATION ***************
+		    
+		    // IMPORTANT: 	Kind of Grid Search for different parameters of C and Gamma have to be done.
+		    //				Chose the best values of C and Gamma so that the cross validation accuracy is at his best.
+//		    double[] target = new double[prob.l];	    
+//		    svm.svm_cross_validation(prob, param, 10, target);
+//		    
+//	        int total_correct = 0;
+//	        double accuracy = 0.0;
+//		    
+//	        for (int i = 0; i < prob.l; i++) {
+//	        	if (target[i] == prob.y[i]) {
+//	        		++total_correct;
+//	            }
+//	        }
+//	        
+//	        accuracy = 100.0 * total_correct / prob.l;
+//	        System.out.print("Cross Validation Accuracy = " + accuracy + "%"+ " C = " + param.C + " g = " + param.gamma + "\n");
+	        
+	        // *************** END OF CROSSVALIDATION ***************
 			
+		    // Train the SVM and generate the model on which the actual classification have to be done.
+		    model = svm.svm_train(prob, param);
+		    
+		    try {
+				svm.svm_save_model("model", model);
+			} catch (IOException e) {
+				System.err.println("Error occured during saving the svm model!");
+				e.printStackTrace();
+			}
+		    
 		} else {
+			
+			try {
+				model = svm.svm_load_model("model");
+			} catch (IOException e) {
+				System.err.println("Error occured during loading the svm model!");
+				e.printStackTrace();
+			}
+			
 			// Run over each feature vector
 			for(int i = 0; i < respectiveFeatureExtractionModel.getNumberOfFeatureValues(); i++) {
 				

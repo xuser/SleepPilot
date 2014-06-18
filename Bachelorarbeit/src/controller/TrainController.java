@@ -174,11 +174,7 @@ public class TrainController extends Thread {
 			}
 			
 			System.out.println("Finished training wihout problems!");
-			
-			System.out.println("Last feature vector: ");
-			for (int i=0; i < 13; i++) {
-				System.out.print(respectiveFeatureExtraxtionModel.getFeatureValuePE(17226, i) + " ");
-			}
+			respectiveFeatureExtraxtionModel.setReadingAndCalculatingDone(true);
 			
 			trainDataFile.close();
 		
