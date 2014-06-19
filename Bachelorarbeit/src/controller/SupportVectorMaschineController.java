@@ -85,9 +85,13 @@ public class SupportVectorMaschineController extends Thread {
 		
 		// 1. Start scalingData
 		String store = "range";
-		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
-		svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
 		
+		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
+		if (trainMode == true) {
+			svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
+		} else {
+			svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, null, store);
+		}
 		// 2. Register the kernel function		
 		// 3. Cross-validation to find best parameter C and Gamma
 		// 4. Train with whole training set by using the parameters c and gamma
