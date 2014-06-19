@@ -1,6 +1,10 @@
 package controller;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 
 import help.svm_scale;
@@ -182,6 +186,18 @@ public class SupportVectorMaschineController extends Thread {
 				e.printStackTrace();
 			}
 			
+			
+//			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
+//			 
+//		    Path file = null;
+//			try {
+//				file = Files.createFile(target);
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+		    
+			
 			// Run over each feature vector
 			for(int i = 0; i < respectiveFeatureExtractionModel.getNumberOfFeatureValues(); i++) {
 				
@@ -190,7 +206,7 @@ public class SupportVectorMaschineController extends Thread {
 				LinkedList<Integer> indiciesFeatureVector = new LinkedList<Integer>();
 				
 				// Run over each value from one feature vector
-				for(int y = 1; y <= (respectiveFeatureExtractionModel.getNumberOfChannels() + 1); y++) {
+				for(int y = 1; y < (respectiveFeatureExtractionModel.getNumberOfChannels() + 1); y++) {
 					
 					double tmp = (double) respectiveFeatureExtractionModel.getFeatureValuePE(i, y);
 					if (tmp != 0.0) {
@@ -198,10 +214,12 @@ public class SupportVectorMaschineController extends Thread {
 						indiciesFeatureVector.add(y);
 					}
 				}
-				
+								
 				// Create array of nodes.
 				svm_node[] nodes = new svm_node[featureVector.size()];
-			    for (int x = 0; x < featureVector.size(); x++)
+				
+				int lengthOfFeatureVector = featureVector.size();
+			    for (int x = 0; x < lengthOfFeatureVector; x++)
 			    {
 			        svm_node node = new svm_node();
 			        node.index = indiciesFeatureVector.pollFirst();
@@ -209,18 +227,28 @@ public class SupportVectorMaschineController extends Thread {
 
 			        nodes[x] = node;
 			    }
-			    
+			    			    
 			    // Predict probabilities and predict class
 			    int totalClasses = 5;
 			    int[] labels = new int[totalClasses];
 			    svm.svm_get_labels(model,labels);
-			    
+			    			    
 			    double[] prob_estimates = new double[totalClasses];
 			    double v = svm.svm_predict_probability(model, nodes, prob_estimates);
 			    
 			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
+			    //System.out.println(v);
+			    
+//			    String tmp = v + "";
+//			    try {
+//					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+			    
 			}
 			
+			System.out.println("Finished testing!");
 		}
 		
 	}

@@ -72,7 +72,7 @@ public class MainController extends Application {
 		try {
 			fileLocation = args[0];
 			// TODO: These three parameters have to be set by the user!!!
-			trainMode = true;
+			trainMode = false;
 			numberOfDataPointsForOneEpoche = 3001;
 			numberOfEpochs = 17227;
 			
@@ -161,7 +161,6 @@ public class MainController extends Application {
 					}
 				}
 				
-				System.out.println("Finished process in Test Mode!");
 				
 				launch(args);
 				
