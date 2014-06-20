@@ -58,19 +58,7 @@ public class FeatureExtractionController extends Thread {
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		respectiveTrainDataPointsModel = trainModel;
 		this.trainMode = trainMode;
-		
-		// START JUST FOR TESTING
-		// TODO: Can be deleted after test phase.
-		// H = petropy([6,9,11,12,8,13,5],3,1,'order') mit dem Ergebnis H = 1.5219		
-//		samples.add(6.0);
-//		samples.add(9.0);
-//		samples.add(11.0);
-//		samples.add(12.0);		
-//		samples.add(8.0);
-//		samples.add(13.0);
-//		samples.add(5.0);
-		// END JUST FOR TESTING
-		
+	
 	}
 	
 	public void run() {

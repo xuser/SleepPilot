@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="283.0" prefWidth="547.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <children>
+    <ProgressBar disable="false" focusTraversable="false" layoutX="92.0" layoutY="193.0" prefHeight="25.0" prefWidth="422.052734375" progress="0.49" />
+    <Separator layoutX="150.0" layoutY="186.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator layoutX="379.0" layoutY="186.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator layoutX="225.0" layoutY="186.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Button fx:id="start" cancelButton="false" defaultButton="true" layoutX="29.0" layoutY="186.0" minHeight="15.310546875" mnemonicParsing="false" onAction="#startAction" prefHeight="40.0" prefWidth="53.0" text="Start" textOverrun="CLIP">
+      <font>
+        <Font size="12.0" fx:id="x4" />
+      </font>
+    </Button>
+    <Text layoutX="101.0" layoutY="235.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Reading">
+      <fill>
+        <Color blue="0.625" green="0.625" red="0.625" fx:id="x2" />
+      </fill>
+      <font>
+        <Font size="11.0" fx:id="x1" />
+      </font>
+    </Text>
+    <Text fill="BLACK" font="$x1" layoutX="172.0" layoutY="235.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Filtering" />
+    <Text fill="$x2" font="$x1" layoutX="259.0" layoutY="235.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Feature Extraction" />
+    <Text fill="$x2" font="$x1" layoutX="414.0" layoutY="235.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Classification" />
+    <Text layoutX="52.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="1. Select File">
+      <font>
+        <Font name="System Bold" size="13.0" fx:id="x3" />
+      </font>
+    </Text>
+    <Text font="$x3" layoutX="286.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2. Set Options" />
+    <RadioButton id="TrainModeOn" fx:id="trainModeOn" font="$x4" layoutX="400.0" layoutY="76.0" mnemonicParsing="false" onAction="#trainModeOnAction" prefWidth="42.947265625" selected="false" text="ON">
+      <toggleGroup>
+        <ToggleGroup fx:id="Group" />
+      </toggleGroup>
+    </RadioButton>
+    <Text disable="false" font="$x1" layoutX="285.0" layoutY="116.0" smooth="true" strikethrough="false" strokeType="OUTSIDE" strokeWidth="0.0" text="Length of Epoch:">
+      <fill>
+        <Color blue="0.250" green="0.250" red="0.250" fx:id="x5" />
+      </fill>
+    </Text>
+    <Text fill="$x5" font="$x1" layoutX="285.0" layoutY="140.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Epochs:" />
+    <TextField fx:id="lengthOfEpoch" layoutX="398.0" layoutY="98.0" prefWidth="89.9658203125" promptText="" />
+    <RadioButton fx:id="trainModeOff" font="$x4" layoutX="446.0" layoutY="76.0" mnemonicParsing="false" onAction="#trainModeOffAction" prefWidth="53.0" selected="true" text="OFF" toggleGroup="$Group" />
+    <Text disable="false" fill="#404040" font="$x1" layoutX="285.0" layoutY="90.0" smooth="true" strikethrough="false" strokeType="OUTSIDE" strokeWidth="0.0" text="Train Mode:" />
+    <TextArea layoutX="147.0" layoutY="83.0" prefHeight="25.000099999997474" prefWidth="105.0" wrapText="true" />
+    <Button defaultButton="true" font="$x4" layoutX="54.0" layoutY="83.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="82.97021484375" text="Select File" textOverrun="CLIP" />
+    <TextArea layoutX="52.0" layoutY="117.0" prefHeight="26.0" prefWidth="200.0" wrapText="true" />
+    <TextField fx:id="numberOfEpochs" layoutX="398.0" layoutY="124.0" prefWidth="89.9658203125" promptText="" />
+  </children>
+</AnchorPane>

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javafx.application.Application;
 import view.ChartController;
+import view.StartController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -51,6 +52,10 @@ public class MainController extends Application {
 	public void start(final Stage stage) throws Exception {
 		
 		primaryStage = stage;
+		
+		//Create start controller
+		new StartController(primaryStage);
+		
 		// Creating chart controller
 //		new ChartController(primaryStage, dataPointsModel);
 	
@@ -64,6 +69,8 @@ public class MainController extends Application {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws InterruptedException {
+		
+		launch(args);
 		
 		//TODO: Hier sollte eine if/else Abfrage vorgeschaltet werden, die
 		// prüft, ob trainiert, getestet oder classifiziert werden soll.
@@ -160,10 +167,7 @@ public class MainController extends Application {
 						supportVectorMaschineThreadStartedFlag = true;
 					}
 				}
-				
-				
-				launch(args);
-				
+								
 			} catch (IOException e) {
 				System.err.println("Unexpected error occured during reading the file.");
 				e.printStackTrace();
