@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
+<?import java.net.*?>
 <?import java.util.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
 
-<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="800.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <bottom>
+    <ToolBar minHeight="24.0" prefHeight="24.0" prefWidth="800.0">
+      <items>
+        <Label text="Epoch 1">
+          <font>
+            <Font size="12.0" />
+          </font>
+        </Label>
+      </items>
+    </ToolBar>
+  </bottom>
+  <stylesheets>
+    <URL value="@Application.css" />
+  </stylesheets>
   <top>
     <MenuBar>
       <menus>
@@ -18,6 +34,11 @@
         <Menu mnemonicParsing="false" text="Edit">
           <items>
             <MenuItem mnemonicParsing="false" text="Delete" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Show">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Additional visualization" fx:id="showAdtVisualization" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
