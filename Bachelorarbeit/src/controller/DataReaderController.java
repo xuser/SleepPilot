@@ -65,13 +65,13 @@ public class DataReaderController extends Thread {
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
 	 */
-	public DataReaderController(String fileLocation, DataPoints dataPointsModel) throws IOException {
-		fileLocationPath = fileLocation;
+	public DataReaderController(File fileLocation, DataPoints dataPointsModel) throws IOException {
+		headerFile = fileLocation;
 		respectiveModel = dataPointsModel;
 	
 	}
 	public void run() {
-		headerFile = new File(fileLocationPath);
+//		headerFile = new File(fileLocationPath);
 		
 		readHeaderFile();
 		printProperties();

@@ -45,6 +45,11 @@ public class FeatureExtraxtionValues {
 	private boolean readingAndCalculatingDone = false;
 	
 	/**
+	 * Keeps the status, if the SVMController has finished the classification.
+	 */
+	private boolean classificationDone = false;
+	
+	/**
 	 * Creates the feature value matrix with the needed size.
 	 * The first column holds the classified sleep stage.
 	 * Test mode: The first column has the default value 99.00
@@ -170,11 +175,28 @@ public class FeatureExtraxtionValues {
 	/**
 	 * Set the status of the readingAndCalculatingDone Flag.
 	 * @param status
-	 * 			if the TrainController has finished reading and calculating.
+	 * 			true, if the TrainController has finished reading and calculating.
 	 */
 	public void setReadingAndCalculatingDone(boolean status) {
 		readingAndCalculatingDone = status;
 	}
+	
+	/**
+	 * Set the statis of the classificationDone Flag.
+	 * @param status
+	 * 			true, if SVM Controller has finished the classification
+	 */
+	public void setClassificationDone(boolean status) {
+		classificationDone = status;
+	}
+	
+	/**
+	 * @return	the status flag, if the SVM Controller has finished classification.
+	 */
+	public boolean getClassificationDone() {
+		return classificationDone;
+	}
+	
 	
 	/**
 	 * @param row

@@ -176,6 +176,7 @@ public class SupportVectorMaschineController extends Thread {
 			}
 		    
 		    System.out.println("Finished training of the SVM!");
+		    respectiveFeatureExtractionModel.setClassificationDone(true);
 		    
 		} else {
 			
@@ -248,6 +249,7 @@ public class SupportVectorMaschineController extends Thread {
 			}
 			
 			System.out.println("Finished testing!");
+			respectiveFeatureExtractionModel.setClassificationDone(true);
 		}
 		
 	}
