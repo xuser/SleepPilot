@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javafx.application.Application;
+import view.ApplicationController;
 import view.ChartController;
 import view.StartController;
 import javafx.fxml.FXML;
@@ -55,11 +56,15 @@ public class MainController extends Application {
 		
 		primaryStage = stage;
 		
+		// TODO: Ist hier nur testweise ausgeblendet.
 		//Create start controller
-		startController = new StartController(primaryStage);
+//		startController = new StartController(primaryStage);
+		
+		//Create application controller
+		ApplicationController appController = new ApplicationController(primaryStage);
 
 		// Creating chart controller
-//		new ChartController(primaryStage, dataPointsModel);
+		//new ChartController(primaryStage, dataPointsModel);
 	
 	}
 	
