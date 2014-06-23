@@ -4,13 +4,14 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.LinkedList;
 
 public class ReadSMR {
 	
 	private static String filePath;
 	private static RandomAccessFile dataFile;
 	
-	// Information from Header file
+	// Information from File Header
 	private static int systemId;
 	private static int usPerTime;
 	private static int timePerADC;
@@ -24,6 +25,32 @@ public class ReadSMR {
 	private static int maxFTime;
 	private static double dTimeBase;
 	
+	// Information from Channel Header
+	
+	// We dont know the exact number of channels. This is why we create lists,
+	// which will be filled up. Example: All information for channel one are in
+	// list position zero etc..
+	private static LinkedList<Integer> delSize = new LinkedList<Integer>();
+	private static LinkedList<Integer> nextDelBlock = new LinkedList<Integer>();
+	private static LinkedList<Integer> firstBlock = new LinkedList<Integer>();
+	private static LinkedList<Integer> lastBlock = new LinkedList<Integer>();
+	private static LinkedList<Integer> blocks = new LinkedList<Integer>();
+	private static LinkedList<Integer> nExtra = new LinkedList<Integer>();
+	private static LinkedList<Integer> preTrig = new LinkedList<Integer>();
+	private static LinkedList<Integer> free0 = new LinkedList<Integer>();
+	private static LinkedList<Integer> phySz = new LinkedList<Integer>();
+	private static LinkedList<Integer> maxData = new LinkedList<Integer>();
+	private static LinkedList<Integer> maxChanTime = new LinkedList<Integer>();
+	private static LinkedList<Integer> lChanDvd = new LinkedList<Integer>();
+	private static LinkedList<Integer> phyChan = new LinkedList<Integer>();
+	private static LinkedList<Float> idealRate = new LinkedList<Float>();
+	private static LinkedList<Integer> kind = new LinkedList<Integer>();
+	private static LinkedList<Integer> pad = new LinkedList<Integer>();
+	private static LinkedList<Float> scale = new LinkedList<Float>();
+	private static LinkedList<Float> offset = new LinkedList<Float>();
+	private static LinkedList<Integer> divide = new LinkedList<Integer>();
+	private static LinkedList<Integer> interleave = new LinkedList<Integer>();
+
 	
 	public static void main(String args[]) {
 		
@@ -37,6 +64,8 @@ public class ReadSMR {
 		
 		readSMRDataFile(dataFile);
 		printHeaderInformation();
+		System.out.println("------------------------");
+		printChannelInformation(0);
 		
 	}
 	
@@ -46,13 +75,15 @@ public class ReadSMR {
 			FileChannel inChannel = smrFile.getChannel();
 						
 			// Saves the first 512 byte for the file header
-			ByteBuffer buf = ByteBuffer.allocate(512);
+			ByteBuffer buf = ByteBuffer.allocate((int) smrFile.length());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 		
 			int bytesRead = inChannel.read(buf);
 
 			//Make buffer ready for read
 			buf.flip();
+			
+			// ************** Get File Header Information **************
 			
 			systemId = buf.getShort();
 			
@@ -74,7 +105,58 @@ public class ReadSMR {
 			if (systemId < 6){
 				dTimeBase = 1e-6;
 			}
-						
+			
+			// ************** Get Channel Header Information **************
+			
+			for (int i = 0; i < channels; i++){
+				
+				// Offset due to file header and preceding channel headers
+				int offset = 512 + (140 * (i));
+				buf.position(offset);
+				
+				delSize.add((int) buf.getShort());
+				nextDelBlock.add(buf.getInt());
+				firstBlock.add(buf.getInt());
+				lastBlock.add(buf.getInt());
+				blocks.add((int) buf.getShort());
+				nExtra.add((int) buf.getShort());
+				preTrig.add((int) buf.getShort());
+				free0.add((int) buf.getShort());
+				phySz.add((int) buf.getShort());
+				maxData.add((int) buf.getShort());
+				
+				// Set new position, because we skip reading the comment
+				buf.position(buf.position() + (1+71));
+				
+				maxChanTime.add(buf.getInt());
+				lChanDvd.add(buf.getInt());
+				phyChan.add((int) buf.getShort());
+				
+				//TODO: Hier muss der Title herausgelesen werden, um herauszufinden welcher Kanal Fz ist.			
+				// Set new position, because we skip reading the title
+				buf.position(buf.position() + (1+9));
+				
+				idealRate.add(buf.getFloat());
+				kind.add((int) buf.get());
+				pad.add((int) buf.get());
+				
+				if (kind.get(i) == 1) {
+					scale.add(buf.getFloat());
+					ReadSMR.offset.add(buf.getFloat());
+					
+					// Set new position, because we skip reading units
+					buf.position(buf.position() + (1+5));
+					
+					if (systemId < 6) {
+						divide.add((int) buf.getShort());
+					} else {
+						interleave.add((int) buf.getShort());
+					}
+					
+				}
+				
+			}
+			
 			smrFile.close();
 			
 		
@@ -83,6 +165,7 @@ public class ReadSMR {
 			System.err.println("Error during reading the *.smr data file!");
 		}
 	}
+	 
 	
 	private static void printHeaderInformation() {
 		System.out.println("SystemID: " + systemId);
@@ -97,6 +180,35 @@ public class ReadSMR {
 		System.out.println("OsFormat: " + osFormat);
 		System.out.println("MaxFTime: " + maxFTime);
 		System.out.println("DTimeBase: " + dTimeBase);
+		
+		System.out.println(firstBlock.get(0));
+	}
+	
+	/**
+	 * Returns all channel information for the given parameter.
+	 * @param channel
+	 * 			the channel from which you want to get the channel information.
+	 */
+	private static void printChannelInformation(int channel) {
+		System.out.println("NextDelBlock: " + nextDelBlock.get(channel));
+		System.out.println("FirstBlock: " + firstBlock.get(channel));
+		System.out.println("LastBlock: " + lastBlock.get(channel));
+		System.out.println("Blocks: " + blocks.get(channel));
+		System.out.println("nExtra: " + nExtra.get(channel));
+		System.out.println("PreTrig: " + preTrig.get(channel));
+		System.out.println("free0: " + free0.get(channel));
+		System.out.println("phySz: " + phySz.get(channel));
+		System.out.println("MaxData: " + maxData.get(channel));
+		System.out.println("MaxChanTime: " + maxChanTime.get(channel));
+		System.out.println("lChanDvD: " + lChanDvd.get(channel));
+		System.out.println("phyChan: " + phyChan.get(channel));
+		System.out.println("IdealRate: " + idealRate.get(channel));
+		System.out.println("Kind: " + kind.get(channel));
+		System.out.println("Pad: " + pad.get(channel));
+		System.out.println("Scale: " + scale.get(channel));
+		System.out.println("Offset: " + offset.get(channel));		
+		
+		// To avoid errors we do not print divide- and interleave-information
 	}
 }
 
