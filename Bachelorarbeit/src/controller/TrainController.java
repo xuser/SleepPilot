@@ -179,7 +179,7 @@ public class TrainController extends Thread {
 			trainDataFile.close();
 		
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			System.err.println("Error during reading the training data file!");
 		}
 	}

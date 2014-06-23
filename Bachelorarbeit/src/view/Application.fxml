@@ -24,29 +24,55 @@
     <URL value="@Application.css" />
   </stylesheets>
   <top>
-    <MenuBar>
-      <menus>
-        <Menu mnemonicParsing="false" text="File">
+    <GridPane prefHeight="56.0" prefWidth="800.0">
+      <children>
+        <MenuBar prefHeight="28.0" prefWidth="800.0" styleClass="menuBar" GridPane.columnIndex="0" GridPane.rowIndex="0">
+          <menus>
+            <Menu mnemonicParsing="false" text="File">
+              <items>
+                <MenuItem mnemonicParsing="false" text="Close" />
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Edit">
+              <items>
+                <MenuItem mnemonicParsing="false" text="Delete" />
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Show">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Additional visualization" />
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+              <items>
+                <MenuItem mnemonicParsing="false" text="About" />
+              </items>
+            </Menu>
+          </menus>
+        </MenuBar>
+        <ToolBar minHeight="23.999900000002526" prefHeight="24.000099182128906" prefWidth="800.0000999999975" styleClass="toolBar" GridPane.columnIndex="0" GridPane.rowIndex="1">
           <items>
-            <MenuItem mnemonicParsing="false" text="Close" />
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <Button cancelButton="false" contentDisplay="RIGHT" defaultButton="false" focusTraversable="false" mnemonicParsing="false" text="W">
+              <font>
+                <Font size="10.0" fx:id="x1" />
+              </font>
+            </Button>
+            <Button cancelButton="false" contentDisplay="RIGHT" defaultButton="false" focusTraversable="false" font="$x1" mnemonicParsing="false" text="1" />
+            <Button cancelButton="false" contentDisplay="RIGHT" defaultButton="false" focusTraversable="false" font="$x1" mnemonicParsing="false" text="2" />
+            <Button cancelButton="false" contentDisplay="RIGHT" defaultButton="false" focusTraversable="false" font="$x1" mnemonicParsing="false" text="3" />
+            <Button cancelButton="false" contentDisplay="RIGHT" defaultButton="false" focusTraversable="false" font="$x1" mnemonicParsing="false" text="REM" />
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
           </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
-          <items>
-            <MenuItem mnemonicParsing="false" text="Delete" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Show">
-          <items>
-            <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Additional visualization" fx:id="showAdtVisualization" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Help">
-          <items>
-            <MenuItem mnemonicParsing="false" text="About" />
-          </items>
-        </Menu>
-      </menus>
-    </MenuBar>
+        </ToolBar>
+      </children>
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      </columnConstraints>
+      <rowConstraints>
+        <RowConstraints maxHeight="60.0" minHeight="10.0" prefHeight="22.0" vgrow="SOMETIMES" />
+        <RowConstraints maxHeight="50.0" minHeight="0.0" prefHeight="38.0" vgrow="SOMETIMES" />
+      </rowConstraints>
+    </GridPane>
   </top>
 </BorderPane>
