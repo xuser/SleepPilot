@@ -12,7 +12,7 @@
 
 <AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="700.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <children>
-    <Button fx:id="openProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="257.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" onAction="#openProjectAction" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="Open Project">
+    <Button fx:id="openProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="257.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="Open Project">
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>
@@ -22,7 +22,7 @@
       </graphic>
     </Button>
     <Text fill="WHITE" layoutX="280.0" layoutY="257.0" scaleX="0.9999991292778578" scaleY="1.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Open an existing project" />
-    <Button fx:id="newProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="40.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" onAction="#newProjectAction" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="New Project">
+    <Button fx:id="newProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="40.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="New Project">
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>
@@ -32,7 +32,7 @@
       </graphic>
     </Button>
     <Text fill="WHITE" layoutX="67.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Start Auto-Score Mode" />
-    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="7.0" layoutX="512.0" layoutY="65.0" minHeight="114.0" minWidth="115.0" mnemonicParsing="false" onAction="#createModelAction" prefHeight="114.0" prefWidth="115.0" styleClass="startButtons" text="Train">
+    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="7.0" layoutX="512.0" layoutY="65.0" minHeight="114.0" minWidth="115.0" mnemonicParsing="false" prefHeight="114.0" prefWidth="115.0" styleClass="startButtons" text="Train">
       <graphic>
         <ImageView fitHeight="47.45864929759761" fitWidth="40.97610092163086" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>

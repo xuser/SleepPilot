@@ -48,20 +48,12 @@ public class StartController implements Initializable {
 	
 	private File file;
 	
-		
-//	@FXML RadioButton trainModeOn;
-//	@FXML RadioButton trainModeOff;
 	@FXML TextField lengthOfEpoch;
 	@FXML TextField numberOfEpochs;
-//	@FXML Button selectFile;
 	@FXML Button start;
 	@FXML ProgressBar progressBar;
 	@FXML ProgressIndicator progressIndicator;
-//	@FXML Text readingLabel;
-//	@FXML Text filteringLabel;
-//	@FXML Text featureExtractionLabel;
-//	@FXML Text classificationLabel;
-//	@FXML Label fileHint;
+
 	
 	@FXML Button newProject;	
 	private boolean newProjectFlag = false;
@@ -112,9 +104,9 @@ public class StartController implements Initializable {
 		primaryStage.setTitle("Automatic Sleep Staging - Start");
 		
 		// Start settings
-//		lengthOfEpoch.setDisable(true);
-//		numberOfEpochs.setDisable(true);
-//		start.setDisable(true);
+		progressIndicator.setDisable(true);
+		start.setDisable(true);
+		
 		start.setVisible(false);
 		newProjectForm.setVisible(false);
 		openProjectForm.setVisible(false);
@@ -126,147 +118,164 @@ public class StartController implements Initializable {
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-//		selectFile.setOnAction(new EventHandler<ActionEvent>() {
-//
-//			@Override
-//			public void handle(ActionEvent event) {
-//				FileChooser fileChooser = new FileChooser();
-//				
-//				if (trainMode == true) {
-//					// Set extension filter
-//					FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
-//							"TXT files (*.txt)", "*.txt");
-//					fileChooser.getExtensionFilters().add(extFilter);
-//				} else {
-//					// Set extension filter
-//					FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
-//							"BrainVision files (*.vhdr)", "*.vhdr");
-//					fileChooser.getExtensionFilters().add(extFilter);
-//				}
-//				
-//				// Show open file dialog
-//				file = fileChooser.showOpenDialog(null);
-//				
-//				if (file != null) {
-//					fileHint.setText(file.getName() + " selected!");
-//					start.setDisable(false);
-//				}
-//				
-//			}
-//		
-//		});
+		newProject.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				label1.setVisible(true);
+				label2.setVisible(true);
+				label3.setVisible(true);
+				label4.setVisible(true);
+				
+				lengthOfEpoch.setVisible(false);
+				numberOfEpochs.setVisible(false);
+				
+				progressBar.setVisible(true);
+				progressIndicator.setVisible(true);
+				
+				separator1.setVisible(true);
+				separator2.setVisible(true);
+				separator3.setVisible(true);
+				
+				start.setVisible(true);
+				openProjectForm.setVisible(false);
+				createModelForm.setVisible(false);
+				
+				newProjectForm.setVisible(true);
+				primaryStage.setHeight(450);
+				
+				trainMode = false;
+				
+				FileChooser fileChooser = new FileChooser();
+				
+				// Set extension filter
+				FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter(
+							"BrainVision files (*.vhdr)", "*.vhdr");
+				
+				FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter(
+						"Spike2 files (*.smr)", "*.smr");
+			
+				fileChooser.getExtensionFilters().add(extFilter1);
+				fileChooser.getExtensionFilters().add(extFilter2);
+				
+				
+				// Show open file dialog
+				file = fileChooser.showOpenDialog(null);
+				
+				start.setDisable(false);
+				
+				
+			}
 		
-	}
+		});
+		
+		openProject.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				label1.setVisible(false);
+				label2.setVisible(false);
+				label3.setVisible(false);
+				label4.setVisible(false);
+				
+				lengthOfEpoch.setVisible(false);
+				numberOfEpochs.setVisible(false);
+				
+				progressBar.setVisible(false);
+				progressIndicator.setVisible(false);
+				
+				separator1.setVisible(false);
+				separator2.setVisible(false);
+				separator3.setVisible(false);
+				
+				start.setVisible(false);
+				
+				newProjectForm.setVisible(false);
+				createModelForm.setVisible(false);
+				
+				openProjectForm.setVisible(true);
+				primaryStage.setHeight(450);
+				
+				trainMode = false;
+				
+				FileChooser fileChooser = new FileChooser();
+				
+				// Set extension filter
+				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
+							"AutoScore files (*.as)", "*.as");
+				fileChooser.getExtensionFilters().add(extFilter);
+				
+				
+				// Show open file dialog
+				file = fileChooser.showOpenDialog(null);
+				
+				start.setDisable(false);
+				
+				
+			}
+		
+		});
+		
+		createModel.setOnAction(new EventHandler<ActionEvent>() {
+			
+			@Override
+			public void handle(ActionEvent event) {
+				
+				label1.setVisible(true);
+				label2.setVisible(true);
+				label3.setVisible(true);
+				label4.setVisible(true);
+				
+				lengthOfEpoch.setVisible(true);
+				numberOfEpochs.setVisible(true);
+				
+				progressBar.setVisible(true);
+				progressIndicator.setVisible(true);
+				
+				separator1.setVisible(true);
+				separator2.setVisible(true);
+				separator3.setVisible(true);
+				
+				start.setVisible(true);
+				newProjectForm.setVisible(false);
+				openProjectForm.setVisible(false);
+				
+				createModelForm.setVisible(true);
+				primaryStage.setHeight(450);
+				
+				trainMode = true;
+				
+				FileChooser fileChooser = new FileChooser();
+				
+				// Set extension filter
+				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
+							"Text files (*.txt)", "*.txt");
+				fileChooser.getExtensionFilters().add(extFilter);
+				
+				
+				// Show open file dialog
+				file = fileChooser.showOpenDialog(null);
+				
+				start.setDisable(false);
+				
+				
+			}
+		
+		});
+		
+	}	
 	
-	@FXML
-	protected void newProjectAction() {
-		
-		label1.setVisible(true);
-		label2.setVisible(true);
-		label3.setVisible(true);
-		label4.setVisible(true);
-		
-		lengthOfEpoch.setVisible(false);
-		numberOfEpochs.setVisible(false);
-		
-		progressBar.setVisible(true);
-		progressIndicator.setVisible(true);
-		
-		separator1.setVisible(true);
-		separator2.setVisible(true);
-		separator3.setVisible(true);
-		
-		start.setVisible(true);
-		openProjectForm.setVisible(false);
-		createModelForm.setVisible(false);
-		
-		newProjectForm.setVisible(true);
-		primaryStage.setHeight(450);
-		
-	}
-	
-	@FXML
-	protected void openProjectAction() {
-		
-		label1.setVisible(false);
-		label2.setVisible(false);
-		label3.setVisible(false);
-		label4.setVisible(false);
-		
-		lengthOfEpoch.setVisible(false);
-		numberOfEpochs.setVisible(false);
-		
-		progressBar.setVisible(false);
-		progressIndicator.setVisible(false);
-		
-		separator1.setVisible(false);
-		separator2.setVisible(false);
-		separator3.setVisible(false);
-		
-		start.setVisible(false);
-		
-		newProjectForm.setVisible(false);
-		createModelForm.setVisible(false);
-		
-		openProjectForm.setVisible(true);
-		primaryStage.setHeight(450);
-		
-	}
-	
-	@FXML
-	protected void createModelAction() {
-		
-		label1.setVisible(true);
-		label2.setVisible(true);
-		label3.setVisible(true);
-		label4.setVisible(true);
-		
-		lengthOfEpoch.setVisible(true);
-		numberOfEpochs.setVisible(true);
-		
-		progressBar.setVisible(true);
-		progressIndicator.setVisible(true);
-		
-		separator1.setVisible(true);
-		separator2.setVisible(true);
-		separator3.setVisible(true);
-		
-		start.setVisible(true);
-		newProjectForm.setVisible(false);
-		openProjectForm.setVisible(false);
-		
-		createModelForm.setVisible(true);
-		primaryStage.setHeight(450);
-		
-	}
-	
-	
-//	
-//	@FXML
-//	protected void trainModeOnAction() {
-//		if (trainModeOn.isSelected()) {
-//			trainMode = true;
-//			lengthOfEpoch.setDisable(false);
-//			numberOfEpochs.setDisable(false);
-//		}
-//	}
-//	
-//	@FXML
-//	protected void trainModeOffAction() {
-//		if (trainModeOff.isSelected()) {
-//			trainMode = false;
-//			lengthOfEpoch.setDisable(true);
-//			numberOfEpochs.setDisable(true);
-//		}
-//	}
-//	
-//	
+
 	@FXML
 	protected void startAction() {
-//		if (trainMode == true) {
-//			amountOfEpochs = Integer.parseInt(numberOfEpochs.getText());
-//			numberOfDataPointsForOneEpoche = Integer.parseInt(lengthOfEpoch.getText());
-//		}
+		progressIndicator.setVisible(true);
+		
+		if (trainMode == true) {
+			amountOfEpochs = Integer.parseInt(numberOfEpochs.getText());
+			numberOfDataPointsForOneEpoche = Integer.parseInt(lengthOfEpoch.getText());
+		}
 		
 		progressIndicator.setProgress(-1);
 		
@@ -286,10 +295,15 @@ public class StartController implements Initializable {
 	
 	public void setProgressBar(double value) {
 		progressBar.setProgress(value);
+		
+		if (value == 1.0) {
+			progressIndicator.setVisible(false);
+		}
 	}
 	
 	public void setProgressIndicator(double value) {
 		progressIndicator.setProgress(value);
+		
 	}
 	
 }

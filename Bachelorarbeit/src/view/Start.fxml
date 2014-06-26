@@ -8,7 +8,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="283.0" prefWidth="547.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="283.0" prefWidth="547.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <children>
     <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="104.0" layoutY="193.0" prefHeight="25.0" prefWidth="368.0" progress="0.0" />
     <Separator layoutX="162.0" layoutY="186.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
