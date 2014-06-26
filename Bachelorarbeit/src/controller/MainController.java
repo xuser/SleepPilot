@@ -58,10 +58,10 @@ public class MainController extends Application {
 		
 		// TODO: Ist hier nur testweise ausgeblendet.
 		//Create start controller
-//		startController = new StartController(primaryStage);
+		startController = new StartController(primaryStage);
 		
 		//Create application controller
-		ApplicationController appController = new ApplicationController(primaryStage);
+//		ApplicationController appController = new ApplicationController(primaryStage);
 
 		// Creating chart controller
 		//new ChartController(primaryStage, dataPointsModel);
@@ -100,7 +100,7 @@ public class MainController extends Application {
 
 				while (filterThreadStartedFlag == false) {
 					if (dataPointsModel.getRowInSampleFile() >= 1) {
-						startController.setProgressBar(0.18);
+//						startController.setProgressBar(0.18);
 						filterController.start();
 
 						filterThreadStartedFlag = true;
@@ -138,7 +138,7 @@ public class MainController extends Application {
 				while (featureExtractionThreadStartedFlag == false) {
 					if (dataPointsModel.getRowFilteredValues() > (dataPointsModel
 							.getSamplingRateConvertedToHertz() * 30)) {
-						startController.setProgressBar(0.38);
+//						startController.setProgressBar(0.38);
 						featureExtractionController.start();
 
 						featureExtractionThreadStartedFlag = true;
@@ -164,7 +164,7 @@ public class MainController extends Application {
 					if (featureExtractionModel.getNumberOfcalculatedEpoch() >= dataPointsModel
 							.getNumberOf30sEpochs()) {
 						
-						startController.setProgressBar(0.69);
+//						startController.setProgressBar(0.69);
 						svmController.start();
 
 						supportVectorMaschineThreadStartedFlag = true;
@@ -173,8 +173,8 @@ public class MainController extends Application {
 				
 				while (finishedClassificationFlag == false) {
 					if (featureExtractionModel.getClassificationDone() == true) {
-						startController.setProgressBar(1.0);
-						startController.setProgressIndicator(1.0);
+//						startController.setProgressBar(1.0);
+//						startController.setProgressIndicator(1.0);
 						
 						finishedClassificationFlag = true;
 					}

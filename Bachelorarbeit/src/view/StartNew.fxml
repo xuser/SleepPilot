@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="700.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <children>
+    <Button fx:id="openProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="257.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" onAction="#openProjectAction" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="Open Project">
+      <graphic>
+        <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
+          <image>
+            <Image url="@img/open.png" />
+          </image>
+        </ImageView>
+      </graphic>
+    </Button>
+    <Text fill="WHITE" layoutX="280.0" layoutY="257.0" scaleX="0.9999991292778578" scaleY="1.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Open an existing project" />
+    <Button fx:id="newProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="40.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" onAction="#newProjectAction" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="New Project">
+      <graphic>
+        <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
+          <image>
+            <Image url="@img/new2.png" />
+          </image>
+        </ImageView>
+      </graphic>
+    </Button>
+    <Text fill="WHITE" layoutX="67.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Start Auto-Score Mode" />
+    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="7.0" layoutX="512.0" layoutY="65.0" minHeight="114.0" minWidth="115.0" mnemonicParsing="false" onAction="#createModelAction" prefHeight="114.0" prefWidth="115.0" styleClass="startButtons" text="Train">
+      <graphic>
+        <ImageView fitHeight="47.45864929759761" fitWidth="40.97610092163086" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
+          <image>
+            <Image url="@img/train.png" />
+          </image>
+        </ImageView>
+      </graphic>
+    </Button>
+    <Text fill="WHITE" layoutX="489.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Advanced: Train the system" />
+    <Polygon fx:id="newProjectForm" fill="#ffffff56" layoutX="133.0" layoutY="221.0" scaleX="1.0" scaleY="0.13225160930522437" stroke="WHITE" strokeType="INSIDE">
+      <points>
+        <Double fx:value="-50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="0.0" />
+        <Double fx:value="-60.0" />
+      </points>
+    </Polygon>
+    <Polygon fx:id="openProjectForm" layoutX="351.0" layoutY="221.0" scaleX="1.0" scaleY="0.13225160930522437" stroke="WHITE" strokeType="INSIDE">
+      <fill>
+        <Color blue="1.000" green="1.000" opacity="0.337" red="1.000" fx:id="x1" />
+      </fill>
+      <points>
+        <Double fx:value="-50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="0.0" />
+        <Double fx:value="-60.0" />
+      </points>
+    </Polygon>
+    <Polygon fx:id="createModelForm" fill="$x1" layoutX="570.0" layoutY="181.0" scaleX="0.87" scaleY="0.13225160930522437" stroke="WHITE" strokeType="INSIDE">
+      <points>
+        <Double fx:value="-50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="50.0" />
+        <Double fx:value="40.0" />
+        <Double fx:value="0.0" />
+        <Double fx:value="-60.0" />
+      </points>
+    </Polygon>
+    <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="107.0" layoutY="357.0" prefHeight="25.0" prefWidth="487.0" progress="0.0" />
+    <Separator fx:id="separator1" layoutX="219.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator fx:id="separator3" layoutX="459.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator fx:id="separator2" layoutX="340.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Button fx:id="start" cancelButton="false" defaultButton="true" layoutX="316.0" layoutY="290.0" minHeight="15.310546875" mnemonicParsing="false" onAction="#startAction" prefHeight="40.0" prefWidth="68.0" styleClass="startButtons" text="Start" textOverrun="CLIP">
+      <font>
+        <Font size="12.0" />
+      </font>
+    </Button>
+    <Text id="readingLabel" fx:id="label1" fill="WHITE" layoutX="148.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Reading">
+      <font>
+        <Font size="11.0" fx:id="x2" />
+      </font>
+    </Text>
+    <Text id="filteringLabel" fx:id="label2" fill="WHITE" font="$x2" layoutX="268.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Filtering" />
+    <Text id="featureExtractionLabel" fx:id="label3" fill="WHITE" font="$x2" layoutX="361.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Feature Extraction" />
+    <Text id="classificationLabel" fx:id="label4" fill="WHITE" font="$x2" layoutX="497.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Classification" />
+    <ProgressIndicator fx:id="progressIndicator" layoutX="606.0" layoutY="357.0" prefHeight="24.999900000002526" prefWidth="27.0" progress="-1.0" />
+    <TextField id="numberOfEpochs" fx:id="lengthOfEpoch" layoutX="508.0" layoutY="191.0" prefWidth="124.0" promptText="Length of an epoch" />
+    <TextField fx:id="numberOfEpochs" layoutX="508.0" layoutY="215.0" prefWidth="124.0" promptText="Number of epochs" />
+  </children>
+  <stylesheets>
+    <URL value="@Application.css" />
+  </stylesheets>
+</AnchorPane>

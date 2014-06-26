@@ -39,8 +39,8 @@ public class FeatureExtractionController extends Thread {
 //	private List<Double> samples = new LinkedList<Double>();
 	
 	/**
-	 * This TreeMap holds all values for the current window.
-	 * The TreeMap automatically sorts the map by its key value in log(n) time.
+	 * This TreeMap holds all values for the current window. INFO: MAP<Key,Value>
+	 * The TreeMap automatically sorts the map by its key in log(n) time.
 	 */
 	private Map<Double, Integer> window = new TreeMap<Double, Integer>();
 	

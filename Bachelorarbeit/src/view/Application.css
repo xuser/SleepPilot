@@ -1,6 +1,36 @@
 
 .background{
-	-fx-background-color: white;	
+	-fx-background-color: rgb(61,191,217);	
+}
+
+.startButtons{
+	-fx-background-color: rgb(61,191,217);
+	-fx-border-style: solid;
+	-fx-border-width: 1px 1px 1px 1px;
+	-fx-border-color: rgb(160,206,224);
+	-fx-border-radius: 2; 
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+	-fx-font-size: 15.0;
+}
+
+.polygon{
+	-fx-background-color: rgb(61,191,217);
+}
+
+.startButtons:pressed{
+	-fx-background-color: rgb(125,206,224);	
+}
+
+.text-field{
+	-fx-font-size: 10;
+	-fx-font-family: sans-serif;
+	-fx-alignment: center;
+}
+
+.textLabel{
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
 }
 
 .menuBar{
