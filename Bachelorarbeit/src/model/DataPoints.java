@@ -1,5 +1,6 @@
 package model;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -100,6 +101,7 @@ public class DataPoints {
 	}
 
 	/**
+	 * INFO: ChannelName for channel one is at position 0 etc. Shift!
 	 * @return the channelNames
 	 */
 	public String[] getChannelNames() {

@@ -4,12 +4,17 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+
+import com.sun.xml.internal.ws.util.StringUtils;
 
 public class ReadSMR {
 	
 	private static String filePath;
 	private static RandomAccessFile dataFile;
+	
+	private static int numberOfChannels = 0;
 	
 	// Information from File Header
 	private static int systemId;
@@ -43,6 +48,7 @@ public class ReadSMR {
 	private static LinkedList<Integer> maxChanTime = new LinkedList<Integer>();
 	private static LinkedList<Integer> lChanDvd = new LinkedList<Integer>();
 	private static LinkedList<Integer> phyChan = new LinkedList<Integer>();
+	private static LinkedList<String> titel = new LinkedList<String>();
 	private static LinkedList<Float> idealRate = new LinkedList<Float>();
 	private static LinkedList<Integer> kind = new LinkedList<Integer>();
 	private static LinkedList<Integer> pad = new LinkedList<Integer>();
@@ -132,9 +138,26 @@ public class ReadSMR {
 				lChanDvd.add(buf.getInt());
 				phyChan.add((int) buf.getShort());
 				
+				int actPos = buf.position();
 				//TODO: Hier muss der Title herausgelesen werden, um herauszufinden welcher Kanal Fz ist.			
 				// Set new position, because we skip reading the title
-				buf.position(buf.position() + (1+9));
+				byte[] bytes = new byte[9];
+				buf.get(bytes, 0, 9);
+				
+				String fileString = new String(bytes,StandardCharsets.UTF_8);
+				fileString = fileString.trim();
+				
+				String tmp = "untitled";
+				int diff = 0;
+				for (int y = tmp.length()-1; y > 0; y--) {
+					if ((tmp.charAt(y) == fileString.charAt(y))) {
+						diff = y;
+					}
+				}
+				fileString = fileString.substring(0, diff);
+				
+				titel.add(fileString);
+				buf.position(actPos + (1 + 9));
 				
 				idealRate.add(buf.getFloat());
 				kind.add((int) buf.get());
@@ -151,8 +174,28 @@ public class ReadSMR {
 						divide.add((int) buf.getShort());
 					} else {
 						interleave.add((int) buf.getShort());
-					}
+					}	
+				}				
+			}
+			
+			// Get the number of channels
+			for (int i = 0; i < kind.size(); i++) {
+				if (kind.get(i) == 1) {
+					numberOfChannels++;
+				}
+			}
+			
+			// ************** Get data for each channel **************
+			
+			// Run over each channel
+			for (int i = 0; i < numberOfChannels; i++) {
+				
+				if (kind.get(i) == 1) {
+					buf.position(firstBlock.get(i) + 20);
+					System.out.println("FirstValue: " + buf.getShort());
 					
+				} else {
+					System.err.println("Channel #" + i + ": No waveform data found!");
 				}
 				
 			}
@@ -202,6 +245,7 @@ public class ReadSMR {
 		System.out.println("MaxChanTime: " + maxChanTime.get(channel));
 		System.out.println("lChanDvD: " + lChanDvd.get(channel));
 		System.out.println("phyChan: " + phyChan.get(channel));
+		System.out.println("Title: " + titel.get(channel));
 		System.out.println("IdealRate: " + idealRate.get(channel));
 		System.out.println("Kind: " + kind.get(channel));
 		System.out.println("Pad: " + pad.get(channel));

@@ -61,6 +61,9 @@ public class DataReaderController extends Thread {
 	// [Channel Infos]
 	private double channelResolution;
 	
+	String[] channelNames;
+	int countChannels = 0;
+	
 	/**
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
@@ -74,6 +77,8 @@ public class DataReaderController extends Thread {
 //		headerFile = new File(fileLocationPath);
 		
 		readHeaderFile();
+		respectiveModel.setChannelNames(channelNames);
+
 		printProperties();
 		
 		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
@@ -104,7 +109,7 @@ public class DataReaderController extends Thread {
 
 	
 	/**
-	 * Reads the header file and elect the necessary information.
+	 * Reads the header file and select the necessary information.
 	 */
 	private void readHeaderFile() {
 		try {
@@ -163,6 +168,7 @@ public class DataReaderController extends Thread {
 				// Read number of channels
 				if (zeile.startsWith("NumberOfChannels=")) {
 					respectiveModel.setNumberOfChannels(Integer.parseInt(zeile.substring(17)));
+					channelNames = new String[respectiveModel.getNumberOfChannels()];
 				}
 				
 				// Read number of data points
@@ -209,19 +215,23 @@ public class DataReaderController extends Thread {
 					skipColumns = Integer.parseInt(zeile.substring(12));
 				}
 				
+
 				// Read channel resolution
 				// TODO: IMPORTANT: It could be possible, that each channel has a different resolution!
-				if (zeile.startsWith("Ch1=")) {
+				if (zeile.startsWith("Ch")) {
 					String[] tmp = zeile.split(",");
-					
+
 					if (tmp.length == 4) {
+						channelNames[countChannels] = tmp[0].substring(4);
 						if (tmp[2].isEmpty()) {
 							channelResolution = 1.0;
 						} else {
-						channelResolution = Double.parseDouble(tmp[2]);
+							channelResolution = Double.parseDouble(tmp[2]);
 						}
+						countChannels++;
 					}
-				}				
+				}
+											
 			}
 			
 		in.close();
@@ -469,6 +479,13 @@ public class DataReaderController extends Thread {
 		System.out.println("SkipColumns: " + skipColumns);
 		System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
 		System.out.println("ChannelResolution: " + channelResolution);
+		
+		String[] tmp = respectiveModel.getChannelNames();
+		System.out.print("ChannelNames:");
+		for (int i = 0; i < tmp.length; i++) {
+			System.out.print(" " + tmp[i]);
+		}
+		System.out.println();
 		
 		System.out.println("SamplingRate in Hertz: " + respectiveModel.getSamplingRateConvertedToHertz());
 		
