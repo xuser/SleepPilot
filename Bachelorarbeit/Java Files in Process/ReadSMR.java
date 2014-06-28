@@ -69,9 +69,9 @@ public class ReadSMR {
 		}
 		
 		readSMRDataFile(dataFile);
-		printHeaderInformation();
-		System.out.println("------------------------");
-		printChannelInformation(0);
+//		printHeaderInformation();
+//		System.out.println("------------------------");
+//		printChannelInformation(0);
 		
 	}
 	
@@ -191,9 +191,11 @@ public class ReadSMR {
 			for (int i = 0; i < numberOfChannels; i++) {
 				
 				if (kind.get(i) == 1) {
-					buf.position(firstBlock.get(i) + 20);
-					System.out.println("FirstValue: " + buf.getShort());
-					
+					int nextBlock = firstBlock.get(i);
+					while (nextBlock != -1) {
+						nextBlock = getWholeDataFromOneChannel(buf, i, nextBlock);
+					}
+	
 				} else {
 					System.err.println("Channel #" + i + ": No waveform data found!");
 				}
@@ -210,6 +212,32 @@ public class ReadSMR {
 	}
 	 
 	
+	private static int getWholeDataFromOneChannel(ByteBuffer buf, int channel, int succBlock) {
+		
+		buf.position(succBlock);
+		int lastBlock = buf.getInt();
+		int nextBlock = buf.getInt();
+
+		buf.position(buf.position() + 8);
+		int channelNumber = buf.getShort();
+		int itemsInBlock = buf.getShort();
+
+		int x = 0;
+		while (x < itemsInBlock) {
+			System.out.println("Value: " + buf.getShort());
+			x++;
+		}
+
+		// Header information for this block
+		System.out.println("LastBlock: " + lastBlock);
+		System.out.println("NextBlock: " + nextBlock);
+
+		System.out.println("ChannelNumer: " + channelNumber);
+		System.out.println("Items in Block: " + itemsInBlock);
+		
+		return nextBlock;
+	}
+
 	private static void printHeaderInformation() {
 		System.out.println("SystemID: " + systemId);
 		System.out.println("UsPerTime: " + usPerTime);
