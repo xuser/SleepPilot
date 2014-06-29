@@ -103,7 +103,7 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(300);
+				primaryStage.setHeight(320);
 				
 				label1.setVisible(true);
 				label2.setVisible(true);
@@ -151,7 +151,7 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(300);
+				primaryStage.setHeight(320);
 				
 				label1.setVisible(false);
 				label2.setVisible(false);
@@ -193,7 +193,7 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(300);
+				primaryStage.setHeight(320);
 
 				label1.setVisible(true);
 				label2.setVisible(true);

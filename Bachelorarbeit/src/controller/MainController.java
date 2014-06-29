@@ -67,13 +67,15 @@ public class MainController extends Application {
 	
 	public static void startClassifier(File fileLocation, boolean trainMode, int channelNumberToRead) {
 
-		
 		if (trainMode == false) {
 
 			// Creats a new controller which reads the declared file
 			try {
 				dataPointsModel = new DataPoints();
 
+				
+				
+				
 				// Start Data Reader Controller
 				DataReaderController dataReaderController = new DataReaderController(
 						fileLocation, dataPointsModel);

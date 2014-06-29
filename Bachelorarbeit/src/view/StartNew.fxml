@@ -26,13 +26,13 @@
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>
-            <Image url="@img/new2.png" />
+            <Image url="@img/create.png" />
           </image>
         </ImageView>
       </graphic>
     </Button>
     <Text fill="WHITE" layoutX="67.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Start Auto-Score Mode" />
-    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="7.0" layoutX="512.0" layoutY="65.0" minHeight="114.0" minWidth="115.0" mnemonicParsing="false" prefHeight="114.0" prefWidth="115.0" styleClass="startButtons" text="Train">
+    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="10.0" layoutX="512.0" layoutY="65.0" minHeight="114.0" minWidth="115.0" mnemonicParsing="false" prefHeight="114.0" prefWidth="115.0" styleClass="startButtons" text="  Train">
       <graphic>
         <ImageView fitHeight="47.45864929759761" fitWidth="40.97610092163086" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>
