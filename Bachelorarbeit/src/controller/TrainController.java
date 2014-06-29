@@ -118,7 +118,6 @@ public class TrainController extends Thread {
 					break;
 				}
 				
-				
 				respectiveFeatureExtraxtionModel.setLengthOfOneEpoch((int) buf.getFloat());
 				respectiveFeatureExtraxtionModel.setNumberOfEpochs((int) buf.getFloat());
 				

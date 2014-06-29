@@ -88,8 +88,7 @@ public class SupportVectorMaschineController extends Thread {
 		}
 		
 		// 1. Start scalingData
-		String store = "range";
-		
+		String store = "range" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
 		if (trainMode == true) {
 			svm_scale scalingData = new svm_scale(respectiveFeatureExtractionModel, -1, 1, store, null);
@@ -168,8 +167,10 @@ public class SupportVectorMaschineController extends Thread {
 		    // Train the SVM and generate the model on which the actual classification have to be done.
 		    model = svm.svm_train(prob, param);
 		    
+		    String storeModelName = "model" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
+		    
 		    try {
-				svm.svm_save_model("model", model);
+				svm.svm_save_model(storeModelName, model);
 			} catch (IOException e) {
 				System.err.println("Error occured during saving the svm model!");
 				e.printStackTrace();
@@ -180,8 +181,10 @@ public class SupportVectorMaschineController extends Thread {
 		    
 		} else {
 			
+		    String loadModelName = "model[Fz]";
+			
 			try {
-				model = svm.svm_load_model("model");
+				model = svm.svm_load_model(loadModelName);
 			} catch (IOException e) {
 				System.err.println("Error occured during loading the svm model!");
 				e.printStackTrace();
