@@ -29,8 +29,6 @@ public class MainController extends Application {
 	private static String fileLocation;
 	
 	private static boolean trainMode;
-	private static int numberOfDataPointsForOneEpoche;
-	private static int numberOfEpochs;
 	
 	private static Stage primaryStage;
 	
@@ -68,7 +66,7 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode, int numberOfDataPointsForOneEpoche, int numberOfEpochs) {
+	public static void startClassifier(File fileLocation, boolean trainMode) {
 		// IMPORTANT: The absolute filepath on current filesystem is required.
 //		try {
 //			//fileLocation = args[0];
@@ -199,14 +197,9 @@ public class MainController extends Application {
 
 			FeatureExtraxtionValues featureExtractionModel = new FeatureExtraxtionValues();
 
-			// 1 Column for the PE of one channel and 11 columns for the LPC
-			// coefficients
-			featureExtractionModel.createDataMatrix(numberOfEpochs, (1 + 11));
-
 			// Start/ Create Train Data Reader Controller
 			TrainController trainController = new TrainController(
 					trainDataPointsModel, fileLocation.getAbsolutePath(),
-					numberOfDataPointsForOneEpoche, numberOfEpochs,
 					featureExtractionModel);
 			trainController.setPriority(10);
 			trainController.start();

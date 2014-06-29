@@ -93,8 +93,6 @@
     <Text id="featureExtractionLabel" fx:id="label3" fill="WHITE" font="$x2" layoutX="361.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Feature Extraction" />
     <Text id="classificationLabel" fx:id="label4" fill="WHITE" font="$x2" layoutX="497.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Classification" />
     <ProgressIndicator fx:id="progressIndicator" layoutX="606.0" layoutY="357.0" prefHeight="24.999900000002526" prefWidth="27.0" progress="-1.0" />
-    <TextField id="numberOfEpochs" fx:id="lengthOfEpoch" layoutX="508.0" layoutY="191.0" prefWidth="124.0" promptText="Length of an epoch" />
-    <TextField fx:id="numberOfEpochs" layoutX="508.0" layoutY="215.0" prefWidth="124.0" promptText="Number of epochs" />
   </children>
   <stylesheets>
     <URL value="@Application.css" />

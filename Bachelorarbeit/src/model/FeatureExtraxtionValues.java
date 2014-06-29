@@ -1,5 +1,9 @@
 package model;
 
+import java.util.LinkedList;
+
+import help.ChannelNames;
+
 /**
  * This class is the respective model for the FeatureExtractionController.
  * 
@@ -49,7 +53,20 @@ public class FeatureExtraxtionValues {
 	 */
 	private boolean classificationDone = false;
 	
-//	private 
+	/**
+	 * The number of samples for one epoch.
+	 */
+	private int lengthOfOneEpoch;
+	
+	/**
+	 * The number of epochs for one record.
+	 */
+	private int numberOfEpochs;
+	
+	/**
+	 * The channel name of the samples in the training file.
+	 */
+	private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
 	
 	/**
 	 * Creates the feature value matrix with the needed size.
@@ -70,6 +87,7 @@ public class FeatureExtraxtionValues {
 		numberOfChannels = columns;
 		featureValuesPE = new float[rows][columns + 1];
 	}
+	
 	
 	/**
 	 * This method builds the needed string for using the svm_scale method.
@@ -215,6 +233,56 @@ public class FeatureExtraxtionValues {
 		
 		return features;
 	}
+
+
+	/**
+	 * @return the lengthOfOneEpoch
+	 */
+	public int getLengthOfOneEpoch() {
+		return lengthOfOneEpoch;
+	}
+
+
+	/**
+	 * @param lengthOfOneEpoch the lengthOfOneEpoch to set
+	 */
+	public void setLengthOfOneEpoch(int lengthOfOneEpoch) {
+		this.lengthOfOneEpoch = lengthOfOneEpoch;
+	}
+
+
+	/**
+	 * @return the numberOfEpochs
+	 */
+	public int getNumberOfEpochs() {
+		return numberOfEpochs;
+	}
+
+
+	/**
+	 * @param numberOfEpochs the numberOfEpochs to set
+	 */
+	public void setNumberOfEpochs(int numberOfEpochs) {
+		this.numberOfEpochs = numberOfEpochs;
+	}
+
+
+	/**
+	 * @return the channelName
+	 */
+	public LinkedList<ChannelNames> getChannelName() {
+		return channelNames;
+	}
+
+
+	/**
+	 * @param channelName the channelName to set
+	 */
+	public void setChannelName(ChannelNames channelName) {
+		channelNames.add(channelName);
+	}
+
+
 	
 	
 	

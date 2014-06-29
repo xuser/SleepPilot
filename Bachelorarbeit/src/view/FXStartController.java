@@ -48,8 +48,6 @@ public class FXStartController implements Initializable {
 	
 	private File file;
 	
-	@FXML TextField lengthOfEpoch;
-	@FXML TextField numberOfEpochs;
 	@FXML Button start;
 	@FXML ProgressBar progressBar;
 	@FXML ProgressIndicator progressIndicator;
@@ -111,8 +109,6 @@ public class FXStartController implements Initializable {
 		newProjectForm.setVisible(false);
 		openProjectForm.setVisible(false);
 		createModelForm.setVisible(false);
-		lengthOfEpoch.setVisible(false);
-		numberOfEpochs.setVisible(false);
 		
 	}
 	
@@ -127,9 +123,6 @@ public class FXStartController implements Initializable {
 				label2.setVisible(true);
 				label3.setVisible(true);
 				label4.setVisible(true);
-				
-				lengthOfEpoch.setVisible(false);
-				numberOfEpochs.setVisible(false);
 				
 				progressBar.setVisible(true);
 				progressIndicator.setVisible(true);
@@ -180,9 +173,6 @@ public class FXStartController implements Initializable {
 				label3.setVisible(false);
 				label4.setVisible(false);
 				
-				lengthOfEpoch.setVisible(false);
-				numberOfEpochs.setVisible(false);
-				
 				progressBar.setVisible(false);
 				progressIndicator.setVisible(false);
 				
@@ -228,9 +218,6 @@ public class FXStartController implements Initializable {
 				label3.setVisible(true);
 				label4.setVisible(true);
 				
-				lengthOfEpoch.setVisible(true);
-				numberOfEpochs.setVisible(true);
-				
 				progressBar.setVisible(true);
 				progressIndicator.setVisible(true);
 				
@@ -272,18 +259,13 @@ public class FXStartController implements Initializable {
 	protected void startAction() {
 		progressIndicator.setVisible(true);
 		
-		if (trainMode == true) {
-			amountOfEpochs = Integer.parseInt(numberOfEpochs.getText());
-			numberOfDataPointsForOneEpoche = Integer.parseInt(lengthOfEpoch.getText());
-		}
-		
 		progressIndicator.setProgress(-1);
 		
 		Task<Void> task = new Task<Void>() {
 
 			@Override
 			protected Void call() throws Exception {
-				MainController.startClassifier(file, trainMode, numberOfDataPointsForOneEpoche, amountOfEpochs);
+				MainController.startClassifier(file, trainMode);
 				return null;
 			}
 

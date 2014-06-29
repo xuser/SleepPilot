@@ -1,5 +1,6 @@
 package controller;
 
+import help.ChannelNames;
 import help.LPC;
 import help.MathFunctions;
 
@@ -34,8 +35,6 @@ public class TrainController extends Thread {
 	
 	private TrainDataPoints respectiveTrainDataPointsModel;
 	private String fileLocationPath;
-	private int numberOfDataPointsForOneEpoche;
-	private int numberOfEpochs;
 	
 	private int numberOfReadSamples = 0;
 	
@@ -54,12 +53,11 @@ public class TrainController extends Thread {
 	
 	private FeatureExtraxtionValues respectiveFeatureExtraxtionModel;
 	
-	public TrainController(TrainDataPoints trainModel, String fileLocation, int numberOfDataPointsForOneEpoche, int numberOfEpochs, FeatureExtraxtionValues model) {
+	public TrainController(TrainDataPoints trainModel, String fileLocation, FeatureExtraxtionValues model) {
 		
 		respectiveTrainDataPointsModel = trainModel;
 		fileLocationPath = fileLocation;
-		this.numberOfDataPointsForOneEpoche = numberOfDataPointsForOneEpoche;
-		this.numberOfEpochs = numberOfEpochs;		
+		
 		respectiveFeatureExtraxtionModel = model;
 		
 		try {
@@ -93,7 +91,7 @@ public class TrainController extends Thread {
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 		
 			int bytesRead = inChannel.read(buf);
-			
+				
 			// Marks the position in current epoch
 			int currentEpochPos = 0;
 			
@@ -107,6 +105,29 @@ public class TrainController extends Thread {
 
 				//Make buffer ready for read
 				buf.flip();
+				
+				// This is important for setting the correct channel name
+				// Add here new channel names
+				switch ((int) buf.getFloat()) {
+				case 1: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.Fz);
+					break;
+				case 12: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.Fz);
+						 respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.VEOG1);
+					break;
+				default: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.UNKNOWN);
+					break;
+				}
+				
+				
+				respectiveFeatureExtraxtionModel.setLengthOfOneEpoch((int) buf.getFloat());
+				respectiveFeatureExtraxtionModel.setNumberOfEpochs((int) buf.getFloat());
+				
+				// 1 Column for the PE of one channel and 11 columns for the LPC
+				// coefficients
+				respectiveFeatureExtraxtionModel.createDataMatrix(respectiveFeatureExtraxtionModel.getNumberOfEpochs(), (1 + 11));
+				
+				// The next values are zeros, so set to the beginn of the actual data.
+				buf.position(respectiveFeatureExtraxtionModel.getLengthOfOneEpoch());
 				
 				while (buf.hasRemaining()) {
 					
@@ -133,7 +154,8 @@ public class TrainController extends Thread {
 					
 					currentEpochPos++;
 					
-					if (currentEpochPos == numberOfDataPointsForOneEpoche) {
+					// We add 1, because of the class label
+					if (currentEpochPos == (respectiveFeatureExtraxtionModel.getLengthOfOneEpoch() + 1)) {
 						
 						double label = epoch.get(0);
 						respectiveFeatureExtraxtionModel.setFeatureClassLabel(currentEpoch, label);
