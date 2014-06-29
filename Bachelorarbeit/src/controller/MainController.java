@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import javafx.application.Application;
 import view.FXApplicationController;
-import view.ChartController;
 import view.FXStartController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

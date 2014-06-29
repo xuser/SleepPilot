@@ -1,6 +1,9 @@
 package view;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -252,26 +255,80 @@ public class FXStartController implements Initializable {
 		
 		});
 		
-	}	
+	}
+	
+	private boolean checkChannels() {
+		
+		boolean flag = false;
+		String[] channelNames = null;
+		int countChannels = 0;
+		
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(file));
+
+			String zeile = null;
+						
+			
+			while ((zeile = in.readLine()) != null) {
+				
+				// Read number of channels
+				if (zeile.startsWith("NumberOfChannels=")) {
+					channelNames = new String[Integer.parseInt(zeile.substring(17))];
+				}
+				
+				// Read channel names
+				if (zeile.startsWith("Ch")) {
+					String[] tmp = zeile.split(",");
+
+					if (tmp.length == 4) {
+						channelNames[countChannels] = tmp[0].substring(4);
+						countChannels++;
+					}
+				}
+			}
+			
+			in.close();
+			
+		} catch (IOException e) {
+			System.err.println("No file found on current location.");
+			//e.printStackTrace();
+		}
+		
+		File folder = new File(".").getAbsoluteFile();
+		for( File file : folder.listFiles() ) {		
+			for (int i = 0; i < channelNames.length; i++) { 
+				if (file.getName().contains(channelNames[i])) {
+					flag = true;
+				} 	
+			}
+		}
+		
+		return flag;
+		
+	}
 	
 
 	@FXML
 	protected void startAction() {
-		progressIndicator.setVisible(true);
 		
-		progressIndicator.setProgress(-1);
-		
-		Task<Void> task = new Task<Void>() {
-
-			@Override
-			protected Void call() throws Exception {
-				MainController.startClassifier(file, trainMode);
-				return null;
-			}
-
-		};
-		
-		new Thread(task).start();
+		if (checkChannels()) {
+			progressIndicator.setVisible(true);	
+			progressIndicator.setProgress(-1);
+			
+			Task<Void> task = new Task<Void>() {
+	
+				@Override
+				protected Void call() throws Exception {
+					MainController.startClassifier(file, trainMode);
+					return null;
+				}
+	
+			};
+			
+			new Thread(task).start();
+		} else {
+			FXPopUp.showPopupMessage("Für den aktuellen Datensatz ist kein tranierter Kanal gefunden worden!", primaryStage);
+		}
 	}
 	
 	
