@@ -2,16 +2,12 @@ package view;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import controller.MainController;
-import javafx.animation.ScaleTransition;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,28 +16,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 public class FXStartController implements Initializable {
 	
 	//MainController mainController;
 
 	private boolean trainMode = false;
-	private int amountOfEpochs;
-	private int numberOfDataPointsForOneEpoche;	
-	
-	
+	private int channelNumberToRead = 0;
+
 	// JavaFx components
 	private Stage primaryStage;
 	
@@ -53,16 +43,10 @@ public class FXStartController implements Initializable {
 	
 	@FXML ProgressBar progressBar;
 	@FXML ProgressIndicator progressIndicator;
-
 	
-	@FXML Button newProject;	
-	private boolean newProjectFlag = false;
-	
+	@FXML Button newProject;		
 	@FXML Button openProject;
-	private boolean openProjectFlag = false;
-	
 	@FXML Button createModel;
-	private boolean createModelFlag = false;
 	
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
@@ -110,6 +94,7 @@ public class FXStartController implements Initializable {
 		openProjectForm.setVisible(false);
 		createModelForm.setVisible(false);
 		
+		
 	}
 	
 	@Override
@@ -118,6 +103,7 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
+				primaryStage.setHeight(300);
 				
 				label1.setVisible(true);
 				label2.setVisible(true);
@@ -165,6 +151,7 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
+				primaryStage.setHeight(300);
 				
 				label1.setVisible(false);
 				label2.setVisible(false);
@@ -206,7 +193,8 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				
+				primaryStage.setHeight(300);
+
 				label1.setVisible(true);
 				label2.setVisible(true);
 				label3.setVisible(true);
@@ -245,7 +233,7 @@ public class FXStartController implements Initializable {
 		
 					@Override
 					protected Void call() throws Exception {
-						MainController.startClassifier(file, trainMode);
+						MainController.startClassifier(file, trainMode, channelNumberToRead);
 						return null;
 					}
 		
@@ -299,8 +287,14 @@ public class FXStartController implements Initializable {
 		File folder = new File(".").getAbsoluteFile();
 		for( File file : folder.listFiles() ) {		
 			for (int i = 0; i < channelNames.length; i++) { 
-				if (file.getName().contains(channelNames[i])) {
+				if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
 					flag = true;
+					
+					if (channelNumberToRead == 0) {
+						channelNumberToRead = i;						
+					} else {
+						channelNumberToRead = (channelNumberToRead * 10) + i;
+					}
 				} 	
 			}
 		}
@@ -322,7 +316,7 @@ public class FXStartController implements Initializable {
 	
 				@Override
 				protected Void call() throws Exception {
-					MainController.startClassifier(file, trainMode);
+					MainController.startClassifier(file, trainMode, channelNumberToRead);
 					return null;
 				}
 	

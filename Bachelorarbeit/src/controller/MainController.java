@@ -65,19 +65,9 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode) {
-		// IMPORTANT: The absolute filepath on current filesystem is required.
-//		try {
-//			//fileLocation = args[0];
-//			// TODO: These three parameters have to be set by the user!!!
-//			trainMode = false;
-//			numberOfDataPointsForOneEpoche = 3001;
-//			numberOfEpochs = 17227;
-//
-//		} catch (Exception e) {
-//			System.err.println("No valid file location for runtime argument.");
-//		}
+	public static void startClassifier(File fileLocation, boolean trainMode, int channelNumberToRead) {
 
+		
 		if (trainMode == false) {
 
 			// Creats a new controller which reads the declared file
