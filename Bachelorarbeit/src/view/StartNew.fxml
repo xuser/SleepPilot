@@ -75,24 +75,19 @@
         <Double fx:value="-60.0" />
       </points>
     </Polygon>
-    <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="107.0" layoutY="357.0" prefHeight="25.0" prefWidth="487.0" progress="0.0" />
-    <Separator fx:id="separator1" layoutX="219.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
-    <Separator fx:id="separator3" layoutX="459.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
-    <Separator fx:id="separator2" layoutX="340.0" layoutY="350.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
-    <Button fx:id="start" cancelButton="false" defaultButton="true" layoutX="316.0" layoutY="290.0" minHeight="15.310546875" mnemonicParsing="false" onAction="#startAction" prefHeight="40.0" prefWidth="68.0" styleClass="startButtons" text="Start" textOverrun="CLIP">
-      <font>
-        <Font size="12.0" />
-      </font>
-    </Button>
-    <Text id="readingLabel" fx:id="label1" fill="WHITE" layoutX="148.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Reading">
+    <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="94.0" layoutY="317.0" prefHeight="25.0" prefWidth="487.0" progress="0.0" />
+    <Separator fx:id="separator1" layoutX="206.0" layoutY="310.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator fx:id="separator3" layoutX="446.0" layoutY="310.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Separator fx:id="separator2" layoutX="327.0" layoutY="310.0" orientation="VERTICAL" prefHeight="40.0" prefWidth="11.0" />
+    <Text id="readingLabel" fx:id="label1" fill="WHITE" layoutX="135.0" layoutY="356.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Reading">
       <font>
         <Font size="11.0" fx:id="x2" />
       </font>
     </Text>
-    <Text id="filteringLabel" fx:id="label2" fill="WHITE" font="$x2" layoutX="268.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Filtering" />
-    <Text id="featureExtractionLabel" fx:id="label3" fill="WHITE" font="$x2" layoutX="361.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Feature Extraction" />
-    <Text id="classificationLabel" fx:id="label4" fill="WHITE" font="$x2" layoutX="497.0" layoutY="396.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Classification" />
-    <ProgressIndicator fx:id="progressIndicator" layoutX="606.0" layoutY="357.0" prefHeight="24.999900000002526" prefWidth="27.0" progress="-1.0" />
+    <Text id="filteringLabel" fx:id="label2" fill="WHITE" font="$x2" layoutX="255.0" layoutY="356.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Filtering" />
+    <Text id="featureExtractionLabel" fx:id="label3" fill="WHITE" font="$x2" layoutX="348.0" layoutY="356.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Feature Extraction" />
+    <Text id="classificationLabel" fx:id="label4" fill="WHITE" font="$x2" layoutX="484.0" layoutY="356.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Classification" />
+    <ProgressIndicator fx:id="progressIndicator" layoutX="593.0" layoutY="317.0" prefHeight="24.999900000002526" prefWidth="27.0" progress="-1.0" />
   </children>
   <stylesheets>
     <URL value="@Application.css" />

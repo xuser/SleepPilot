@@ -51,7 +51,6 @@ public class FXStartController implements Initializable {
 	
 	private File file;
 	
-	@FXML Button start;
 	@FXML ProgressBar progressBar;
 	@FXML ProgressIndicator progressIndicator;
 
@@ -106,9 +105,7 @@ public class FXStartController implements Initializable {
 		
 		// Start settings
 		progressIndicator.setDisable(true);
-		start.setDisable(true);
-		
-		start.setVisible(false);
+
 		newProjectForm.setVisible(false);
 		openProjectForm.setVisible(false);
 		createModelForm.setVisible(false);
@@ -134,12 +131,11 @@ public class FXStartController implements Initializable {
 				separator2.setVisible(true);
 				separator3.setVisible(true);
 				
-				start.setVisible(true);
 				openProjectForm.setVisible(false);
 				createModelForm.setVisible(false);
 				
 				newProjectForm.setVisible(true);
-				primaryStage.setHeight(450);
+				primaryStage.setHeight(440);
 				
 				trainMode = false;
 				
@@ -159,8 +155,8 @@ public class FXStartController implements Initializable {
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
 				
-				start.setDisable(false);
-				
+				startAction();
+								
 				
 			}
 		
@@ -182,14 +178,12 @@ public class FXStartController implements Initializable {
 				separator1.setVisible(false);
 				separator2.setVisible(false);
 				separator3.setVisible(false);
-				
-				start.setVisible(false);
-				
+								
 				newProjectForm.setVisible(false);
 				createModelForm.setVisible(false);
 				
 				openProjectForm.setVisible(true);
-				primaryStage.setHeight(450);
+				primaryStage.setHeight(440);
 				
 				trainMode = false;
 				
@@ -203,9 +197,7 @@ public class FXStartController implements Initializable {
 				
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
-				
-				start.setDisable(false);
-				
+								
 				
 			}
 		
@@ -228,12 +220,11 @@ public class FXStartController implements Initializable {
 				separator2.setVisible(true);
 				separator3.setVisible(true);
 				
-				start.setVisible(true);
 				newProjectForm.setVisible(false);
 				openProjectForm.setVisible(false);
 				
 				createModelForm.setVisible(true);
-				primaryStage.setHeight(450);
+				primaryStage.setHeight(440);
 				
 				trainMode = true;
 				
@@ -248,8 +239,20 @@ public class FXStartController implements Initializable {
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
 				
-				start.setDisable(false);
+				progressIndicator.setVisible(true);	
+				progressIndicator.setProgress(-1);
 				
+				Task<Void> task = new Task<Void>() {
+		
+					@Override
+					protected Void call() throws Exception {
+						MainController.startClassifier(file, trainMode);
+						return null;
+					}
+		
+				};
+				
+				new Thread(task).start();
 				
 			}
 		
@@ -308,8 +311,7 @@ public class FXStartController implements Initializable {
 	}
 	
 
-	@FXML
-	protected void startAction() {
+	private void startAction() {
 		
 		if (checkChannels()) {
 			progressIndicator.setVisible(true);	
