@@ -22,6 +22,12 @@ public class FeatureExtraxtionValues {
 	private float[][] featureValuesPE;
 	
 	/**
+	 * Predict probabilities for the different classes. Each row keeps one array with
+	 * the probabilities for the epoch with the rowindex. 
+	 */
+	private double[][] predictProbabilities;
+	
+	/**
 	 * This variable keeps the number of the epoch to which the calculation of the PE
 	 * has been done.
 	 */
@@ -86,6 +92,7 @@ public class FeatureExtraxtionValues {
 		numberOfFeatureValues = rows;
 		numberOfChannels = columns;
 		featureValuesPE = new float[rows][columns + 1];
+		predictProbabilities = new double[rows][];
 	}
 	
 	
@@ -281,8 +288,17 @@ public class FeatureExtraxtionValues {
 	public void setChannelName(ChannelNames channelName) {
 		channelNames.add(channelName);
 	}
-
-
+	
+	/**
+	 * Set the array with the predict probabilities for the current epoch.
+	 * @param row
+	 * 			the epoch for the predict probabilities.
+	 * @param predictProbability
+	 * 			the array with the predict probabilities.
+	 */
+	public void setPredictProbabilities(int row, double[] predictProbability) {
+		predictProbabilities[row] = predictProbability;
+	}
 	
 	
 	

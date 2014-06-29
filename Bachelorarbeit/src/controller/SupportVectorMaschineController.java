@@ -239,6 +239,7 @@ public class SupportVectorMaschineController extends Thread {
 			    double[] prob_estimates = new double[totalClasses];
 			    double v = svm.svm_predict_probability(model, nodes, prob_estimates);
 			    
+			    respectiveFeatureExtractionModel.setPredictProbabilities(i, prob_estimates);
 			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
 			    //System.out.println(v);
 			    

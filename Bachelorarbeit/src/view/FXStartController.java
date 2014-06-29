@@ -135,7 +135,6 @@ public class FXStartController implements Initializable {
 				createModelForm.setVisible(false);
 				
 				newProjectForm.setVisible(true);
-				primaryStage.setHeight(440);
 				
 				trainMode = false;
 				
@@ -314,6 +313,8 @@ public class FXStartController implements Initializable {
 	private void startAction() {
 		
 		if (checkChannels()) {
+			primaryStage.setHeight(440);
+
 			progressIndicator.setVisible(true);	
 			progressIndicator.setProgress(-1);
 			
@@ -329,7 +330,7 @@ public class FXStartController implements Initializable {
 			
 			new Thread(task).start();
 		} else {
-			FXPopUp.showPopupMessage("Für den aktuellen Datensatz ist kein tranierter Kanal gefunden worden!", primaryStage);
+			FXPopUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
 		}
 	}
 	
