@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import javafx.application.Application;
-import view.ApplicationController;
+import view.FXApplicationController;
 import view.ChartController;
-import view.StartController;
+import view.FXStartController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -38,7 +38,7 @@ public class MainController extends Application {
 	private static TrainDataPoints trainDataPointsModel;
 	
 	private static FeatureExtraxtionValues featureExtractionModel;
-	private static StartController startController;
+	private static FXStartController startController;
 	
 	private static boolean filterThreadStartedFlag = false;
 	private static boolean featureExtractionThreadStartedFlag = false;
@@ -58,7 +58,7 @@ public class MainController extends Application {
 		
 		// TODO: Ist hier nur testweise ausgeblendet.
 		//Create start controller
-		startController = new StartController(primaryStage);
+		startController = new FXStartController(primaryStage);
 		
 		//Create application controller
 //		ApplicationController appController = new ApplicationController(primaryStage);

@@ -30,7 +30,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class StartController implements Initializable {
+public class FXStartController implements Initializable {
 	
 	//MainController mainController;
 
@@ -78,12 +78,12 @@ public class StartController implements Initializable {
 	@FXML Separator separator3;
 	
 	
-	public StartController(Stage stage) {
+	public FXStartController(Stage stage) {
 		
 		primaryStage = stage;
 		
 		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(StartController.class.getResource("StartNew.fxml"));
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("StartNew.fxml"));
 		loader.setController(this);
 		
 		// Try to load fxml file

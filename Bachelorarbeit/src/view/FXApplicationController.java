@@ -12,7 +12,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-public class ApplicationController implements Initializable{
+public class FXApplicationController implements Initializable{
 	
 	private Stage primaryStage; 
 	
@@ -22,11 +22,11 @@ public class ApplicationController implements Initializable{
 	
 	@FXML MenuItem showAdtVisualization;
 	
-	public ApplicationController(Stage stage) {
+	public FXApplicationController(Stage stage) {
 		primaryStage = stage;
 		
 		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(StartController.class.getResource("Application.fxml"));
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
 		loader.setController(this);
 		
 		// Try to load fxml file
@@ -60,7 +60,7 @@ public class ApplicationController implements Initializable{
 		BorderPane addGrid = new BorderPane();
 		
 		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(StartController.class.getResource("AdditionalVisualization.fxml"));
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("AdditionalVisualization.fxml"));
 		loader.setController(this);
 		
 		// Try to load fxml file

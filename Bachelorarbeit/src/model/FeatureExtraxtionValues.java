@@ -49,6 +49,8 @@ public class FeatureExtraxtionValues {
 	 */
 	private boolean classificationDone = false;
 	
+//	private 
+	
 	/**
 	 * Creates the feature value matrix with the needed size.
 	 * The first column holds the classified sleep stage.
