@@ -24,6 +24,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.LinkedList;
 
 import sun.text.normalizer.CharTrie.FriendAgent;
 import model.DataPoints;
@@ -33,6 +35,8 @@ public class DataReaderController extends Thread {
 	private String fileLocationPath;
 	private DataPoints respectiveModel;
 	private Thread t;
+	private LinkedList<Integer> channelsToRead;
+	private int numberOfSamplesForOneEpoch;
 	
 	// These two variables are necessary for setting the value into the right dataPoint position.
 	int column = 0;
@@ -68,15 +72,19 @@ public class DataReaderController extends Thread {
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
 	 */
-	public DataReaderController(File fileLocation, DataPoints dataPointsModel) throws IOException {
+	public DataReaderController(File fileLocation, DataPoints dataPointsModel, LinkedList<Integer> channelsToRead) throws IOException {
 		headerFile = fileLocation;
 		respectiveModel = dataPointsModel;
+		this.channelsToRead = channelsToRead;
 	
 	}
+	
+	// TODO: DataFile have to be closed at the end!
 	public void run() {
 //		headerFile = new File(fileLocationPath);
 		
 		readHeaderFile();
+		numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
 		respectiveModel.setChannelNames(channelNames);
 
 		printProperties();
@@ -85,15 +93,21 @@ public class DataReaderController extends Thread {
 			
 			if (dataFormat.equals(DataFormat.BINARY)) {
 				switch (binaryFormat) {
-				case INT_16: readDataFileInt(dataFile);
+				case INT_16: 
+					for (int i = 0; i < channelsToRead.size(); i++) {
+						readDataFileInt(dataFile, i, 0);			
+					}
 					break;
-				case IEEE_FLOAT_32: readDataFileFloat(dataFile);
+				case IEEE_FLOAT_32: 
+					for (int i = 0; i < channelsToRead.size(); i++) {
+						readDataFileFloat(dataFile, i, 0);			
+					}
 					break;
 				default: System.err.println("No compatible binary format!");
 					break;
 				}
-			} else if (dataFormat.equals(DataFormat.ASCII)) {
-				readDataFileAscii(dataFileForAscii);
+			//} else if (dataFormat.equals(DataFormat.ASCII)) {
+			//	readDataFileAscii(dataFileForAscii);
 				
 			} else {
 				System.err.println("No compatible data format!");
@@ -135,9 +149,9 @@ public class DataReaderController extends Thread {
 					switch (zeile.substring(11)) {
 					case "BINARY": dataFormat = DataFormat.BINARY;
 						break;
-					case "ASCII": dataFormat = DataFormat.ASCII;
-								dataFileForAscii = new File(dataFileLocation);
-						break;
+					//case "ASCII": dataFormat = DataFormat.ASCII;
+					//			dataFileForAscii = new File(dataFileLocation);
+					//	break;
 					default: dataFormat = DataFormat.UNKNOWN;
 						break;
 					}
@@ -249,33 +263,62 @@ public class DataReaderController extends Thread {
 	 * Reads the first data value of channel 1
 	 * 
 	 * @param dataFile file with data content
+	 * @param epoch
+	 * 			the epoch which have to be read. 
 	 */
-	private void readDataFileInt(RandomAccessFile dataFile) {		
+	private void readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {		
 					
 		try {
 			/* ---- Start just for testing ---- */
 //			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
 //			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
+					
+			
+//			long start = new Date().getTime();
+//			long time;
 			
 			FileChannel inChannel = dataFile.getChannel();
-
+			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
 			
-			
-			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
+			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch) * 2);
+			//ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 			
 			int bytesRead = inChannel.read(buf);
 					
 			// This function has to be called here, because you now know how big the matrix have to be
-			respectiveModel.createDataMatrix();
+			//respectiveModel.createDataMatrix();
 
-			while (bytesRead != -1) {
+			
+			//while (bytesRead != -1) {
 				
 				// Make buffer ready for read
 				buf.flip();
 				
+				// Set the start position in the file
+				//buf.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
+				
 				while (buf.hasRemaining()) {
+					Double value = (buf.getShort() * channelResolution);
+					
+					// Rounded a mantisse with value 3
+					double rValue = Math.round(value * Math.pow(10d, 3));
+					rValue = rValue / Math.pow(10d, 3);
+					
+					// This is the next sample in this epoch for the given channel
+					if (buf.hasRemaining()) {
+						buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*2) - 2);
+					}	
+				}
+				
+				buf.clear();
+//				inChannel.close();
+				
+//				time = new Date().getTime() - start;
+//				System.out.println("RunTime: " + time);
+								
+				/*while (buf.hasRemaining()) {
 					Double value = (buf.getShort() * channelResolution);
 					
 					// Rounded a mantisse with value 3
@@ -306,12 +349,12 @@ public class DataReaderController extends Thread {
 //				}
 				/* ---- End just for testing ---- */
 					
-				}
+				/*}
 				
 				buf.clear(); //make buffer ready for writing
 				bytesRead = inChannel.read(buf);
-			}	
-			dataFile.close();
+			}*/
+//			dataFile.close();
 									
 //			writer.close();  // Just for testing
 			
@@ -329,7 +372,7 @@ public class DataReaderController extends Thread {
 	 * 
 	 * @param dataFile
 	 */
-	private void readDataFileFloat(RandomAccessFile dataFile) {
+	private void readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
 		try {
 			/* ---- Start just for testing ---- */
 //			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
@@ -337,12 +380,32 @@ public class DataReaderController extends Thread {
 			/* ---- End just for testing ---- */
 			
 			FileChannel inChannel = dataFile.getChannel();
+			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4)) + (channelToRead * 4));
 			
-			ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
+			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch * 4));
 			buf.order(ByteOrder.LITTLE_ENDIAN);
-			
+
 			int bytesRead = inChannel.read(buf);
 			
+			// Make buffer ready for read
+			buf.flip();
+			
+			while (buf.hasRemaining()) {
+				Double value = (buf.getFloat() * channelResolution);
+				
+				// Rounded a mantisse with value 3
+				double rValue = Math.round(value * Math.pow(10d, 3));
+				rValue = rValue / Math.pow(10d, 3);
+				
+				// This is the next sample in this epoch for the given channel
+				if (buf.hasRemaining()) {
+					buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*4) - 4);
+				}
+			}
+			
+			buf.clear();
+			
+			/*
 			// This function has to be called here, because you now know how big the matrix have to be
 			respectiveModel.createDataMatrix();
 			
@@ -383,13 +446,13 @@ public class DataReaderController extends Thread {
 //				}
 				/* ---- End just for testing ---- */
 					
-				}
+				/*}
 				
 				buf.clear(); //make buffer ready for writing
 				bytesRead = inChannel.read(buf);
 			}
 			
-			dataFile.close();
+			dataFile.close();*/
 //			writer.close(); //Just for testing
 
 			

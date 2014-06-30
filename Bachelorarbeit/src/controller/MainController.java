@@ -2,6 +2,7 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import javafx.application.Application;
 import view.FXApplicationController;
@@ -65,17 +66,19 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode, int channelNumberToRead) {
+	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumberToRead) {
 
 		if (trainMode == false) {
 
 			// Creats a new controller which reads the declared file
 			try {
 				dataPointsModel = new DataPoints();
-
+				featureExtractionModel = new FeatureExtraxtionValues();
 				
+				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumberToRead);
+				dataReaderController.start();
 				
-				
+				/*
 				// Start Data Reader Controller
 				DataReaderController dataReaderController = new DataReaderController(
 						fileLocation, dataPointsModel);
@@ -174,14 +177,12 @@ public class MainController extends Application {
 						System.err.println("Error by taking thread to sleep for one second.");
 //						e.printStackTrace();
 					}
+				
 					
-					
-					
-				}
+				}*/
 
-			} catch (IOException e) {
-				System.err
-						.println("Unexpected error occured during reading the file.");
+			} catch (Exception e) {
+				System.err.println("Unexpected error occured during reading the file.");
 				e.printStackTrace();
 			}
 		} else {

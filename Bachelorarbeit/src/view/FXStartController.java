@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import controller.MainController;
@@ -30,7 +31,7 @@ public class FXStartController implements Initializable {
 	//MainController mainController;
 
 	private boolean trainMode = false;
-	private int channelNumberToRead = 0;
+	private LinkedList<Integer> channelNumbersToRead = new LinkedList<Integer>();
 
 	// JavaFx components
 	private Stage primaryStage;
@@ -233,7 +234,7 @@ public class FXStartController implements Initializable {
 		
 					@Override
 					protected Void call() throws Exception {
-						MainController.startClassifier(file, trainMode, channelNumberToRead);
+						MainController.startClassifier(file, trainMode, channelNumbersToRead);
 						return null;
 					}
 		
@@ -289,12 +290,7 @@ public class FXStartController implements Initializable {
 			for (int i = 0; i < channelNames.length; i++) { 
 				if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
 					flag = true;
-					
-					if (channelNumberToRead == 0) {
-						channelNumberToRead = i;						
-					} else {
-						channelNumberToRead = (channelNumberToRead * 10) + i;
-					}
+					channelNumbersToRead.add(i);
 				} 	
 			}
 		}
@@ -316,7 +312,7 @@ public class FXStartController implements Initializable {
 	
 				@Override
 				protected Void call() throws Exception {
-					MainController.startClassifier(file, trainMode, channelNumberToRead);
+					MainController.startClassifier(file, trainMode, channelNumbersToRead);
 					return null;
 				}
 	
