@@ -29,7 +29,6 @@ public class FeatureExtractionController extends Thread {
 	private boolean fPause = false;
 	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
-	private TrainDataPoints respectiveTrainDataPointsModel;
 	
 	private boolean trainMode;
 	
@@ -52,18 +51,23 @@ public class FeatureExtractionController extends Thread {
 	/**
 	 * Constructor which initializes the class.
 	 */
-	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel, TrainDataPoints trainModel, boolean trainMode){
+	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel, boolean trainMode){
 		
 		respectiveModel = dataPointsModel;
 		respectiveFeatureExtractionModel = featureExtractionModel;
-		respectiveTrainDataPointsModel = trainModel;
 		this.trainMode = trainMode;
 	
 	}
 	
 	public void run() {
 		
-		if (trainMode == false) {
+		while ((respectiveModel.getFilteringComplete() == false) || (respectiveModel.getSizeOfFilteredEpochList() != 0)) {
+			if ((respectiveModel.getSizeOfFilteredEpochList() >= 2) || (respectiveModel.getFilteringComplete() == true)) {
+				calculatedFeatures(respectiveModel.getFilteredEpoch());
+			}
+		}
+		
+		/*if (trainMode == false) {
 		
 			// Create data matrics in modell to keep the calculated feature values.
 			int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
@@ -126,9 +130,54 @@ public class FeatureExtractionController extends Thread {
 				respectiveFeatureExtractionModel.setNumberOfcalculatedEpoch(i+1);
 				
 			}
-			System.out.println("Finished PE and LPC Calculation!!");
 		
+		}*/
+		
+		System.out.println("Finished PE and LPC Calculation!!");
+		
+	}
+	
+	private void calculatedFeatures(LinkedList<Double> filteredEpoch) {
+		
+		double numberOfEpoch = filteredEpoch.poll();
+		
+		// Create data matrics in modell to keep the calculated feature values.
+		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
+		
+		// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
+		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+11));			
+		
+		// Create instance of LPC class
+		LPC lpcExtraction = new LPC(10);
+		
+		float tmp = calculatePermutationEntropy(filteredEpoch, 6, 1);
+		respectiveFeatureExtractionModel.setFeatureValuesPE((int) numberOfEpoch, 1, tmp);
+		
+		// Convert the list of samples to an array
+		Double[] epoch = filteredEpoch.toArray(new Double[filteredEpoch.size()]);
+		
+		// Array for the autocorrelation values
+		long[] R = new long[11];
+		
+		LPC.createAutoCorrelation(R, epoch, epoch.length, 0, 1, 10);
+		LPC.calculate(lpcExtraction, R);
+		
+		double[] coefficients = lpcExtraction.getCoefficients();
+		
+		for(int y = 0; y < coefficients.length; y++){
+			
+			// Rounded a mantisse with value 4
+			double rValue = Math.round(coefficients[y] * Math.pow(10d, 3));
+			rValue = rValue / Math.pow(10d, 3);
+			
+//			BigDecimal myDec = new BigDecimal(coefficients[y]);
+//			myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
+			
+			// Insert in column y+2 because first column if for the class label and second column for the PE
+			respectiveFeatureExtractionModel.setFeatureValuesPE((int) numberOfEpoch, y+2, (float) rValue);
+			
 		}
+		
 	}
 	
 	/**

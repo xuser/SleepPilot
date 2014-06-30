@@ -103,6 +103,7 @@ public class FilterController extends Thread {
 		
 		respectiveModel.setFilteringComplete(true);*/
 		System.out.println("Finished Filtering!");
+		
 	}
 	
 	private void filterRawEpoch(LinkedList<Double> rawEpoch) {
@@ -135,9 +136,10 @@ public class FilterController extends Thread {
 				thirdValueFromFilterWindow = rawEpoch.get(i+1);
 				
 			}
-
 		
 		}
+		
+		respectiveModel.addFilteredEpoch(tmpFilteredEpoch);
 		
 	}
 	

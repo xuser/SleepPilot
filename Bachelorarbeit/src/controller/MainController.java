@@ -2,6 +2,7 @@ package controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javafx.application.Application;
@@ -72,14 +73,19 @@ public class MainController extends Application {
 
 			// Creats a new controller which reads the declared file
 			try {
+				
 				dataPointsModel = new DataPoints();
 				featureExtractionModel = new FeatureExtraxtionValues();
+				
 				
 				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
 				
 				FilterController filterController = new FilterController(dataPointsModel);
 				filterController.start();
+				
+				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
+				featureExtractionController.start();
 				
 				
 				/*
