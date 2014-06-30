@@ -67,6 +67,8 @@ public class FeatureExtractionController extends Thread {
 			}
 		}
 		
+		respectiveFeatureExtractionModel.setReadingAndCalculatingDone(true);
+		
 		/*if (trainMode == false) {
 		
 			// Create data matrics in modell to keep the calculated feature values.

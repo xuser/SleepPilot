@@ -1,5 +1,7 @@
 package controller;
 
+import help.ChannelNames;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -77,6 +79,17 @@ public class MainController extends Application {
 				dataPointsModel = new DataPoints();
 				featureExtractionModel = new FeatureExtraxtionValues();
 				
+				for (int i = 0; i < channelNumbersToRead.size(); i++) {
+					switch (channelNumbersToRead.get(i)) {
+					case 1: featureExtractionModel.setChannelName(ChannelNames.Fz);
+						break;
+					case 12: featureExtractionModel.setChannelName(ChannelNames.Fz);
+					featureExtractionModel.setChannelName(ChannelNames.VEOG1);
+						break;
+					default: featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
+						break;
+					}
+				}
 				
 				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
@@ -87,6 +100,14 @@ public class MainController extends Application {
 				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
 				featureExtractionController.start();
 				
+				SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
+				
+				while (supportVectorMaschineThreadStartedFlag == false) {
+					if (featureExtractionModel.getReadingAndCalculatingDone()) {
+						svmController.start();
+						supportVectorMaschineThreadStartedFlag = true;
+					}
+				}
 				
 				/*
 				// Start Data Reader Controller

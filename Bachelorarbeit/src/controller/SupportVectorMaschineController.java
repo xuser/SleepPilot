@@ -87,6 +87,7 @@ public class SupportVectorMaschineController extends Thread {
 			}
 		}
 		
+		
 		// 1. Start scalingData
 		String store = "range" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
