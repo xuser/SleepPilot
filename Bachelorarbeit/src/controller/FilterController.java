@@ -1,5 +1,7 @@
 package controller;
 
+import java.util.LinkedList;
+
 import model.DataPoints;
 
 /**
@@ -30,7 +32,7 @@ public class FilterController extends Thread {
 	/**
 	 * Constructor for initializing this class.
 	 */
-	public FilterController(DataPoints dataPointsFromModel, DataReaderController controller) {
+	public FilterController(DataPoints dataPointsFromModel) {
 		respectiveModel = dataPointsFromModel;
 	}
 	
@@ -39,8 +41,16 @@ public class FilterController extends Thread {
 	 */
 	public void run() {
 		
+		while ((respectiveModel.getReadingCompleteStatus() == false) || (respectiveModel.getSizeOfRawEpochList() != 0)) {
+			if ((respectiveModel.getSizeOfRawEpochList() >= 2) || (respectiveModel.getReadingCompleteStatus() == true)) {
+				filterRawEpoch(respectiveModel.getRawEpoch());
+			}
+		}
+		
+		respectiveModel.setFilteringComplete(true);
+		
 		// Run over each channel
-		for (int y = 0; y < respectiveModel.getNumberOfChannels(); y++) {
+		/*for (int y = 0; y < respectiveModel.getNumberOfChannels(); y++) {
 			
 			int i = 0;
 			
@@ -91,8 +101,44 @@ public class FilterController extends Thread {
 			}
 		}
 		
-		respectiveModel.setFilteringComplete(true);
+		respectiveModel.setFilteringComplete(true);*/
 		System.out.println("Finished Filtering!");
+	}
+	
+	private void filterRawEpoch(LinkedList<Double> rawEpoch) {
+		double numberOfEpoch = rawEpoch.poll();
+		
+		LinkedList<Double> tmpFilteredEpoch = new LinkedList<Double>();
+		tmpFilteredEpoch.add(numberOfEpoch);
+		
+		firstValueFromFilterWindow = 0;
+		secondValueFromFilterWindow = 0;
+		thirdValueFromFilterWindow = rawEpoch.getFirst();
+		
+		for (int i = 0; i < rawEpoch.size(); i++) {
+			tmpFirst = ((b[0] * thirdValueFromFilterWindow) + (b[1] * secondValueFromFilterWindow) + (b[2] * firstValueFromFilterWindow));
+		
+			if (i >= 2) {				
+				tmpSecond = ((a[1] * rawEpoch.get(i-1)) + (a[2] * rawEpoch.get(i-2)));
+			} else if (i == 1) {
+				tmpSecond = ((a[1] * rawEpoch.get(i-1)) + (a[2] * 0));
+			} else if (i == 0) {
+				tmpSecond = ((a[1] * 0) + (a[2] * 0));
+			}
+			
+			filteredDataValue = tmpFirst - tmpSecond;
+			tmpFilteredEpoch.add(filteredDataValue);
+			
+			if (i < (rawEpoch.size() - 1)) {
+				firstValueFromFilterWindow = secondValueFromFilterWindow;
+				secondValueFromFilterWindow = thirdValueFromFilterWindow;
+				thirdValueFromFilterWindow = rawEpoch.get(i+1);
+				
+			}
+
+		
+		}
+		
 	}
 	
 	public void start()

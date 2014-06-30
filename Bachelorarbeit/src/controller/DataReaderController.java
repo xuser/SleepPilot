@@ -93,15 +93,21 @@ public class DataReaderController extends Thread {
 			
 			if (dataFormat.equals(DataFormat.BINARY)) {
 				switch (binaryFormat) {
-				case INT_16: 
-					for (int i = 0; i < channelsToRead.size(); i++) {
-						readDataFileInt(dataFile, i, 0);			
+				case INT_16:
+					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+						for (int i = 0; i < channelsToRead.size(); i++) {
+							readDataFileInt(dataFile, i, x);			
+						}
 					}
+					respectiveModel.setReadingComplete(true);
 					break;
 				case IEEE_FLOAT_32: 
-					for (int i = 0; i < channelsToRead.size(); i++) {
-						readDataFileFloat(dataFile, i, 0);			
+					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+						for (int i = 0; i < channelsToRead.size(); i++) {
+							readDataFileFloat(dataFile, i, x);			
+						}
 					}
+					respectiveModel.setReadingComplete(true);
 					break;
 				default: System.err.println("No compatible binary format!");
 					break;
@@ -236,7 +242,8 @@ public class DataReaderController extends Thread {
 					String[] tmp = zeile.split(",");
 
 					if (tmp.length == 4) {
-						channelNames[countChannels] = tmp[0].substring(4);
+						int stringIndex = tmp[0].indexOf("=");
+						channelNames[countChannels] = tmp[0].substring(stringIndex+1);
 						if (tmp[2].isEmpty()) {
 							channelResolution = 1.0;
 						} else {
@@ -278,6 +285,9 @@ public class DataReaderController extends Thread {
 //			long start = new Date().getTime();
 //			long time;
 			
+			LinkedList<Double> tmpEpoch = new LinkedList<Double>();
+			tmpEpoch.add((double) epochToRead);
+			
 			FileChannel inChannel = dataFile.getChannel();
 			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
 			
@@ -305,12 +315,15 @@ public class DataReaderController extends Thread {
 					// Rounded a mantisse with value 3
 					double rValue = Math.round(value * Math.pow(10d, 3));
 					rValue = rValue / Math.pow(10d, 3);
+					tmpEpoch.add(rValue);
 					
 					// This is the next sample in this epoch for the given channel
 					if (buf.hasRemaining()) {
 						buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*2) - 2);
 					}	
 				}
+				
+				respectiveModel.addRawEpoch(tmpEpoch);
 				
 				buf.clear();
 //				inChannel.close();
@@ -364,7 +377,6 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 	
-		respectiveModel.setReadingComplete(true);
 	}
 	
 	/**
@@ -378,6 +390,9 @@ public class DataReaderController extends Thread {
 //			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
 //			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
+			
+			LinkedList<Double> tmpEpoch = new LinkedList<Double>();
+			tmpEpoch.add((double) epochToRead);
 			
 			FileChannel inChannel = dataFile.getChannel();
 			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4)) + (channelToRead * 4));
@@ -397,11 +412,15 @@ public class DataReaderController extends Thread {
 				double rValue = Math.round(value * Math.pow(10d, 3));
 				rValue = rValue / Math.pow(10d, 3);
 				
+				tmpEpoch.add(rValue);
+				
 				// This is the next sample in this epoch for the given channel
 				if (buf.hasRemaining()) {
 					buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*4) - 4);
 				}
 			}
+			
+			respectiveModel.addRawEpoch(tmpEpoch);
 			
 			buf.clear();
 			

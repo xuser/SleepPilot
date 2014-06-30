@@ -22,6 +22,18 @@ public class DataPoints {
 	private boolean filteringComplete = false;
 	
 	/**
+	 * This list keeps lists with the epochs (raw data).
+	 * IMPORTANT: The head of the inter list keeps the assosiated epoch.
+	 */
+	private LinkedList<LinkedList<Double>> rawEpochs = new LinkedList<LinkedList<Double>>();
+	
+	/**
+	 * This list keeps lists with the epochs (filtered data).
+	 * IMPORTANT: The head of the inter list keeps the assosiated epoch.
+	 */
+	private LinkedList<LinkedList<Double>> filteredEpochs = new LinkedList<LinkedList<Double>>();
+	
+	/**
 	 * This variable holds the value which number of the samples has been read.
 	 */
 	private int rowInSampleFile = 0;
@@ -229,5 +241,40 @@ public class DataPoints {
 	public int getRowFilteredValues() {
 		return rowFilteredValues;
 	}
+	
+	public void addRawEpoch(LinkedList<Double> rawEpoch) {
+		rawEpochs.add(rawEpoch);
+	}
+	
+	/**
+	 * Polls the rawEpoch. Get and remove the head of the list.
+	 * @return
+	 * 		LinkedList with the epochs.
+	 */
+	public LinkedList<Double> getRawEpoch() {
+		return rawEpochs.poll();
+	}
+	
+	public int getSizeOfRawEpochList() {
+		return rawEpochs.size();
+	}
+	
+	public void addFilteredEpoch(LinkedList<Double> filteredEpoch) {
+		filteredEpochs.add(filteredEpoch);
+	}
+	
+	/**
+	 * Polls the rawEpoch. Get and remove the head of the list.
+	 * @return
+	 * 		LinkedList with the epochs.
+	 */
+	public LinkedList<Double> getFilteredEpoch() {
+		return filteredEpochs.poll();
+	}
+	
+	public int getSizeOfFilteredEpochList() {
+		return filteredEpochs.size();
+	}
+
 
 }

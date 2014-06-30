@@ -66,7 +66,7 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumberToRead) {
+	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead) {
 
 		if (trainMode == false) {
 
@@ -75,8 +75,12 @@ public class MainController extends Application {
 				dataPointsModel = new DataPoints();
 				featureExtractionModel = new FeatureExtraxtionValues();
 				
-				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumberToRead);
+				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
+				
+				FilterController filterController = new FilterController(dataPointsModel);
+				filterController.start();
+				
 				
 				/*
 				// Start Data Reader Controller
