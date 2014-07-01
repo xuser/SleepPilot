@@ -32,6 +32,7 @@ public class FXStartController implements Initializable {
 
 	private boolean trainMode = false;
 	private LinkedList<Integer> channelNumbersToRead = new LinkedList<Integer>();
+	private String[] channelNames;
 
 	// JavaFx components
 	private Stage primaryStage;
@@ -234,7 +235,7 @@ public class FXStartController implements Initializable {
 		
 					@Override
 					protected Void call() throws Exception {
-						MainController.startClassifier(file, trainMode, channelNumbersToRead);
+						MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
 						return null;
 					}
 		
@@ -251,7 +252,7 @@ public class FXStartController implements Initializable {
 	private boolean checkChannels() {
 		
 		boolean flag = false;
-		String[] channelNames = null;
+		channelNames = null;
 		int countChannels = 0;
 		
 		try {
@@ -272,7 +273,8 @@ public class FXStartController implements Initializable {
 					String[] tmp = zeile.split(",");
 
 					if (tmp.length == 4) {
-						channelNames[countChannels] = tmp[0].substring(4);
+						int stringIndex = tmp[0].indexOf("=");
+						channelNames[countChannels] = tmp[0].substring(stringIndex+1);
 						countChannels++;
 					}
 				}
@@ -312,7 +314,7 @@ public class FXStartController implements Initializable {
 	
 				@Override
 				protected Void call() throws Exception {
-					MainController.startClassifier(file, trainMode, channelNumbersToRead);
+					MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
 					return null;
 				}
 	

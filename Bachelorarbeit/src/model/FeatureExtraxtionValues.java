@@ -275,7 +275,7 @@ public class FeatureExtraxtionValues {
 
 
 	/**
-	 * @return the channelName
+	 * @return the channelNames, which have been calculated.
 	 */
 	public LinkedList<ChannelNames> getChannelName() {
 		return channelNames;
@@ -283,7 +283,7 @@ public class FeatureExtraxtionValues {
 
 
 	/**
-	 * @param channelName the channelName to set
+	 * @param channelName the channelName, which have been calculated.
 	 */
 	public void setChannelName(ChannelNames channelName) {
 		channelNames.add(channelName);

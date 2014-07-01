@@ -41,53 +41,13 @@ public class SupportVectorMaschineController extends Thread {
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		this.trainMode = trainMode;
 		
-		// Five Example values for one epoche. Each column represents the feature for one channel.	
-		// IMPORTANT:	The first column is important for traning of the SVM. 
-		//				This value describes the attachment to the correct sleep stage!
-		
-		// Code is just for testing
-		/*
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 0, 1F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 1, -2.3321208F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 2, -2.3527015F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 3, -2.2061187F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 4, -2.2272816F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(0, 5, 18.7079211F);
-		
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 0, 2F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 1, -1.3642082F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 2, -9.2407016F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 3, -1.3176912F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 4, 5.7479941F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(1, 5, -37.3130493F);
-		
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 0, 3F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 1, -10.3642082F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 2, -19.2407016F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 3, -12.3176912F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 4, 53.7479941F);
-		respectiveFeatureExtractionModel.setFeatureValuesPE(2, 5, -37.3130493F);
-		*/
-		
 	}
 	
 	/**
 	 * Starts the thread. Will exist when the method reaches his end.
 	 */
 	public void run() {
-		
-		//Check if thread have to pause.
-		synchronized (this) {
-			while (fPause) {
-				try {
-					wait();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		
+				
 		// 1. Start scalingData
 		String store = "range" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
 		// Save the ranges to file. Scaling for training data. Be sure that you use the same ranges for testing data later
@@ -192,14 +152,14 @@ public class SupportVectorMaschineController extends Thread {
 			}
 			
 			
-//			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
-//			 
-//		    Path file = null;
-//			try {
-//				file = Files.createFile(target);
-//			} catch (IOException e1) {
-//				e1.printStackTrace();
-//			}
+			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
+			 
+		    Path file = null;
+			try {
+				file = Files.createFile(target);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		    
 			
 			// Run over each feature vector
@@ -244,12 +204,12 @@ public class SupportVectorMaschineController extends Thread {
 			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
 			    //System.out.println(v);
 			    
-//			    String tmp = v + "";
-//			    try {
-//					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
+			    String tmp = v + "";
+			    try {
+					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			    
 			}
 			

@@ -28,6 +28,8 @@ public class FeatureExtractionController extends Thread {
 	private Thread t;
 	private boolean fPause = false;
 	
+	private boolean dataMatrixCreated = false;
+	
 	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
 	
 	private boolean trainMode;
@@ -135,25 +137,40 @@ public class FeatureExtractionController extends Thread {
 		
 		}*/
 		
+//		for (int x = 0; x < respectiveFeatureExtractionModel.getNumberOfFeatureValues(); x++) {
+//			double[] features = respectiveFeatureExtractionModel.getFeatureVector(x);
+//			
+//			for (int i = 0; i < features.length; i++) {
+//				System.out.print(features[i] + " ");
+//			}
+//			
+//			System.out.println();
+//		}
+		
 		System.out.println("Finished PE and LPC Calculation!!");
 		
 	}
 	
 	private void calculatedFeatures(LinkedList<Double> filteredEpoch) {
 		
-		double numberOfEpoch = filteredEpoch.poll();
+		int numberOfEpoch = filteredEpoch.poll().intValue();
 		
-		// Create data matrics in modell to keep the calculated feature values.
-		int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
-		
-		// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
-		respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+11));			
+		if (dataMatrixCreated == false) {
+			// Create data matrics in modell to keep the calculated feature values.
+			int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
+			
+			// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
+			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+11));
+			
+			dataMatrixCreated = true;
+		}
 		
 		// Create instance of LPC class
 		LPC lpcExtraction = new LPC(10);
 		
 		float tmp = calculatePermutationEntropy(filteredEpoch, 6, 1);
-		respectiveFeatureExtractionModel.setFeatureValuesPE((int) numberOfEpoch, 1, tmp);
+		respectiveFeatureExtractionModel.setFeatureValuesPE(numberOfEpoch, 1, tmp);
+		//System.out.print(tmp + " ");
 		
 		// Convert the list of samples to an array
 		Double[] epoch = filteredEpoch.toArray(new Double[filteredEpoch.size()]);
@@ -169,16 +186,17 @@ public class FeatureExtractionController extends Thread {
 		for(int y = 0; y < coefficients.length; y++){
 			
 			// Rounded a mantisse with value 4
-			double rValue = Math.round(coefficients[y] * Math.pow(10d, 3));
-			rValue = rValue / Math.pow(10d, 3);
-			
-//			BigDecimal myDec = new BigDecimal(coefficients[y]);
-//			myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
+//			double rValue = Math.round(coefficients[y] * Math.pow(10d, 4));
+//			rValue = rValue / Math.pow(10d, 4);
+						
+			BigDecimal myDec = new BigDecimal(coefficients[y]);
+			myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
 			
 			// Insert in column y+2 because first column if for the class label and second column for the PE
-			respectiveFeatureExtractionModel.setFeatureValuesPE((int) numberOfEpoch, y+2, (float) rValue);
-			
+			respectiveFeatureExtractionModel.setFeatureValuesPE(numberOfEpoch, y+2, myDec.floatValue());
+			//System.out.print(myDec + " ");
 		}
+		//System.out.println("");
 		
 	}
 	

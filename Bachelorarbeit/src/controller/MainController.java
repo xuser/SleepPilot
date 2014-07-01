@@ -69,25 +69,24 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead) {
-
+	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames) {
+		
 		if (trainMode == false) {
 
 			// Creats a new controller which reads the declared file
-			try {
+			try {							
 				
 				dataPointsModel = new DataPoints();
 				featureExtractionModel = new FeatureExtraxtionValues();
-				
+	
 				for (int i = 0; i < channelNumbersToRead.size(); i++) {
-					switch (channelNumbersToRead.get(i)) {
-					case 1: featureExtractionModel.setChannelName(ChannelNames.Fz);
-						break;
-					case 12: featureExtractionModel.setChannelName(ChannelNames.Fz);
-					featureExtractionModel.setChannelName(ChannelNames.VEOG1);
-						break;
+					String channel = channelNames[(channelNumbersToRead.get(i))];
+										
+					switch (channel) {
+					case "Fz": featureExtractionModel.setChannelName(ChannelNames.Fz);
+					break;
 					default: featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
-						break;
+					break;
 					}
 				}
 				
@@ -101,9 +100,11 @@ public class MainController extends Application {
 				featureExtractionController.start();
 				
 				SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
-				
+								
 				while (supportVectorMaschineThreadStartedFlag == false) {
+					
 					if (featureExtractionModel.getReadingAndCalculatingDone()) {
+						
 						svmController.start();
 						supportVectorMaschineThreadStartedFlag = true;
 					}
