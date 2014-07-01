@@ -142,7 +142,7 @@ public class SupportVectorMaschineController extends Thread {
 		    
 		} else {
 			
-		    String loadModelName = "model[Fz]";
+			String loadModelName = "model" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
 			
 			try {
 				model = svm.svm_load_model(loadModelName);
@@ -152,14 +152,14 @@ public class SupportVectorMaschineController extends Thread {
 			}
 			
 			
-			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
-			 
-		    Path file = null;
-			try {
-				file = Files.createFile(target);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+//			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
+//			 
+//		    Path file = null;
+//			try {
+//				file = Files.createFile(target);
+//			} catch (IOException e1) {
+//				e1.printStackTrace();
+//			}
 		    
 			
 			// Run over each feature vector
@@ -204,12 +204,12 @@ public class SupportVectorMaschineController extends Thread {
 			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
 			    //System.out.println(v);
 			    
-			    String tmp = v + "";
-			    try {
-					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+//			    String tmp = v + "";
+//			    try {
+//					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 			    
 			}
 			
