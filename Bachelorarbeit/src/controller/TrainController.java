@@ -22,7 +22,7 @@ import model.TrainDataPoints;
 
 /**
  * This controller is only for reading training data with special format
- * specification.
+ * specification. You can use the matlab scripts, which you can find in the appended folder.
  * 
  * @author Nils Finke
  */
