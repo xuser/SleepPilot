@@ -96,7 +96,10 @@ public class DataReaderController extends Thread {
 				case INT_16:
 					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
 						for (int i = 0; i < channelsToRead.size(); i++) {
-							readDataFileInt(dataFile, i, x);			
+							
+							// x is the epoch, which have to be calculated
+							// i is the channel, which have to be calculated
+							readDataFileInt(dataFile, channelsToRead.get(i), x);			
 						}
 					}
 					respectiveModel.setReadingComplete(true);
@@ -104,7 +107,7 @@ public class DataReaderController extends Thread {
 				case IEEE_FLOAT_32: 
 					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
 						for (int i = 0; i < channelsToRead.size(); i++) {
-							readDataFileFloat(dataFile, i, x);			
+							readDataFileFloat(dataFile, channelsToRead.get(i), x);			
 						}
 					}
 					respectiveModel.setReadingComplete(true);

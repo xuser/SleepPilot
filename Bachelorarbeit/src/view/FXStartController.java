@@ -287,6 +287,7 @@ public class FXStartController implements Initializable {
 			//e.printStackTrace();
 		}
 		
+		// Check whether the the SVM Model is trained for one of the given channels
 		File folder = new File(".").getAbsoluteFile();
 		for( File file : folder.listFiles() ) {		
 			for (int i = 0; i < channelNames.length; i++) { 
@@ -297,6 +298,7 @@ public class FXStartController implements Initializable {
 			}
 		}
 		
+		// The flag signalizes if in the chosen dataset is one channel which can be used for the classification
 		return flag;
 		
 	}

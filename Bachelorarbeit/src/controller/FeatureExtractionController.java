@@ -153,6 +153,7 @@ public class FeatureExtractionController extends Thread {
 	
 	private void calculatedFeatures(LinkedList<Double> filteredEpoch) {
 		
+		// This is necessary to set the correct pos in matrics.
 		int numberOfEpoch = filteredEpoch.poll().intValue();
 		
 		if (dataMatrixCreated == false) {

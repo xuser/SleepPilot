@@ -90,6 +90,7 @@ public class MainController extends Application {
 					}
 				}
 				
+				// ChannelNumbersToRead contains all channel numbers, which have to be calculated
 				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
 				
