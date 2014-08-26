@@ -307,22 +307,30 @@ public class FXStartController implements Initializable {
 	private void startAction() {
 		
 		if (checkChannels()) {
-			primaryStage.setHeight(440);
-
-			progressIndicator.setVisible(true);	
-			progressIndicator.setProgress(-1);
 			
-			Task<Void> task = new Task<Void>() {
-	
-				@Override
-				protected Void call() throws Exception {
-					MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
-					return null;
-				}
-	
-			};
+			// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
+			if (channelNumbersToRead.size() == 1) {
 			
-			new Thread(task).start();
+				primaryStage.setHeight(440);
+	
+				progressIndicator.setVisible(true);	
+				progressIndicator.setProgress(-1);
+				
+				Task<Void> task = new Task<Void>() {
+		
+					@Override
+					protected Void call() throws Exception {
+						MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+						return null;
+					}
+		
+				};
+				
+				new Thread(task).start();
+			} else {
+				FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+			}
+			
 		} else {
 			FXPopUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
 		}
