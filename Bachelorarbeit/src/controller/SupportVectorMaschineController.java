@@ -96,8 +96,11 @@ public class SupportVectorMaschineController extends Thread {
 		    // Create SVM parameters
 		    svm_parameter param = new svm_parameter();
 		    param.probability = 1;
-		    param.gamma = 0.5;
-		    param.C = 100;
+		    
+		    // We set these parameters during the crossvalidation
+		    //param.gamma = 0.5;
+		    //param.C = 100;
+		    
 		    param.svm_type = svm_parameter.C_SVC;
 		    param.kernel_type = svm_parameter.RBF;
 		    param.cache_size = 20000;
@@ -108,20 +111,57 @@ public class SupportVectorMaschineController extends Thread {
 		    
 		    // IMPORTANT: 	Kind of Grid Search for different parameters of C and Gamma have to be done.
 		    //				Chose the best values of C and Gamma so that the cross validation accuracy is at his best.
-//		    double[] target = new double[prob.l];	    
-//		    svm.svm_cross_validation(prob, param, 10, target);
-//		    
-//	        int total_correct = 0;
-//	        double accuracy = 0.0;
-//		    
-//	        for (int i = 0; i < prob.l; i++) {
-//	        	if (target[i] == prob.y[i]) {
-//	        		++total_correct;
-//	            }
-//	        }
-//	        
-//	        accuracy = 100.0 * total_correct / prob.l;
-//	        System.out.print("Cross Validation Accuracy = " + accuracy + "%"+ " C = " + param.C + " g = " + param.gamma + "\n");
+		    
+		    // These to variables are overwriten each time when the validation accuracy is at his best
+		    double tmpC = 0;
+		    double tmpGamma = 0;
+		    double tmpAccuracy = 0; 
+		    
+		    double c[] = {Math.pow(2, -5), Math.pow(2, -3), Math.pow(2, -1), 
+		    			  Math.pow(2, 1), Math.pow(2, 3), Math.pow(2, 5),
+		    			  Math.pow(2, 7), Math.pow(2, 7), Math.pow(2, 9),
+		    			  Math.pow(2, 11), Math.pow(2, 13), Math.pow(2, 15)};
+		    
+		    double gamma[] = {Math.pow(2, -15), Math.pow(2, -13), Math.pow(2, -11), 
+	    			  		  Math.pow(2, -9), Math.pow(2, -7), Math.pow(2, -5),
+	    			  		  Math.pow(2, -3), Math.pow(2, -1), Math.pow(2, 1),
+	    			  		  Math.pow(2, 3)};
+		    
+		    for (int x = 0; x < c.length; x++) {
+		    	for (int y = 0; y < gamma.length; y++) {
+		    		
+		    		param.C = c[x];
+		    		param.gamma = gamma[y];
+		    		
+		    		double[] target = new double[prob.l];	    
+		    		svm.svm_cross_validation(prob, param, 5, target);
+		    		
+		    		int total_correct = 0;
+		    		double accuracy = 0.0;
+		    		
+		    		for (int i = 0; i < prob.l; i++) {
+		    			if (target[i] == prob.y[i]) {
+		    				++total_correct;
+		    			}
+		    		}
+		    		
+		    		accuracy = 100.0 * total_correct / prob.l;
+		    		
+		    		if (accuracy > tmpAccuracy) {
+		    			tmpC = c[x];
+		    			tmpGamma = gamma[y];
+		    			tmpAccuracy = accuracy;
+		    		}
+		    		
+		    		System.out.print("Cross Validation Accuracy = " + accuracy + "%"+ " C = " + param.C + " g = " + param.gamma + "\n");    		
+		    		
+		    	}	    	
+		    }
+		    
+		    // Overwrite the original parameters; 
+		    param.C = tmpC;
+		    param.gamma = tmpGamma;
+		    
 	        
 	        // *************** END OF CROSSVALIDATION ***************
 			
