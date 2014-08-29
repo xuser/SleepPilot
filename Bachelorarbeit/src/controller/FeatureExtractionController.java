@@ -151,6 +151,7 @@ public class FeatureExtractionController extends Thread {
 		
 	}
 	
+	@SuppressWarnings("static-access")
 	private void calculatedFeatures(LinkedList<Double> filteredEpoch) {
 		
 		// This is necessary to set the correct pos in matrics.
@@ -160,8 +161,8 @@ public class FeatureExtractionController extends Thread {
 			// Create data matrics in modell to keep the calculated feature values.
 			int numberOfFeatureExtractionValues = respectiveModel.getNumberOf30sEpochs();
 			
-			// 1 Column for the PE of one channel and 11 columns for the LPC coefficients
-			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+11));
+			// 1 Column for the PE of one channel and 10 columns for the LSP coefficients
+			respectiveFeatureExtractionModel.createDataMatrix(numberOfFeatureExtractionValues, (1+10));
 			
 			dataMatrixCreated = true;
 		}
@@ -182,18 +183,22 @@ public class FeatureExtractionController extends Thread {
 		LPC.createAutoCorrelation(R, epoch, epoch.length, 0, 1, 10);
 		LPC.calculate(lpcExtraction, R);
 		
-		double[] coefficients = lpcExtraction.getCoefficients();
+		double[] LPCcoefficients = lpcExtraction.getCoefficients();
 		
-		for(int y = 0; y < coefficients.length; y++){
+		double[] LSPcoeficients = new double[LPCcoefficients.length - 1];
+		
+		LSPcoeficients = lpcExtraction.lpc2lsp(LPCcoefficients, 10, LSPcoeficients, 4, 0.02);
+		
+		for(int y = 0; y < LSPcoeficients.length; y++){
 			
 			// Rounded a mantisse with value 4
 //			double rValue = Math.round(coefficients[y] * Math.pow(10d, 4));
 //			rValue = rValue / Math.pow(10d, 4);
 						
-			BigDecimal myDec = new BigDecimal(coefficients[y]);
+			BigDecimal myDec = new BigDecimal(LSPcoeficients[y]);
 			myDec = myDec.setScale(4, BigDecimal.ROUND_HALF_UP);
 			
-			// Insert in column y+2 because first column if for the class label and second column for the PE
+			// Insert in column y+2 because first column is for the class label and second column for the PE
 			respectiveFeatureExtractionModel.setFeatureValuesPE(numberOfEpoch, y+2, myDec.floatValue());
 			//System.out.print(myDec + " ");
 		}

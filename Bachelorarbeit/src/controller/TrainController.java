@@ -121,9 +121,9 @@ public class TrainController extends Thread {
 				respectiveFeatureExtraxtionModel.setLengthOfOneEpoch((int) buf.getFloat());
 				respectiveFeatureExtraxtionModel.setNumberOfEpochs((int) buf.getFloat());
 				
-				// 1 Column for the PE of one channel and 11 columns for the LPC
+				// 1 Column for the PE of one channel and 10 columns for the LSP
 				// coefficients
-				respectiveFeatureExtraxtionModel.createDataMatrix(respectiveFeatureExtraxtionModel.getNumberOfEpochs(), (1 + 11));
+				respectiveFeatureExtraxtionModel.createDataMatrix(respectiveFeatureExtraxtionModel.getNumberOfEpochs(), (1 + 10));
 				
 				// The next values are zeros, so set to the beginn of the actual data.
 				buf.position(respectiveFeatureExtraxtionModel.getLengthOfOneEpoch());
@@ -167,7 +167,7 @@ public class TrainController extends Thread {
 						// For more information see the FeatureExtractionValues.java
 						respectiveFeatureExtraxtionModel.setFeatureValuesPE(currentEpoch, 1, tmp);
 						
-						double[] coefficients = calculateLPC(epoch);
+						double[] coefficients = calculateLSP(epoch);
 						
 						for(int y = 0; y < coefficients.length; y++){
 							
@@ -205,7 +205,7 @@ public class TrainController extends Thread {
 		}
 	}
 	
-	private double[] calculateLPC(List<Double> dataPoints) {
+	private double[] calculateLSP(List<Double> dataPoints) {
 		
 		// Convert the list of samples to an array
 		Double[] epoch = dataPoints.toArray(new Double[dataPoints.size()]);
@@ -216,9 +216,13 @@ public class TrainController extends Thread {
 		LPC.createAutoCorrelation(R, epoch, epoch.length, 0, 1, 10);
 		LPC.calculate(lpcExtraction, R);
 		
-		double[] coefficients = lpcExtraction.getCoefficients();
+		double[] LPCcoefficients = lpcExtraction.getCoefficients();
 		
-		return coefficients;
+		double[] LSPcoeficients = new double[LPCcoefficients.length - 1];
+		LSPcoeficients = LPC.lpc2lsp(LPCcoefficients, 10, LSPcoeficients, 4, 0.02);
+		
+		
+		return LSPcoeficients;
 	}
 	
 
