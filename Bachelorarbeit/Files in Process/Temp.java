@@ -1,3 +1,5 @@
+import java.util.Date;
+
 
 public class Temp {
 	
@@ -7,7 +9,9 @@ public class Temp {
     static int ptr=0;
 	
 	public static void main(String args[]) {
-		float[] lpc = {(float) 1.0000, (float) -0.6433, (float) -0.1737, (float) 0.1360, (float) 0.0559, (float) -0.0467, (float) -0.0728, (float) 0.0400, (float) -0.0573, (float) -0.0414, (float) -0.1180};
+		
+		double[] lpc = {1.0000, -0.6433, -0.1737, 0.1360, 0.0559, -0.0467, -0.0728, 0.0400, -0.0573, -0.0414, -0.1180};
+
 		
 //		double[] lsf = lpc2lsf(lpc, 1);
 //		
@@ -15,10 +19,18 @@ public class Temp {
 //			System.out.print(lsf[i] + " ");
 //		}
 		
-		float[] lsf = new float[lpc.length - 1];
+		long start = System.currentTimeMillis(); 
 		
-		lpc2lsp(lpc, 10, lsf, 4, (float) 0.02);
+		double[] lsf = new double[lpc.length - 1];
 		
+		lsf = lpc2lsp(lpc, 10, lsf, 4, 0.02);
+		
+		for(int i = 0; i < lsf.length; i++) {
+			System.out.print(lsf[i] + " ");
+		}
+		
+		long runningTime =  System.currentTimeMillis() - start;
+		System.out.println("Runtime: " + runningTime + "ms");
 	}
 	
 	/**
@@ -244,36 +256,39 @@ public class Temp {
 
     /**
      * This function converts LPC coefficients to LSP coefficients.
-     * @param a      - LPC coefficients.
+     * @param lpc      - LPC coefficients.
      * @param lpcrdr - order of LPC coefficients (10).
-     * @param freq   - LSP frequencies in the x domain.
+     * @param lsf   - LSP frequencies in the x domain.
      * @param nb     - number of sub-intervals (4).
-     * @param delta  - grid spacing interval (0.02).
+     * @param d  - grid spacing interval (0.02).
      * @return the number of roots (the LSP coefs are returned in the array).
      */
-    public static int lpc2lsp (final float[] a,
+    public static double[] lpc2lsp (final double[] lpc,
                                final int lpcrdr,
-                               final float[] freq,
+                               final double[] lsf,
                                final int nb,
-                               final float delta)
+                               final double d)
     {
-      float psuml, psumr, psumm, temp_xr, xl, xr, xm=0;
-      float temp_psumr;
+      double psuml;
+	  double psumr;
+	  float temp_xr, xl, xr, xm=0;
+	  double psumm;
+      double temp_psumr;
       int i, j, m, flag, k;
-      float[] Q;     // ptrs for memory allocation
-      float[] P;
+      double[] Q;     // ptrs for memory allocation
+      double[] P;
       int px;        // ptrs of respective P'(z) & Q'(z)
       int qx;
       int p;
       int q;
-      float[] pt;    // ptr used for cheb_poly_eval() whether P' or Q'
+      double[] pt;    // ptr used for cheb_poly_eval() whether P' or Q'
       int roots = 0; // DR 8/2/94: number of roots found
       flag = 1;      // program is searching for a root when, 1 else has found one
       m = lpcrdr/2;  // order of P'(z) & Q'(z) polynomials
 
       /* Allocate memory space for polynomials */
-      Q = new float[m+1];
-      P = new float[m+1];
+      Q = new double[m+1];
+      P = new double[m+1];
 
       /* determine P'(z)'s and Q'(z)'s coefficients where
       P'(z) = P(z)/(1 + z^(-1)) and Q'(z) = Q(z)/(1-z^(-1)) */
@@ -285,8 +300,8 @@ public class Temp {
       P[px++] = 1.0f;
       Q[qx++] = 1.0f;
       for (i=1; i<=m; i++){
-        P[px++] = a[i]+a[lpcrdr+1-i]-P[p++];
-        Q[qx++] = a[i]-a[lpcrdr+1-i]+Q[q++];
+        P[px++] = lpc[i]+lpc[lpcrdr+1-i]-P[p++];
+        Q[qx++] = lpc[i]-lpc[lpcrdr+1-i]+Q[q++];
       }
       px = 0;
       qx = 0;
@@ -316,7 +331,7 @@ public class Temp {
         while ((flag == 1) && (xr >= -1.0)) {
           float dd;
           /* Modified by JMV to provide smaller steps around x=+-1 */
-          dd=(float)(delta*(1-.9*xl*xl));
+          dd=(float)(d*(1-.9*xl*xl));
           if (Math.abs(psuml)<.2)
             dd *= .5;
 
@@ -352,7 +367,7 @@ public class Temp {
             }
 
             /* once zero is found, reset initial interval to xr */
-            freq[j] = xm;
+            lsf[j] = xm;
             xl = xm;
             flag = 0; /* reset flag for next search */
           }
@@ -363,27 +378,23 @@ public class Temp {
         }
       }
       
-      for (int y = 0; y < freq.length; y++) {
-    	  System.out.print(freq[y] + " ");
-      }
-      
-      return roots;
+      return lsf;
     }
 
     
     /**
      * This function evaluates a series of Chebyshev polynomials.
-     * @param coef - coefficients of the polynomial to be evaluated.
+     * @param pt - coefficients of the polynomial to be evaluated.
      * @param x    - the point where polynomial is to be evaluated.
      * @param m    - order of the polynomial.
      * @return the value of the polynomial at point x.
      */
-    public static final float cheb_poly_eva(final float[] coef,
+    public static final double cheb_poly_eva(final double[] pt,
                                             float x,
                                             final int m)
     {
       int i;
-      float sum;
+      double sum;
       float[] T;
       int m2 = m >> 1;
       /* Allocate memory for Chebyshev series formulation */
@@ -393,12 +404,12 @@ public class Temp {
       T[1] = x;
       /* Evaluate Chebyshev series formulation using iterative approach  */
       /* Evaluate polynomial and return value also free memory space */
-      sum = coef[m2] + coef[m2-1]*x;
+      sum = pt[m2] + pt[m2-1]*x;
       x *= 2;
       for (i=2; i<=m2; i++)
       {
         T[i] = x*T[i-1] - T[i-2];
-        sum += coef[m2-i] * T[i];
+        sum += pt[m2-i] * T[i];
       }
       return sum;
     }
