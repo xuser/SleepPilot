@@ -95,11 +95,13 @@ public class SupportVectorMaschineController extends Thread {
 		    
 		    // Create SVM parameters
 		    svm_parameter param = new svm_parameter();
+		    
+		    // If you not do cross validation set this parameter to 1
 		    param.probability = 1;
 		    
 		    // We set these parameters during the crossvalidation
-		    //param.gamma = 0.5;
-		    //param.C = 100;
+		    param.gamma = 0.5;
+		    param.C = 100;
 		    
 		    param.svm_type = svm_parameter.C_SVC;
 		    param.kernel_type = svm_parameter.RBF;
@@ -113,7 +115,7 @@ public class SupportVectorMaschineController extends Thread {
 		    //				Chose the best values of C and Gamma so that the cross validation accuracy is at his best.
 		    
 		    // These to variables are overwriten each time when the validation accuracy is at his best
-		    double tmpC = 0;
+		    /*double tmpC = 0;
 		    double tmpGamma = 0;
 		    double tmpAccuracy = 0; 
 		    
@@ -162,7 +164,7 @@ public class SupportVectorMaschineController extends Thread {
 		    param.C = tmpC;
 		    param.gamma = tmpGamma;
 		    
-	        
+	        */
 	        // *************** END OF CROSSVALIDATION ***************
 			
 		    // Train the SVM and generate the model on which the actual classification have to be done.
@@ -177,7 +179,7 @@ public class SupportVectorMaschineController extends Thread {
 				e.printStackTrace();
 			}
 		    
-		    System.out.println("Finished training of the SVM!");
+		    System.out.println("Finished training of the SVM! C: " + param.C + " Gamma: " + param.gamma);
 		    respectiveFeatureExtractionModel.setClassificationDone(true);
 		    
 		} else {
