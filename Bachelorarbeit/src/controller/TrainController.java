@@ -112,9 +112,9 @@ public class TrainController extends Thread {
 				switch ((int) buf.getFloat()) {
 				case 1: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.Fz);
 					break;
-				case 12: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.Fz);
+				/*case 12: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.Fz);
 						 respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.VEOG1);
-					break;
+					break;*/
 				default: respectiveFeatureExtraxtionModel.setChannelName(ChannelNames.UNKNOWN);
 					break;
 				}

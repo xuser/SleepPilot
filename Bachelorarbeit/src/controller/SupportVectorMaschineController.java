@@ -163,6 +163,8 @@ public class SupportVectorMaschineController extends Thread {
 		    // Overwrite the original parameters; 
 		    param.C = tmpC;
 		    param.gamma = tmpGamma;
+		    // We set the probability mode after the crossvalidation, because with this option an additional cross-validation will be performed
+		    param.probability = 1;
 		    
 	        */
 	        // *************** END OF CROSSVALIDATION ***************
