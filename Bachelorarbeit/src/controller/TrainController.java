@@ -106,6 +106,7 @@ public class TrainController extends Thread {
 				//Make buffer ready for read
 				buf.flip();
 				
+				
 				// This is important for setting the correct channel name
 				// Add here new channel names
 				switch ((int) buf.getFloat()) {
@@ -126,7 +127,9 @@ public class TrainController extends Thread {
 				respectiveFeatureExtraxtionModel.createDataMatrix(respectiveFeatureExtraxtionModel.getNumberOfEpochs(), (1 + 10));
 				
 				// The next values are zeros, so set to the beginn of the actual data.
-				buf.position(respectiveFeatureExtraxtionModel.getLengthOfOneEpoch());
+				// +1 is important, because we always have one label at the beginning of the epoch
+				// * 4 because one value insists of 4 bytes
+				buf.position((respectiveFeatureExtraxtionModel.getLengthOfOneEpoch() + 1) * 4);
 				
 				while (buf.hasRemaining()) {
 					
@@ -180,6 +183,7 @@ public class TrainController extends Thread {
 							
 						}
 						
+						
 						System.out.println("Calculated Epoch: " + currentEpoch);
 						
 						currentEpoch++;
@@ -187,6 +191,8 @@ public class TrainController extends Thread {
 						epoch.clear();
 						
 					}
+					
+			
 					
 				}
 								
