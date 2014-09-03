@@ -83,58 +83,74 @@ public class DataReaderController extends Thread {
 	public void run() {
 //		headerFile = new File(fileLocationPath);
 		
-		readHeaderFile();
-		numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-		respectiveModel.setChannelNames(channelNames);
-
-		printProperties();
-		
-		if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
+		if (headerFile.getName().toLowerCase().endsWith(".smr")) {
 			
-			if (dataFormat.equals(DataFormat.BINARY)) {
-				switch (binaryFormat) {
-				case INT_16:
-					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-						for (int i = 0; i < channelsToRead.size(); i++) {
-							
-							// x is the epoch, which have to be calculated
-							// i is the channel, which have to be calculated
-							readDataFileInt(dataFile, channelsToRead.get(i), x);			
+			readHeaderFromSMR();
+			respectiveModel.setChannelNames(channelNames);
+			
+			
+			
+		} else if (headerFile.getName().toLowerCase().endsWith(".vhdr")) {			
+			
+			readHeaderFromVHDR();
+			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+			respectiveModel.setChannelNames(channelNames);
+	
+			printProperties();
+			
+			if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
+				
+				if (dataFormat.equals(DataFormat.BINARY)) {
+					switch (binaryFormat) {
+					case INT_16:
+						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+							for (int i = 0; i < channelsToRead.size(); i++) {
+								
+								// x is the epoch, which have to be calculated
+								// i is the channel, which have to be calculated
+								readDataFileInt(dataFile, channelsToRead.get(i), x);			
+							}
 						}
-					}
-					respectiveModel.setReadingComplete(true);
-					break;
-				case IEEE_FLOAT_32: 
-					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-						for (int i = 0; i < channelsToRead.size(); i++) {
-							readDataFileFloat(dataFile, channelsToRead.get(i), x);			
+						respectiveModel.setReadingComplete(true);
+						break;
+					case IEEE_FLOAT_32: 
+						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+							for (int i = 0; i < channelsToRead.size(); i++) {
+								readDataFileFloat(dataFile, channelsToRead.get(i), x);			
+							}
 						}
+						respectiveModel.setReadingComplete(true);
+						break;
+					default: System.err.println("No compatible binary format!");
+						break;
 					}
-					respectiveModel.setReadingComplete(true);
-					break;
-				default: System.err.println("No compatible binary format!");
-					break;
+				//} else if (dataFormat.equals(DataFormat.ASCII)) {
+				//	readDataFileAscii(dataFileForAscii);
+					
+				} else {
+					System.err.println("No compatible data format!");
+					
 				}
-			//} else if (dataFormat.equals(DataFormat.ASCII)) {
-			//	readDataFileAscii(dataFileForAscii);
 				
 			} else {
-				System.err.println("No compatible data format!");
-				
+				System.err.println("No supported data orientation, data type or count of skip columns! ");
 			}
-			
-		} else {
-			System.err.println("No supported data orientation, data type or count of skip columns! ");
+		
 		}
 		
 		System.out.println("Finished Reading!!");
 	}
 
 	
+	private void readHeaderFromSMR() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	/**
 	 * Reads the header file and select the necessary information.
 	 */
-	private void readHeaderFile() {
+	private void readHeaderFromVHDR() {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(headerFile));
 			String zeile = null;
