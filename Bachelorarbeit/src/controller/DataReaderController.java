@@ -87,7 +87,15 @@ public class DataReaderController extends Thread {
 		if (file.getName().toLowerCase().endsWith(".smr")) {
 			
 			readHeaderFromSMR();
+			int tmp = (int) (respectiveModel.getlChanDvd(channelsToRead.get(0)) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
+			respectiveModel.setSamplingIntervall(tmp);
+
+			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
 			
+			//TODO: 1. Anzahl an Epochen auslesen (getNumberOf30sEpochs, numberOfDataPoints)
+			//		2. Über alle Epochen iterieren
+			//		3. Epochenweises Channelweises einlesen (Methode unten ergänzen)
+									
 			printPropertiesSMR();
 			printChannelInformationSMR(16);
 			
@@ -290,6 +298,54 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	private void readSMRChannel(int channel, int epoch) {
+			
+		if (respectiveModel.getKind(channel) == 1) {
+
+			// long start = new Date().getTime();
+			// long time;
+
+			int nextBlock = respectiveModel.getFirstBlock(channel);
+			while (nextBlock != -1) {
+				nextBlock = getWholeDataFromOneChannel(buf, channel, nextBlock);
+			}
+			// time = new Date().getTime() - start;
+			// System.out.println("RunTime: " + time);
+
+		} else {
+			System.err.println("Channel #" + channel + ": No waveform data found!");
+		}
+			
+	}
+	
+	
+	private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock) {
+		
+		buf.position(succBlock);
+		int lastBlock = buf.getInt();
+		int nextBlock = buf.getInt();
+
+		buf.position(buf.position() + 8);
+		int channelNumber = buf.getShort();
+		int itemsInBlock = buf.getShort();
+
+		int x = 0;
+		while (x < itemsInBlock) {
+			System.out.println("Value: " + buf.getShort());
+			x++;
+		}
+
+		// Header information for this block
+		System.out.println("LastBlock: " + lastBlock);
+		System.out.println("NextBlock: " + nextBlock);
+
+		System.out.println("ChannelNumer: " + channelNumber);
+		System.out.println("Items in Block: " + itemsInBlock);
+		
+		
+		return nextBlock;
 	}
 
 	/**
