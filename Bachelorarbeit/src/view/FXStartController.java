@@ -328,6 +328,9 @@ public class FXStartController implements Initializable {
 	}
 	
 	private boolean checkChannelsSMR() {
+		
+		boolean flag = false;
+		
 		try {
 			smrFile = new RandomAccessFile(file, "rw");
 			FileChannel inChannel = smrFile.getChannel();
@@ -341,16 +344,13 @@ public class FXStartController implements Initializable {
 			//Make buffer ready for read
 			buf.flip();
 			
-			//buf.position(buf.position() + 30);
 			channels = buf.getShort();					// Number of channels which are included in the given file
 			
 			for (int i = 0; i < channels; i++){
 				
 				// Offset due to file header and preceding channel headers
 				int offset = 512 + (140 * (i) + 108);
-				//buf.position(offset);
-				//buf.position(buf.position() + 108);
-				
+	
 				inChannel.position(offset);
 				buf = ByteBuffer.allocate(16);
 				buf.order(ByteOrder.LITTLE_ENDIAN);
@@ -385,12 +385,7 @@ public class FXStartController implements Initializable {
 				if (kind.get(i) == 1) {
 					numberOfChannels++;
 				}
-			}
-			
-			for (int i = 0; i < numberOfChannels; i++) {
-				System.out.println(titel.get(i));
-			}
-						
+			}			
 			
 		} catch (FileNotFoundException e) {
 			System.err.println("No file found on current location.");
@@ -399,7 +394,22 @@ public class FXStartController implements Initializable {
 			System.err.println("Error occured during reading the *.smr File!");
 			//e.printStackTrace();
 		}
-		return false;
+		
+		// Check whether the the SVM Model is trained for one of the given channels
+				File folder = new File(".").getAbsoluteFile();
+				for( File file : folder.listFiles() ) {		
+					for (int i = 0; i < numberOfChannels; i++) { 
+						if (file.getName().contains(titel.get(i)) && file.getName().contains("model")) {
+							flag = true;
+							channelNumbersToRead.add(i);
+						} 	
+					}
+				}
+				
+		// The flag signalizes if in the chosen dataset is one channel which can be used for the classification
+		
+		return flag;
+		
 	}
 	
 
@@ -408,6 +418,7 @@ public class FXStartController implements Initializable {
 		if (file.getName().toLowerCase().endsWith(".smr")) {
 			
 			if (checkChannelsSMR()) {
+				
 				
 				
 			} else {
