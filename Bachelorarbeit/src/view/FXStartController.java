@@ -2,9 +2,15 @@ package view;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
@@ -26,6 +32,16 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+
+/**
+ * ANNOTATION: We have to read Header information here, because we want to show PopUp Messages, if there are not valid channels.
+ * It is only possible to show these messages from the FX Thread. This is the reason, why we cant print messages later on during
+ * reading teh file in the DataReaderController.
+ * 
+ * 
+ * @author Nils Finke
+ *
+ */
 public class FXStartController implements Initializable {
 	
 	//MainController mainController;
@@ -33,7 +49,14 @@ public class FXStartController implements Initializable {
 	private boolean trainMode = false;
 	private LinkedList<Integer> channelNumbersToRead = new LinkedList<Integer>();
 	private String[] channelNames;
+	
+	//Necessary for reading the smr information
+	private int channels;
+	private int numberOfChannels;
+	private static LinkedList<String> titel = new LinkedList<String>();
+	private static LinkedList<Integer> kind = new LinkedList<Integer>();
 
+	
 	// JavaFx components
 	private Stage primaryStage;
 	
@@ -42,6 +65,7 @@ public class FXStartController implements Initializable {
 	private Scene scene;
 	
 	private File file;
+	private RandomAccessFile smrFile;
 	
 	@FXML ProgressBar progressBar;
 	@FXML ProgressIndicator progressIndicator;
@@ -249,7 +273,7 @@ public class FXStartController implements Initializable {
 		
 	}
 	
-	private boolean checkChannels() {
+	private boolean checkChannelsVHDR() {
 		
 		boolean flag = false;
 		channelNames = null;
@@ -303,40 +327,130 @@ public class FXStartController implements Initializable {
 		
 	}
 	
+	private boolean checkChannelsSMR() {
+		try {
+			smrFile = new RandomAccessFile(file, "rw");
+			FileChannel inChannel = smrFile.getChannel();
+			inChannel.position(30);
+			
+			ByteBuffer buf = ByteBuffer.allocate(2);
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+		
+			int bytesRead = inChannel.read(buf);
+
+			//Make buffer ready for read
+			buf.flip();
+			
+			//buf.position(buf.position() + 30);
+			channels = buf.getShort();					// Number of channels which are included in the given file
+			
+			for (int i = 0; i < channels; i++){
+				
+				// Offset due to file header and preceding channel headers
+				int offset = 512 + (140 * (i) + 108);
+				//buf.position(offset);
+				//buf.position(buf.position() + 108);
+				
+				inChannel.position(offset);
+				buf = ByteBuffer.allocate(16);
+				buf.order(ByteOrder.LITTLE_ENDIAN);
+				bytesRead = inChannel.read(buf);
+				buf.flip();
+				
+				int actPos = buf.position();
+				byte[] bytes = new byte[9];
+				buf.get(bytes, 0, 9);
+				
+				String fileString = new String(bytes,StandardCharsets.UTF_8);
+				fileString = fileString.trim();
+				
+				String tmp = "untitled";
+				int diff = 0;
+				for (int y = tmp.length()-1; y > 0; y--) {
+					if ((tmp.charAt(y) == fileString.charAt(y))) {
+						diff = y;
+					}
+				}
+				fileString = fileString.substring(0, diff);
+				
+				titel.add(fileString);
+				
+				buf.position(actPos + (1 + 9 + 4));
+				kind.add((int) buf.get());
+				
+			}
+			
+			// Get the number of channels
+			for (int i = 0; i < kind.size(); i++) {
+				if (kind.get(i) == 1) {
+					numberOfChannels++;
+				}
+			}
+			
+			for (int i = 0; i < numberOfChannels; i++) {
+				System.out.println(titel.get(i));
+			}
+						
+			
+		} catch (FileNotFoundException e) {
+			System.err.println("No file found on current location.");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("Error occured during reading the *.smr File!");
+			//e.printStackTrace();
+		}
+		return false;
+	}
+	
 
 	private void startAction() {
 		
-		if (checkChannels()) {
+		if (file.getName().toLowerCase().endsWith(".smr")) {
 			
-			// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
-			if (channelNumbersToRead.size() == 1) {
-			
-				primaryStage.setHeight(440);
-	
-				progressIndicator.setVisible(true);	
-				progressIndicator.setProgress(-1);
+			if (checkChannelsSMR()) {
 				
-				Task<Void> task = new Task<Void>() {
-		
-					@Override
-					protected Void call() throws Exception {
-						MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
-						return null;
-					}
-		
-				};
 				
-				new Thread(task).start();
 			} else {
-				FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+				FXPopUp.showPopupMessage("SMR: No trained channel for the selected dataset found!", primaryStage);
 			}
 			
-		} else {
-			FXPopUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
+			
+		} else if(file.getName().toLowerCase().endsWith(".vhdr")) {
+		
+			if (checkChannelsVHDR()) {
+				
+				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
+				if (channelNumbersToRead.size() == 1) {
+				
+					primaryStage.setHeight(440);
+		
+					progressIndicator.setVisible(true);	
+					progressIndicator.setProgress(-1);
+					
+					Task<Void> task = new Task<Void>() {
+			
+						@Override
+						protected Void call() throws Exception {
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							return null;
+						}
+			
+					};
+					
+					new Thread(task).start();
+				} else {
+					FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+				}
+				
+			} else {
+				FXPopUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
+			}
 		}
+		
+		
 	}
 	
-	
+
 	public void setProgressBar(double value) {
 		progressBar.setProgress(value);
 		

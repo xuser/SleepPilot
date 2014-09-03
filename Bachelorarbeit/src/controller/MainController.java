@@ -9,6 +9,7 @@ import java.util.LinkedList;
 
 import javafx.application.Application;
 import view.FXApplicationController;
+import view.FXPopUp;
 import view.FXStartController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -93,7 +94,7 @@ public class MainController extends Application {
 				// ChannelNumbersToRead contains all channel numbers, which have to be calculated
 				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
-				
+								
 				FilterController filterController = new FilterController(dataPointsModel);
 				filterController.start();
 				
