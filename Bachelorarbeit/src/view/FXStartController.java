@@ -395,10 +395,15 @@ public class FXStartController implements Initializable {
 			//e.printStackTrace();
 		}
 		
+		channelNames = new String[numberOfChannels];		//To avoid handling lists and arrays in MainController we parse the list to an array now
+		
 		// Check whether the the SVM Model is trained for one of the given channels
 				File folder = new File(".").getAbsoluteFile();
 				for( File file : folder.listFiles() ) {		
-					for (int i = 0; i < numberOfChannels; i++) { 
+					for (int i = 0; i < numberOfChannels; i++) {
+						
+						channelNames[i] = titel.get(i);		//To avoid handling lists and arrays in MainController we parse the list to an array now
+						
 						if (file.getName().contains(titel.get(i)) && file.getName().contains("model")) {
 							flag = true;
 							channelNumbersToRead.add(i);
@@ -419,6 +424,28 @@ public class FXStartController implements Initializable {
 			
 			if (checkChannelsSMR()) {
 				
+				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
+				if (channelNumbersToRead.size() == 1) {
+					
+					primaryStage.setHeight(440);
+		
+					progressIndicator.setVisible(true);	
+					progressIndicator.setProgress(-1);
+					
+					Task<Void> task = new Task<Void>() {
+			
+						@Override
+						protected Void call() throws Exception {
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							return null;
+						}
+			
+					};
+					
+					new Thread(task).start();
+				} else {
+					FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+				}
 				
 				
 			} else {
