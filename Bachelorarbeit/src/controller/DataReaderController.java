@@ -21,6 +21,7 @@ import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,7 +44,7 @@ public class DataReaderController extends Thread {
 	int row = 0;
 	
 	// [Common Infos]
-	private File headerFile;
+	private File file;
 	private RandomAccessFile dataFile;
 	private File dataFileForAscii;
 	
@@ -73,7 +74,7 @@ public class DataReaderController extends Thread {
 	 * @throws IOException 
 	 */
 	public DataReaderController(File fileLocation, DataPoints dataPointsModel, LinkedList<Integer> channelsToRead) throws IOException {
-		headerFile = fileLocation;
+		file = fileLocation;
 		respectiveModel = dataPointsModel;
 		this.channelsToRead = channelsToRead;
 	
@@ -83,20 +84,19 @@ public class DataReaderController extends Thread {
 	public void run() {
 //		headerFile = new File(fileLocationPath);
 		
-		if (headerFile.getName().toLowerCase().endsWith(".smr")) {
+		if (file.getName().toLowerCase().endsWith(".smr")) {
 			
 			readHeaderFromSMR();
-			respectiveModel.setChannelNames(channelNames);
 			
+			printPropertiesSMR();
+			printChannelInformationSMR(16);
 			
-			
-		} else if (headerFile.getName().toLowerCase().endsWith(".vhdr")) {			
+		} else if (file.getName().toLowerCase().endsWith(".vhdr")) {			
 			
 			readHeaderFromVHDR();
 			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-			respectiveModel.setChannelNames(channelNames);
 	
-			printProperties();
+			printPropertiesVHDR();
 			
 			if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 				
@@ -142,8 +142,153 @@ public class DataReaderController extends Thread {
 	}
 
 	
+	private void printPropertiesSMR() {
+
+		System.out.println("SystemID: " + respectiveModel.getSystemId());
+		System.out.println("UsPerTime: " + respectiveModel.getUsPerTime());
+		System.out.println("TimerPerADC: " + respectiveModel.getTimePerADC());
+		System.out.println("FileState: " + respectiveModel.getFileState());
+		System.out.println("FirstData: " + respectiveModel.getFirstData());
+		System.out.println("Channels: " + respectiveModel.getChannels());
+		System.out.println("ChanSize: " + respectiveModel.getChanSize());
+		System.out.println("ExtraData: " + respectiveModel.getExtraData());
+		System.out.println("BufferSize: " + respectiveModel.getBufferSize());
+		System.out.println("OsFormat: " + respectiveModel.getOsFormat());
+		System.out.println("MaxFTime: " + respectiveModel.getMaxFTime());
+		System.out.println("DTimeBase: " + respectiveModel.getdTimeBase());
+	}
+
 	private void readHeaderFromSMR() {
-		// TODO Auto-generated method stub
+		try {
+			dataFile = new RandomAccessFile(file, "rw");
+			FileChannel inChannel = dataFile.getChannel();
+			
+			// Saves the first 512 byte for the file header
+			ByteBuffer buf = ByteBuffer.allocate(60);
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+		
+			int bytesRead = inChannel.read(buf);
+
+			//Make buffer ready for read
+			buf.flip();
+			
+			// ************** Get File Header Information **************
+			
+			respectiveModel.setSystemId(buf.getShort());
+			
+			// We skip copyright and creator information
+			buf.position(buf.position() + 18);
+			
+			respectiveModel.setUsPerTime(buf.getShort());
+			respectiveModel.setTimePerADC(buf.getShort());
+			respectiveModel.setFileState(buf.getShort());
+			respectiveModel.setFirstData(buf.getInt());
+			respectiveModel.setChannels(buf.getShort());
+			respectiveModel.setChanSize(buf.getShort());
+			respectiveModel.setExtraData(buf.getShort());
+			respectiveModel.setBufferSize(buf.getShort());
+			respectiveModel.setOsFormat(buf.getShort());
+			respectiveModel.setMaxFTime(buf.getInt());
+			respectiveModel.setdTimeBase(buf.getDouble());
+			
+
+			if (respectiveModel.getSystemId() < 6) {
+				respectiveModel.setdTimeBase(1e-6);
+			}
+			
+			// ************** Get Channel Header Information **************
+			
+			for (int i = 0; i < respectiveModel.getChannels(); i++) {
+
+				// Offset due to file header and preceding channel headers
+				int offset = 512 + (140 * (i));
+				
+				inChannel.position(offset);
+				buf = ByteBuffer.allocate(160);
+				buf.order(ByteOrder.LITTLE_ENDIAN);
+				bytesRead = inChannel.read(buf);
+				buf.flip();
+				
+				respectiveModel.addDelSize((int) buf.getShort());
+				respectiveModel.addNextDelBlock(buf.getInt());
+				respectiveModel.addFirstBlock(buf.getInt());
+				respectiveModel.addLastBlock(buf.getInt());
+				respectiveModel.addBlocks((int) buf.getShort());
+				respectiveModel.addnExtra((int) buf.getShort());
+				respectiveModel.addPreTrig((int) buf.getShort());
+				respectiveModel.addFree0((int) buf.getShort());
+				respectiveModel.addPhySz((int) buf.getShort());
+				respectiveModel.addMaxData((int) buf.getShort()); // 26
+
+				// Set new position, because we skip reading the comment
+				buf.position(buf.position() + (1 + 71)); // 98
+
+				respectiveModel.addMaxChanTime(buf.getInt());
+				respectiveModel.addlChanDvd(buf.getInt());
+				respectiveModel.addPhyChan((int) buf.getShort()); // 108
+
+				int actPos = buf.position();
+				byte[] bytes = new byte[9];
+				buf.get(bytes, 0, 9);
+
+				String fileString = new String(bytes, StandardCharsets.UTF_8);
+				fileString = fileString.trim();
+
+				String tmp = "untitled";
+				int diff = 0;
+				for (int y = tmp.length() - 1; y > 0; y--) {
+					if ((tmp.charAt(y) == fileString.charAt(y))) {
+						diff = y;
+					}
+				}
+				fileString = fileString.substring(0, diff);
+
+				respectiveModel.addTitel(fileString);
+				buf.position(actPos + (1 + 9));
+
+				respectiveModel.addIdealRate(buf.getFloat());
+				respectiveModel.addKind((int) buf.get());
+				respectiveModel.addPad((int) buf.get());
+
+				if (respectiveModel.getKind(i) == 1) {
+					respectiveModel.addScale(buf.getFloat());
+					respectiveModel.addOffset(buf.getFloat());
+
+					// Set new position, because we skip reading units
+					buf.position(buf.position() + (1 + 5));
+
+					if (respectiveModel.getSystemId() < 6) {
+						respectiveModel.addDivide((int) buf.getShort());
+					} else {
+						respectiveModel.addInterleave((int) buf.getShort());
+					}
+				} else {
+					respectiveModel.addScale(1);
+					respectiveModel.addOffset(0);
+				}
+
+			}
+			
+			// Get the number of channels
+			LinkedList<Integer> kind = respectiveModel.getListOfKind(); 
+			int tmp = respectiveModel.getNumberOfChannels();
+			
+			for (int i = 0; i < kind.size(); i++) {
+				if (kind.get(i) == 1) {
+					tmp++;
+				}
+			}
+			respectiveModel.setNumberOfChannels(tmp);
+			
+			dataFile.close();
+			
+			
+		} catch (FileNotFoundException e) {
+			System.err.println("No file found on current location.");
+//			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -152,7 +297,7 @@ public class DataReaderController extends Thread {
 	 */
 	private void readHeaderFromVHDR() {
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(headerFile));
+			BufferedReader in = new BufferedReader(new FileReader(file));
 			String zeile = null;
 			String dataFileLocation = null;
 			
@@ -160,13 +305,13 @@ public class DataReaderController extends Thread {
 				
 				// Open DataFile
 				if (zeile.startsWith("DataFile=")) {
-					dataFileLocation = headerFile.getParent() + File.separator + zeile.substring(9);
+					dataFileLocation = file.getParent() + File.separator + zeile.substring(9);
 					dataFile = new RandomAccessFile(dataFileLocation, "rw");
 				}
 				
 				// Open MarkerFile
 				if (zeile.startsWith("MarkerFile=")) {
-					markerFile = new File(headerFile.getParent() + File.separator + zeile.substring(11));
+					markerFile = new File(file.getParent() + File.separator + zeile.substring(11));
 				}
 				
 				// Read DataFormat
@@ -271,6 +416,7 @@ public class DataReaderController extends Thread {
 						countChannels++;
 					}
 				}
+				respectiveModel.setChannelNames(channelNames);
 											
 			}
 			
@@ -567,7 +713,7 @@ public class DataReaderController extends Thread {
 	/**
 	 * Testfunction: Proof manually, if properties are correct.
 	 */
-	private void printProperties() {
+	private void printPropertiesVHDR() {
 		
 		System.out.println("DataFormat: " + dataFormat);
 		System.out.println("DataOrientation: " + dataOrientation);
@@ -590,6 +736,37 @@ public class DataReaderController extends Thread {
 		
 		System.out.println("SamplingRate in Hertz: " + respectiveModel.getSamplingRateConvertedToHertz());
 		
+	}
+	
+	/**
+	 * Returns all channel information for the given parameter.
+	 * @param channel
+	 * 			the channel from which you want to get the channel information.
+	 */
+	private void printChannelInformationSMR(int channel) {
+		System.out.println("NextDelBlock: " + respectiveModel.getNextDelBlock(channel));
+		System.out.println("FirstBlock: " + respectiveModel.getFirstBlock(channel));
+		System.out.println("LastBlock: " + respectiveModel.getLastBlock(channel));
+		System.out.println("Blocks: " + respectiveModel.getBlocks(channel));
+		System.out.println("nExtra: " + respectiveModel.getnExtra(channel));
+		System.out.println("PreTrig: " + respectiveModel.getPreTrig(channel));
+		System.out.println("free0: " + respectiveModel.getFree0(channel));
+		System.out.println("phySz: " + respectiveModel.getPhySz(channel));
+		System.out.println("MaxData: " + respectiveModel.getMaxData(channel));
+		System.out.println("MaxChanTime: " + respectiveModel.getMaxChanTime(channel));
+		System.out.println("lChanDvD: " + respectiveModel.getlChanDvd(channel));
+		System.out.println("phyChan: " + respectiveModel.getPhyChan(channel));
+		System.out.println("Title: " + respectiveModel.getTitel(channel));
+		System.out.println("IdealRate: " + respectiveModel.getIdealRate(channel));
+		System.out.println("Kind: " + respectiveModel.getKind(channel));
+		System.out.println("Pad: " + respectiveModel.getPad(channel));
+		System.out.println("Scale: " + respectiveModel.getScale(channel));
+		System.out.println("Offset: " + respectiveModel.getOffset(channel));		
+		
+		System.out.println("NumberOfChannels: " + respectiveModel.getNumberOfChannels());
+		
+		// To avoid errors we do not print divide- and interleave-information
+		//System.out.println("Divide: " + divide.get(channel));
 	}
 	
 	/**

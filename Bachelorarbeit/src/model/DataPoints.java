@@ -46,7 +46,7 @@ public class DataPoints {
 	// *** Brainvision Format ***
 	// [Common Infos]
 	private int numberOfDataPoints;
-	private int numberOfChannels;					// This variable will be used for the Spike2 Format as well
+	private int numberOfChannels = 0;					// This variable will be used for the Spike2 Format as well
 	private int samplingIntervall;
 	
 	// [Channel Infos]
@@ -59,45 +59,45 @@ public class DataPoints {
 	// *** Spike2 Format ***
 	
 	// Information from File Header
-	private static int systemId;
-	private static int usPerTime;
-	private static int timePerADC;
-	private static int fileState;
-	private static int firstData;
-	private static int channels;
-	private static int chanSize;
-	private static int extraData;
-	private static int bufferSize;
-	private static int osFormat;
-	private static int maxFTime;
-	private static double dTimeBase;
+	private int systemId;
+	private int usPerTime;
+	private int timePerADC;
+	private int fileState;
+	private int firstData;
+	private int channels;
+	private int chanSize;
+	private int extraData;
+	private int bufferSize;
+	private int osFormat;
+	private int maxFTime;
+	private double dTimeBase;
 
 	// Information from Channel Header
 
 	// We dont know the exact number of channels. This is why we create lists,
 	// which will be filled up. Example: All information for channel one are in
 	// list position zero etc..
-	private static LinkedList<Integer> delSize = new LinkedList<Integer>();
-	private static LinkedList<Integer> nextDelBlock = new LinkedList<Integer>();
-	private static LinkedList<Integer> firstBlock = new LinkedList<Integer>();
-	private static LinkedList<Integer> lastBlock = new LinkedList<Integer>();
-	private static LinkedList<Integer> blocks = new LinkedList<Integer>();
-	private static LinkedList<Integer> nExtra = new LinkedList<Integer>();
-	private static LinkedList<Integer> preTrig = new LinkedList<Integer>();
-	private static LinkedList<Integer> free0 = new LinkedList<Integer>();
-	private static LinkedList<Integer> phySz = new LinkedList<Integer>();
-	private static LinkedList<Integer> maxData = new LinkedList<Integer>();
-	private static LinkedList<Integer> maxChanTime = new LinkedList<Integer>();
-	private static LinkedList<Integer> lChanDvd = new LinkedList<Integer>();
-	private static LinkedList<Integer> phyChan = new LinkedList<Integer>();
-	private static LinkedList<String> titel = new LinkedList<String>();
-	private static LinkedList<Float> idealRate = new LinkedList<Float>();
-	private static LinkedList<Integer> kind = new LinkedList<Integer>();
-	private static LinkedList<Integer> pad = new LinkedList<Integer>();
-	private static LinkedList<Float> scale = new LinkedList<Float>();
-	private static LinkedList<Float> offset = new LinkedList<Float>();
-	private static LinkedList<Integer> divide = new LinkedList<Integer>();
-	private static LinkedList<Integer> interleave = new LinkedList<Integer>();
+	private LinkedList<Integer> delSize = new LinkedList<Integer>();
+	private LinkedList<Integer> nextDelBlock = new LinkedList<Integer>();
+	private LinkedList<Integer> firstBlock = new LinkedList<Integer>();
+	private LinkedList<Integer> lastBlock = new LinkedList<Integer>();
+	private LinkedList<Integer> blocks = new LinkedList<Integer>();
+	private LinkedList<Integer> nExtra = new LinkedList<Integer>();
+	private LinkedList<Integer> preTrig = new LinkedList<Integer>();
+	private LinkedList<Integer> free0 = new LinkedList<Integer>();
+	private LinkedList<Integer> phySz = new LinkedList<Integer>();
+	private LinkedList<Integer> maxData = new LinkedList<Integer>();
+	private LinkedList<Integer> maxChanTime = new LinkedList<Integer>();
+	private LinkedList<Integer> lChanDvd = new LinkedList<Integer>();
+	private LinkedList<Integer> phyChan = new LinkedList<Integer>();
+	private LinkedList<String> titel = new LinkedList<String>();
+	private LinkedList<Float> idealRate = new LinkedList<Float>();
+	private LinkedList<Integer> kind = new LinkedList<Integer>();
+	private LinkedList<Integer> pad = new LinkedList<Integer>();
+	private LinkedList<Float> scale = new LinkedList<Float>();
+	private LinkedList<Float> offset = new LinkedList<Float>();
+	private LinkedList<Integer> divide = new LinkedList<Integer>();
+	private LinkedList<Integer> interleave = new LinkedList<Integer>();
 	
 	
 	// *** Spike2 Format ***
@@ -333,463 +333,512 @@ public class DataPoints {
 	/**
 	 * @return the systemId
 	 */
-	public static int getSystemId() {
+	public int getSystemId() {
 		return systemId;
 	}
 
 	/**
 	 * @param systemId the systemId to set
 	 */
-	public static void setSystemId(int systemId) {
-		DataPoints.systemId = systemId;
+	public void setSystemId(int systemId) {
+		this.systemId = systemId;
 	}
 
 	/**
 	 * @return the usPerTime
 	 */
-	public static int getUsPerTime() {
+	public int getUsPerTime() {
 		return usPerTime;
 	}
 
 	/**
 	 * @param usPerTime the usPerTime to set
 	 */
-	public static void setUsPerTime(int usPerTime) {
-		DataPoints.usPerTime = usPerTime;
+	public void setUsPerTime(int usPerTime) {
+		this.usPerTime = usPerTime;
 	}
 
 	/**
 	 * @return the timePerADC
 	 */
-	public static int getTimePerADC() {
+	public int getTimePerADC() {
 		return timePerADC;
 	}
 
 	/**
 	 * @param timePerADC the timePerADC to set
 	 */
-	public static void setTimePerADC(int timePerADC) {
-		DataPoints.timePerADC = timePerADC;
+	public void setTimePerADC(int timePerADC) {
+		this.timePerADC = timePerADC;
 	}
 
 	/**
 	 * @return the fileState
 	 */
-	public static int getFileState() {
+	public int getFileState() {
 		return fileState;
 	}
 
 	/**
 	 * @param fileState the fileState to set
 	 */
-	public static void setFileState(int fileState) {
-		DataPoints.fileState = fileState;
+	public void setFileState(int fileState) {
+		this.fileState = fileState;
 	}
 
 	/**
 	 * @return the firstData
 	 */
-	public static int getFirstData() {
+	public int getFirstData() {
 		return firstData;
 	}
 
 	/**
 	 * @param firstData the firstData to set
 	 */
-	public static void setFirstData(int firstData) {
-		DataPoints.firstData = firstData;
+	public void setFirstData(int firstData) {
+		this.firstData = firstData;
 	}
 
 	/**
 	 * @return the channels
 	 */
-	public static int getChannels() {
+	public int getChannels() {
 		return channels;
 	}
 
 	/**
 	 * @param channels the channels to set
 	 */
-	public static void setChannels(int channels) {
-		DataPoints.channels = channels;
+	public void setChannels(int channels) {
+		this.channels = channels;
 	}
 
 	/**
 	 * @return the chanSize
 	 */
-	public static int getChanSize() {
+	public int getChanSize() {
 		return chanSize;
 	}
 
 	/**
 	 * @param chanSize the chanSize to set
 	 */
-	public static void setChanSize(int chanSize) {
-		DataPoints.chanSize = chanSize;
+	public void setChanSize(int chanSize) {
+		this.chanSize = chanSize;
 	}
 
 	/**
 	 * @return the extraData
 	 */
-	public static int getExtraData() {
+	public int getExtraData() {
 		return extraData;
 	}
 
 	/**
 	 * @param extraData the extraData to set
 	 */
-	public static void setExtraData(int extraData) {
-		DataPoints.extraData = extraData;
+	public void setExtraData(int extraData) {
+		this.extraData = extraData;
 	}
 
 	/**
 	 * @return the bufferSize
 	 */
-	public static int getBufferSize() {
+	public int getBufferSize() {
 		return bufferSize;
 	}
 
 	/**
 	 * @param bufferSize the bufferSize to set
 	 */
-	public static void setBufferSize(int bufferSize) {
-		DataPoints.bufferSize = bufferSize;
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
 	}
 
 	/**
 	 * @return the osFormat
 	 */
-	public static int getOsFormat() {
+	public int getOsFormat() {
 		return osFormat;
 	}
 
 	/**
 	 * @param osFormat the osFormat to set
 	 */
-	public static void setOsFormat(int osFormat) {
-		DataPoints.osFormat = osFormat;
+	public void setOsFormat(int osFormat) {
+		this.osFormat = osFormat;
 	}
 
 	/**
 	 * @return the maxFTime
 	 */
-	public static int getMaxFTime() {
+	public int getMaxFTime() {
 		return maxFTime;
 	}
 
 	/**
 	 * @param maxFTime the maxFTime to set
 	 */
-	public static void setMaxFTime(int maxFTime) {
-		DataPoints.maxFTime = maxFTime;
+	public void setMaxFTime(int maxFTime) {
+		this.maxFTime = maxFTime;
 	}
 
 	/**
 	 * @return the dTimeBase
 	 */
-	public static double getdTimeBase() {
+	public double getdTimeBase() {
 		return dTimeBase;
 	}
 
 	/**
 	 * @param dTimeBase the dTimeBase to set
 	 */
-	public static void setdTimeBase(double dTimeBase) {
-		DataPoints.dTimeBase = dTimeBase;
+	public void setdTimeBase(double dTimeBase) {
+		this.dTimeBase = dTimeBase;
 	}
 
 	/**
-	 * @return the delSize
+	 * @return the delSize element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getDelSize() {
-		return delSize;
+	public int getDelSize(int pos) {
+		return delSize.get(pos);
 	}
 
 	/**
-	 * @param delSize the delSize to set
+	 * @param element the delSize element to set
 	 */
-	public static void setDelSize(LinkedList<Integer> delSize) {
-		DataPoints.delSize = delSize;
+	public void addDelSize(int element) {
+		this.delSize.add(element);
 	}
 
 	/**
-	 * @return the nextDelBlock
+	 * @return the nextDelBlock element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getNextDelBlock() {
-		return nextDelBlock;
+	public int getNextDelBlock(int pos) {
+		return nextDelBlock.get(pos);
 	}
 
 	/**
 	 * @param nextDelBlock the nextDelBlock to set
 	 */
-	public static void setNextDelBlock(LinkedList<Integer> nextDelBlock) {
-		DataPoints.nextDelBlock = nextDelBlock;
+	public void addNextDelBlock(int element) {
+		this.nextDelBlock.add(element);
 	}
 
 	/**
-	 * @return the firstBlock
+	 * @return the firstBlock element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getFirstBlock() {
-		return firstBlock;
+	public int getFirstBlock(int pos) {
+		return firstBlock.get(pos);
 	}
 
 	/**
 	 * @param firstBlock the firstBlock to set
 	 */
-	public static void setFirstBlock(LinkedList<Integer> firstBlock) {
-		DataPoints.firstBlock = firstBlock;
+	public void addFirstBlock(int element) {
+		this.firstBlock.add(element);
 	}
 
 	/**
-	 * @return the lastBlock
+	 * @return the lastBlock element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getLastBlock() {
-		return lastBlock;
+	public int getLastBlock(int pos) {
+		return lastBlock.get(pos);
 	}
 
 	/**
 	 * @param lastBlock the lastBlock to set
 	 */
-	public static void setLastBlock(LinkedList<Integer> lastBlock) {
-		DataPoints.lastBlock = lastBlock;
+	public void addLastBlock(int element) {
+		this.lastBlock.add(element);
 	}
 
 	/**
-	 * @return the blocks
+	 * @return the blocks element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getBlocks() {
-		return blocks;
+	public int getBlocks(int pos) {
+		return blocks.get(pos);
 	}
 
 	/**
 	 * @param blocks the blocks to set
 	 */
-	public static void setBlocks(LinkedList<Integer> blocks) {
-		DataPoints.blocks = blocks;
+	public void addBlocks(int element) {
+		this.blocks.add(element);
 	}
 
 	/**
-	 * @return the nExtra
+	 * @return the nExtra element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getnExtra() {
-		return nExtra;
+	public int getnExtra(int pos) {
+		return nExtra.get(pos);
 	}
 
 	/**
 	 * @param nExtra the nExtra to set
 	 */
-	public static void setnExtra(LinkedList<Integer> nExtra) {
-		DataPoints.nExtra = nExtra;
+	public void addnExtra(int element) {
+		this.nExtra.add(element);
 	}
 
 	/**
-	 * @return the preTrig
+	 * @return the preTrig element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getPreTrig() {
-		return preTrig;
+	public int getPreTrig(int pos) {
+		return preTrig.get(pos);
 	}
 
 	/**
 	 * @param preTrig the preTrig to set
 	 */
-	public static void setPreTrig(LinkedList<Integer> preTrig) {
-		DataPoints.preTrig = preTrig;
+	public void addPreTrig(int element) {
+		this.preTrig.add(element);
 	}
 
 	/**
-	 * @return the free0
+	 * @return the free0 element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getFree0() {
-		return free0;
+	public int getFree0(int pos) {
+		return free0.get(pos);
 	}
 
 	/**
 	 * @param free0 the free0 to set
 	 */
-	public static void setFree0(LinkedList<Integer> free0) {
-		DataPoints.free0 = free0;
+	public void addFree0(int element) {
+		this.free0.add(element);
 	}
 
 	/**
-	 * @return the phySz
+	 * @return the phySz element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getPhySz() {
-		return phySz;
+	public int getPhySz(int pos) {
+		return phySz.get(pos);
 	}
 
 	/**
 	 * @param phySz the phySz to set
 	 */
-	public static void setPhySz(LinkedList<Integer> phySz) {
-		DataPoints.phySz = phySz;
+	public void addPhySz(int element) {
+		this.phySz.add(element);
 	}
 
 	/**
-	 * @return the maxData
+	 * @return the maxData element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getMaxData() {
-		return maxData;
+	public int getMaxData(int pos) {
+		return maxData.get(pos);
 	}
 
 	/**
 	 * @param maxData the maxData to set
 	 */
-	public static void setMaxData(LinkedList<Integer> maxData) {
-		DataPoints.maxData = maxData;
+	public void addMaxData(int element) {
+		this.maxData.add(element);
 	}
 
 	/**
-	 * @return the maxChanTime
+	 * @return the maxChanTime element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getMaxChanTime() {
-		return maxChanTime;
+	public int getMaxChanTime(int pos) {
+		return maxChanTime.get(pos);
 	}
 
 	/**
 	 * @param maxChanTime the maxChanTime to set
 	 */
-	public static void setMaxChanTime(LinkedList<Integer> maxChanTime) {
-		DataPoints.maxChanTime = maxChanTime;
+	public void addMaxChanTime(int element) {
+		this.maxChanTime.add(element);
 	}
 
 	/**
-	 * @return the lChanDvd
+	 * @return the lChanDvd element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getlChanDvd() {
-		return lChanDvd;
+	public int getlChanDvd(int pos) {
+		return lChanDvd.get(pos);
 	}
 
 	/**
 	 * @param lChanDvd the lChanDvd to set
 	 */
-	public static void setlChanDvd(LinkedList<Integer> lChanDvd) {
-		DataPoints.lChanDvd = lChanDvd;
+	public void addlChanDvd(int element) {
+		this.lChanDvd.add(element);
 	}
 
 	/**
-	 * @return the phyChan
+	 * @return the phyChan element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getPhyChan() {
-		return phyChan;
+	public int getPhyChan(int pos) {
+		return phyChan.get(pos);
 	}
 
 	/**
 	 * @param phyChan the phyChan to set
 	 */
-	public static void setPhyChan(LinkedList<Integer> phyChan) {
-		DataPoints.phyChan = phyChan;
+	public void addPhyChan(int element) {
+		this.phyChan.add(element);
 	}
 
 	/**
-	 * @return the titel
+	 * @return the titel element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<String> getTitel() {
-		return titel;
+	public String getTitel(int pos) {
+		return titel.get(pos);
 	}
 
 	/**
 	 * @param titel the titel to set
 	 */
-	public static void setTitel(LinkedList<String> titel) {
-		DataPoints.titel = titel;
+	public void addTitel(String element) {
+		this.titel.add(element);
 	}
 
 	/**
-	 * @return the idealRate
+	 * @return the idealRate element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Float> getIdealRate() {
-		return idealRate;
+	public float getIdealRate(int pos) {
+		return idealRate.get(pos);
 	}
 
 	/**
 	 * @param idealRate the idealRate to set
 	 */
-	public static void setIdealRate(LinkedList<Float> idealRate) {
-		DataPoints.idealRate = idealRate;
+	public void addIdealRate(float element) {
+		this.idealRate.add(element);
 	}
 
 	/**
-	 * @return the kind
+	 * @return the kind element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getKind() {
-		return kind;
+	public int getKind(int pos) {
+		return kind.get(pos);
 	}
 
 	/**
 	 * @param kind the kind to set
 	 */
-	public static void setKind(LinkedList<Integer> kind) {
-		DataPoints.kind = kind;
+	public void addKind(int element) {
+		this.kind.add(element);
+	}
+	
+	/**
+	 * @return the whole LinkedList of Kinds
+	 */
+	public LinkedList<Integer> getListOfKind() {
+		return kind;
 	}
 
 	/**
-	 * @return the pad
+	 * @return the pad element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getPad() {
-		return pad;
+	public int getPad(int pos) {
+		return pad.get(pos);
 	}
 
 	/**
 	 * @param pad the pad to set
 	 */
-	public static void setPad(LinkedList<Integer> pad) {
-		DataPoints.pad = pad;
+	public void addPad(int element) {
+		this.pad.add(element);
 	}
 
 	/**
-	 * @return the scale
+	 * @return the scale element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Float> getScale() {
-		return scale;
+	public float getScale(int pos) {
+		return scale.get(pos);
 	}
 
 	/**
 	 * @param scale the scale to set
 	 */
-	public static void setScale(LinkedList<Float> scale) {
-		DataPoints.scale = scale;
+	public void addScale(float element) {
+		this.scale.add(element);
 	}
 
 	/**
-	 * @return the offset
+	 * @return the offset element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Float> getOffset() {
-		return offset;
+	public float getOffset(int pos) {
+		return offset.get(pos);
 	}
 
 	/**
 	 * @param offset the offset to set
 	 */
-	public static void setOffset(LinkedList<Float> offset) {
-		DataPoints.offset = offset;
+	public void addOffset(float element) {
+		this.offset.add(element);
 	}
 
 	/**
-	 * @return the divide
+	 * @return the divide element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getDivide() {
-		return divide;
+	public int getDivide(int pos) {
+		return divide.get(pos);
 	}
 
 	/**
 	 * @param divide the divide to set
 	 */
-	public static void setDivide(LinkedList<Integer> divide) {
-		DataPoints.divide = divide;
+	public void addDivide(int element) {
+		this.divide.add(element);
 	}
 
 	/**
-	 * @return the interleave
+	 * @return the interleave element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
 	 */
-	public static LinkedList<Integer> getInterleave() {
-		return interleave;
+	public int getInterleave(int pos) {
+		return interleave.get(pos);
 	}
 
 	/**
 	 * @param interleave the interleave to set
 	 */
-	public static void setInterleave(LinkedList<Integer> interleave) {
-		DataPoints.interleave = interleave;
+	public void addInterleave(int element) {
+		this.interleave.add(element);
 	}
 
 
