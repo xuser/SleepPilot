@@ -196,14 +196,14 @@ public class SupportVectorMaschineController extends Thread {
 			}
 			
 			// **** START OUTPUT ON DESKTOP *****
-			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
-			 
-		    Path file = null;
-			try {
-				file = Files.createFile(target);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+//			Path target = Paths.get("/Users/Nils/Desktop/Labels.txt");
+//			 
+//		    Path file = null;
+//			try {
+//				file = Files.createFile(target);
+//			} catch (IOException e1) {
+//				e1.printStackTrace();
+//			}
 			// **** END OUTPUT ON DESKTOP *****
 			
 			// Run over each feature vector
@@ -248,12 +248,12 @@ public class SupportVectorMaschineController extends Thread {
 			    respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
 			    
 			 // **** START OUTPUT ON DESKTOP *****
-			    String tmp = v + "";
-			    try {
-					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+//			    String tmp = v + "";
+//			    try {
+//					Files.write(file, tmp.getBytes(), StandardOpenOption.APPEND);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 			 // **** END OUTPUT ON DESKTOP *****
 			    
 			}

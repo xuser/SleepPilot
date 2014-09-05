@@ -68,9 +68,6 @@ public class FXStartController implements Initializable {
 	private File file;
 	private RandomAccessFile smrFile;
 	
-	@FXML ProgressBar progressBar;
-	@FXML ProgressIndicator progressIndicator;
-	
 	@FXML Button newProject;		
 	@FXML Button openProject;
 	@FXML Button createModel;
@@ -78,15 +75,6 @@ public class FXStartController implements Initializable {
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
 	@FXML Polygon createModelForm;
-	
-	@FXML Text label1;
-	@FXML Text label2;
-	@FXML Text label3;
-	@FXML Text label4;
-	
-	@FXML Separator separator1;
-	@FXML Separator separator2;
-	@FXML Separator separator3;
 	
 	
 	public FXStartController(Stage stage) {
@@ -115,7 +103,6 @@ public class FXStartController implements Initializable {
 		primaryStage.setTitle("Automatic Sleep Staging - Start");
 		
 		// Start settings
-		progressIndicator.setDisable(true);
 
 		newProjectForm.setVisible(false);
 		openProjectForm.setVisible(false);
@@ -130,19 +117,6 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(320);
-				
-				label1.setVisible(true);
-				label2.setVisible(true);
-				label3.setVisible(true);
-				label4.setVisible(true);
-				
-				progressBar.setVisible(true);
-				progressIndicator.setVisible(true);
-				
-				separator1.setVisible(true);
-				separator2.setVisible(true);
-				separator3.setVisible(true);
 				
 				openProjectForm.setVisible(false);
 				createModelForm.setVisible(false);
@@ -182,25 +156,11 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(320);
 				
-				label1.setVisible(false);
-				label2.setVisible(false);
-				label3.setVisible(false);
-				label4.setVisible(false);
-				
-				progressBar.setVisible(false);
-				progressIndicator.setVisible(false);
-				
-				separator1.setVisible(false);
-				separator2.setVisible(false);
-				separator3.setVisible(false);
-								
 				newProjectForm.setVisible(false);
 				createModelForm.setVisible(false);
 				
 				openProjectForm.setVisible(true);
-				primaryStage.setHeight(440);
 				
 				trainMode = false;
 				
@@ -227,25 +187,11 @@ public class FXStartController implements Initializable {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				primaryStage.setHeight(320);
-
-				label1.setVisible(true);
-				label2.setVisible(true);
-				label3.setVisible(true);
-				label4.setVisible(true);
-				
-				progressBar.setVisible(true);
-				progressIndicator.setVisible(true);
-				
-				separator1.setVisible(true);
-				separator2.setVisible(true);
-				separator3.setVisible(true);
 				
 				newProjectForm.setVisible(false);
 				openProjectForm.setVisible(false);
 				
 				createModelForm.setVisible(true);
-				primaryStage.setHeight(440);
 				
 				trainMode = true;
 				
@@ -261,8 +207,6 @@ public class FXStartController implements Initializable {
 				file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
-					progressIndicator.setVisible(true);	
-					progressIndicator.setProgress(-1);
 					
 					Task<Void> task = new Task<Void>() {
 			
@@ -438,10 +382,6 @@ public class FXStartController implements Initializable {
 				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
 				if (channelNumbersToRead.size() == 1) {
 					
-					primaryStage.setHeight(440);
-		
-					progressIndicator.setVisible(true);	
-					progressIndicator.setProgress(-1);
 					
 					Task<Void> task = new Task<Void>() {
 			
@@ -470,11 +410,6 @@ public class FXStartController implements Initializable {
 				
 				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
 				if (channelNumbersToRead.size() == 1) {
-				
-					primaryStage.setHeight(440);
-		
-					progressIndicator.setVisible(true);	
-					progressIndicator.setProgress(-1);
 					
 					Task<Void> task = new Task<Void>() {
 			
@@ -496,20 +431,6 @@ public class FXStartController implements Initializable {
 			}
 		}
 		
-		
-	}
-	
-
-	public void setProgressBar(double value) {
-		progressBar.setProgress(value);
-		
-		if (value == 1.0) {
-			progressIndicator.setVisible(false);
-		}
-	}
-	
-	public void setProgressIndicator(double value) {
-		progressIndicator.setProgress(value);
 		
 	}
 	
