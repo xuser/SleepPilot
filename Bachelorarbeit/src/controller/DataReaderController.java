@@ -117,7 +117,7 @@ public class DataReaderController extends Thread {
 			System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
 			System.out.println("MaxData for one block: " + respectiveModel.getMaxData(16));
 			
-			readSMRChannel(dataFile, channelsToRead.get(0), 0);
+			readSMRChannel(dataFile, channelsToRead.get(0), 1);
 			
 			//TODO: 1. Anzahl an Epochen auslesen (getNumberOf30sEpochs, numberOfDataPoints)
 			//		2. Über alle Epochen iterieren
@@ -337,6 +337,7 @@ public class DataReaderController extends Thread {
 	}
 	
 	private void readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
+		tmpEpoch.clear();
 		
 		tmpEpoch.add((double) epoch);
 		
@@ -371,32 +372,52 @@ public class DataReaderController extends Thread {
 			System.out.println("CountBlock: " + countBlock);
 			
 			FileChannel inChannel = dataFile.getChannel();
-			inChannel =	inChannel.position(channelPosition + 20 + (sampleNumberInBlock * 2));								// + 20 because of the data block header
-			ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 2);					// * 2 because we have two bytes for each sample
+			inChannel =	inChannel.position(channelPosition);															
+			ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 4);					// * 2 because we have two bytes for each sample
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 			int bytesRead = inChannel.read(buf);
 			buf.flip();
 			
-			System.out.println("Sample: " + buf.getShort());
-			System.exit(1);
+			buf.position(buf.position() + 4);											// + 4 because we skip lastBlock element
+			channelPosition = buf.getInt();
+			buf.position(buf.position() + 12 + (sampleNumberInBlock * 2));				// + 12 because we skip channelNumbers and ItemsInBlock elements
 			
-			int nextBlock = respectiveModel.getFirstBlock(channel);
-			while (nextBlock != -1) {
-				 nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
+			int runIndex = (respectiveModel.getMaxData(channelsToRead.get(0)) - sampleNumberInBlock);
+			
+			if (runIndex > numberOfSamplesForOneEpoch) {
+				runIndex = numberOfSamplesForOneEpoch;
+				
+				for (int i = 0; i < runIndex; i++) {
+					tmpEpoch.add((double) buf.getShort());
+				}	
+			
+			} else {
+			
+				for (int i = 0; i < runIndex; i++) {
+					tmpEpoch.add((double) buf.getShort());
+				}		
+				
+				int nextBlock = channelPosition;
+				while (nextBlock != -1) {
+					 nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
+				}
 			}
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		for (int i = 0; i < tmpEpoch.size(); i++) {
+			System.out.println(i+ ": " + tmpEpoch.get(i));
+		}
 	}
 	
 	
-	private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock) {
+	private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock) throws IOException {
 		
-		
-		
-		buf.position(succBlock);
+		FileChannel inChannel = dataFile.getChannel();
+		inChannel =	inChannel.position(succBlock);
 		int lastBlock = buf.getInt();
 		int nextBlock = buf.getInt();
 
@@ -405,9 +426,13 @@ public class DataReaderController extends Thread {
 		int itemsInBlock = buf.getShort();
 
 		int x = 0;
-		while (x < itemsInBlock) {
-			System.out.println("Value: " + buf.getShort());
+		while ((x < itemsInBlock) && (tmpEpoch.size() < (numberOfSamplesForOneEpoch + 1))) {
+			tmpEpoch.add((double) buf.getShort());
 			x++;
+		}
+		
+		if (tmpEpoch.size() == (numberOfSamplesForOneEpoch + 1)) {
+			nextBlock = -1;
 		}
 
 		// Header information for this block
@@ -415,8 +440,7 @@ public class DataReaderController extends Thread {
 //		System.out.println("NextBlock: " + nextBlock);
 //
 //		System.out.println("ChannelNumer: " + channelNumber);
-//		System.out.println("Items in Block: " + itemsInBlock);
-		
+//		System.out.println("Items in Block: " + itemsInBlock);	
 		
 		return nextBlock;
 	}
