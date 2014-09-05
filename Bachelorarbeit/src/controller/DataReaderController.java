@@ -69,6 +69,10 @@ public class DataReaderController extends Thread {
 	String[] channelNames;
 	int countChannels = 0;
 	
+	// Temp Epoch. Will be cleared after reading one epoch
+	LinkedList<Double> tmpEpoch = new LinkedList<Double>();
+	
+	
 	/**
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
@@ -89,8 +93,31 @@ public class DataReaderController extends Thread {
 			readHeaderFromSMR();
 			int tmp = (int) (respectiveModel.getlChanDvd(channelsToRead.get(0)) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
 			respectiveModel.setSamplingIntervall(tmp);
-
+			
+			int numberOfDataPoints = ((respectiveModel.getBlocks(channelsToRead.get(0)) - 1) * respectiveModel.getMaxData(channelsToRead.get(0)) + respectiveModel.getSizeOfLastBlock(channelsToRead.get(0))); 
+			respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+			
 			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+
+			/*if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
+				for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+					for (int i = 0; i < channelsToRead.size(); i++) {
+						
+						// x is the epoch, which have to be calculated
+						// i is the channel, which have to be calculated
+						
+						readDataFileInt(dataFile, channelsToRead.get(i), x);			
+					}
+				}
+				respectiveModel.setReadingComplete(true);
+			} else {
+				System.err.println("Channel #" + channelsToRead.get(0) + ": No waveform data found!");
+			}*/
+			
+			System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
+			System.out.println("MaxData for one block: " + respectiveModel.getMaxData(16));
+			
+			readSMRChannel(dataFile, channelsToRead.get(0), 0);
 			
 			//TODO: 1. Anzahl an Epochen auslesen (getNumberOf30sEpochs, numberOfDataPoints)
 			//		2. Über alle Epochen iterieren
@@ -116,7 +143,7 @@ public class DataReaderController extends Thread {
 								
 								// x is the epoch, which have to be calculated
 								// i is the channel, which have to be calculated
-								readDataFileInt(dataFile, channelsToRead.get(i), x);			
+								readSMRChannel(dataFile, channelsToRead.get(i), x);
 							}
 						}
 						respectiveModel.setReadingComplete(true);
@@ -274,6 +301,15 @@ public class DataReaderController extends Thread {
 					respectiveModel.addScale(1);
 					respectiveModel.addOffset(0);
 				}
+				
+				inChannel.position(respectiveModel.getLastBlock(i) + 18);
+				buf = ByteBuffer.allocate(4);
+				buf.order(ByteOrder.LITTLE_ENDIAN);
+				bytesRead = inChannel.read(buf);
+				buf.flip();
+				
+				int sizeOfLastBlock = buf.getShort();
+				respectiveModel.addSizeOfLastBlock(sizeOfLastBlock);
 
 			}
 			
@@ -288,7 +324,7 @@ public class DataReaderController extends Thread {
 			}
 			respectiveModel.setNumberOfChannels(tmp);
 			
-			dataFile.close();
+//			dataFile.close();
 			
 			
 		} catch (FileNotFoundException e) {
@@ -300,28 +336,65 @@ public class DataReaderController extends Thread {
 		
 	}
 	
-	private void readSMRChannel(int channel, int epoch) {
+	private void readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
+		
+		tmpEpoch.add((double) epoch);
+		
+		int block = (epoch * numberOfSamplesForOneEpoch)/respectiveModel.getMaxData(channelsToRead.get(0));
+		System.out.println("Block: " + block);
 			
-		if (respectiveModel.getKind(channel) == 1) {
-
-			// long start = new Date().getTime();
-			// long time;
-
-			int nextBlock = respectiveModel.getFirstBlock(channel);
-			while (nextBlock != -1) {
-				nextBlock = getWholeDataFromOneChannel(buf, channel, nextBlock);
-			}
-			// time = new Date().getTime() - start;
-			// System.out.println("RunTime: " + time);
-
-		} else {
-			System.err.println("Channel #" + channel + ": No waveform data found!");
+		int sampleNumberInBlock = 0;
+		if (epoch != 0) {
+			sampleNumberInBlock = (epoch * numberOfSamplesForOneEpoch) - ((epoch-1) * respectiveModel.getMaxData(channelsToRead.get(0)));	//epoche*15000-((epoche-1)*15350)
 		}
 			
+		System.out.println("SampleNumberInBlock: " + sampleNumberInBlock);
+		
+		int countBlock = 0;
+		int channelPosition = respectiveModel.getFirstBlock(channel);
+		
+		try {
+			
+			while (block != countBlock) {
+				
+				FileChannel inChannel = dataFile.getChannel();
+				inChannel =	inChannel.position(channelPosition + 4);
+				ByteBuffer buf = ByteBuffer.allocate(4);
+				buf.order(ByteOrder.LITTLE_ENDIAN);
+				int bytesRead = inChannel.read(buf);
+				buf.flip();
+				
+				channelPosition = buf.getInt();
+				countBlock++;
+				
+			}
+			System.out.println("CountBlock: " + countBlock);
+			
+			FileChannel inChannel = dataFile.getChannel();
+			inChannel =	inChannel.position(channelPosition + 20 + (sampleNumberInBlock * 2));								// + 20 because of the data block header
+			ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 2);					// * 2 because we have two bytes for each sample
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+			int bytesRead = inChannel.read(buf);
+			buf.flip();
+			
+			System.out.println("Sample: " + buf.getShort());
+			System.exit(1);
+			
+			int nextBlock = respectiveModel.getFirstBlock(channel);
+			while (nextBlock != -1) {
+				 nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
 	private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock) {
+		
+		
 		
 		buf.position(succBlock);
 		int lastBlock = buf.getInt();
@@ -338,11 +411,11 @@ public class DataReaderController extends Thread {
 		}
 
 		// Header information for this block
-		System.out.println("LastBlock: " + lastBlock);
-		System.out.println("NextBlock: " + nextBlock);
-
-		System.out.println("ChannelNumer: " + channelNumber);
-		System.out.println("Items in Block: " + itemsInBlock);
+//		System.out.println("LastBlock: " + lastBlock);
+//		System.out.println("NextBlock: " + nextBlock);
+//
+//		System.out.println("ChannelNumer: " + channelNumber);
+//		System.out.println("Items in Block: " + itemsInBlock);
 		
 		
 		return nextBlock;

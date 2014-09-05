@@ -98,8 +98,12 @@ public class DataPoints {
 	private LinkedList<Float> offset = new LinkedList<Float>();
 	private LinkedList<Integer> divide = new LinkedList<Integer>();
 	private LinkedList<Integer> interleave = new LinkedList<Integer>();
+	private LinkedList<Integer> sizeOfLastBlock = new LinkedList<Integer>();
 	
-	
+	/**
+	 * The position in the list corresponds to the epoch. The entry is the channel position in the file.
+	 */
+	private LinkedList<Integer> posOfEpochsInFile = new LinkedList<Integer>();
 	// *** Spike2 Format ***
 	
 	
@@ -839,6 +843,38 @@ public class DataPoints {
 	 */
 	public void addInterleave(int element) {
 		this.interleave.add(element);
+	}
+	
+	/**
+	 * @return the sizeOfLastBlock element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
+	 */
+	public int getSizeOfLastBlock(int pos) {
+		return sizeOfLastBlock.get(pos);
+	}
+
+	/**
+	 * @param sizeOfLastBlock the sizeOfLastBlock to set
+	 */
+	public void addSizeOfLastBlock(int element) {
+		this.sizeOfLastBlock.add(element);
+	}
+	
+	/**
+	 * @return the posOfEpochsInFile element at the specified pos
+	 * @param pos
+	 * 			the position in LinkedList
+	 */
+	public int getPosOfEpochsInFile(int pos) {
+		return posOfEpochsInFile.get(pos);
+	}
+
+	/**
+	 * @param posOfEpochsInFile the posOfEpochsInFile to set
+	 */
+	public void addPosOfEpochsInFile(int element) {
+		this.posOfEpochsInFile.add(element);
 	}
 
 
