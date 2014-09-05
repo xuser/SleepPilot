@@ -70,7 +70,7 @@ public class DataReaderController extends Thread {
 	int countChannels = 0;
 	
 	// Temp Epoch. Will be cleared after reading one epoch
-	LinkedList<Double> tmpEpoch = new LinkedList<Double>();
+	LinkedList<Double> tmpEpoch;
 	
 	
 	/**
@@ -99,30 +99,25 @@ public class DataReaderController extends Thread {
 			
 			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
 
-			/*if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
+			if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
 				for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
 					for (int i = 0; i < channelsToRead.size(); i++) {
 						
 						// x is the epoch, which have to be calculated
 						// i is the channel, which have to be calculated
-						
-						readDataFileInt(dataFile, channelsToRead.get(i), x);			
+						readSMRChannel(dataFile, channelsToRead.get(i), x);
+		
 					}
 				}
 				respectiveModel.setReadingComplete(true);
 			} else {
 				System.err.println("Channel #" + channelsToRead.get(0) + ": No waveform data found!");
-			}*/
+			}
 			
 			System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
 			System.out.println("MaxData for one block: " + respectiveModel.getMaxData(16));
-			
-			readSMRChannel(dataFile, channelsToRead.get(0), 1);
-			
-			//TODO: 1. Anzahl an Epochen auslesen (getNumberOf30sEpochs, numberOfDataPoints)
-			//		2. Über alle Epochen iterieren
-			//		3. Epochenweises Channelweises einlesen (Methode unten ergänzen)
-									
+			System.out.println("#30s Epochs: " + respectiveModel.getNumberOf30sEpochs());
+						
 			printPropertiesSMR();
 			printChannelInformationSMR(16);
 			
@@ -337,20 +332,19 @@ public class DataReaderController extends Thread {
 	}
 	
 	private void readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
-		tmpEpoch.clear();
+		tmpEpoch = new LinkedList<Double>();
 		
 		tmpEpoch.add((double) epoch);
 		
 		int block = (epoch * numberOfSamplesForOneEpoch)/respectiveModel.getMaxData(channelsToRead.get(0));
-		System.out.println("Block: " + block);
 			
 		int sampleNumberInBlock = 0;
-		if (epoch != 0) {
-			sampleNumberInBlock = (epoch * numberOfSamplesForOneEpoch) - ((epoch-1) * respectiveModel.getMaxData(channelsToRead.get(0)));	//epoche*15000-((epoche-1)*15350)
+		if (epoch != 0) {			
+			sampleNumberInBlock = (epoch - 1) * numberOfSamplesForOneEpoch;
+			sampleNumberInBlock = sampleNumberInBlock - (block * respectiveModel.getMaxData(channelsToRead.get(0)));
+			sampleNumberInBlock = sampleNumberInBlock + numberOfSamplesForOneEpoch;
 		}
-			
-		System.out.println("SampleNumberInBlock: " + sampleNumberInBlock);
-		
+					
 		int countBlock = 0;
 		int channelPosition = respectiveModel.getFirstBlock(channel);
 		
@@ -369,7 +363,6 @@ public class DataReaderController extends Thread {
 				countBlock++;
 				
 			}
-			System.out.println("CountBlock: " + countBlock);
 			
 			FileChannel inChannel = dataFile.getChannel();
 			inChannel =	inChannel.position(channelPosition);															
@@ -401,6 +394,9 @@ public class DataReaderController extends Thread {
 				while (nextBlock != -1) {
 					 nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
 				}
+				
+				respectiveModel.addRawEpoch(tmpEpoch);
+				
 			}
 			
 		} catch (IOException e) {
@@ -408,9 +404,6 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 		
-		for (int i = 0; i < tmpEpoch.size(); i++) {
-			System.out.println(i+ ": " + tmpEpoch.get(i));
-		}
 	}
 	
 	
@@ -427,7 +420,15 @@ public class DataReaderController extends Thread {
 
 		int x = 0;
 		while ((x < itemsInBlock) && (tmpEpoch.size() < (numberOfSamplesForOneEpoch + 1))) {
-			tmpEpoch.add((double) buf.getShort());
+			Double value = (double) (buf.getShort() * respectiveModel.getScale(channelsToRead.get(0)));
+			value = value / 6553.6;
+			value = value + respectiveModel.getOffset(channelsToRead.get(0));
+			
+			// Rounded a mantisse with value 3
+			double rValue = Math.round(value * Math.pow(10d, 3));
+			rValue = rValue / Math.pow(10d, 3);
+			tmpEpoch.add(rValue);
+			
 			x++;
 		}
 		

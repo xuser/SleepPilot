@@ -30,6 +30,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooserBuilder;
 import javafx.stage.Stage;
 
 
@@ -153,21 +154,25 @@ public class FXStartController implements Initializable {
 				FileChooser fileChooser = new FileChooser();
 				
 				// Set extension filter
+				FileChooser.ExtensionFilter extFilter0 = new FileChooser.ExtensionFilter("All Files", "*.vhdr", "*.smr", "*.VHDR", "*.SMR");
 				FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter(
-							"BrainVision files (*.vhdr)", "*.vhdr");
+							"BrainVision files (*.vhdr)", "*.vhdr", "*.VHDR");
 				
 				FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter(
-						"Spike2 files (*.smr)", "*.smr");
+						"Spike2 files (*.smr)", "*.smr", "*.SMR");
 			
-				fileChooser.getExtensionFilters().add(extFilter1);
-				fileChooser.getExtensionFilters().add(extFilter2);
+				fileChooser.getExtensionFilters().addAll(extFilter0, extFilter1, extFilter2);
+				
+//				fileChooser.getExtensionFilters().add(extFilter1);
+//				fileChooser.getExtensionFilters().add(extFilter2);
 				
 				
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
 				
-				startAction();
-								
+				if (file != null) {
+					startAction();
+				} 			
 				
 			}
 		
@@ -203,13 +208,16 @@ public class FXStartController implements Initializable {
 				
 				// Set extension filter
 				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
-							"AutoScore files (*.as)", "*.as");
+							"AutoScore files (*.as)", "*.as", "*.AS");
 				fileChooser.getExtensionFilters().add(extFilter);
 				
 				
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
-								
+				
+				if (file != null) {
+
+				} 
 				
 			}
 		
@@ -245,27 +253,30 @@ public class FXStartController implements Initializable {
 				
 				// Set extension filter
 				FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
-							"Text files (*.txt)", "*.txt");
+							"Text files (*.txt)", "*.txt", "*.TXT");
 				fileChooser.getExtensionFilters().add(extFilter);
 				
 				
 				// Show open file dialog
 				file = fileChooser.showOpenDialog(null);
 				
-				progressIndicator.setVisible(true);	
-				progressIndicator.setProgress(-1);
+				if (file != null) {
+					progressIndicator.setVisible(true);	
+					progressIndicator.setProgress(-1);
+					
+					Task<Void> task = new Task<Void>() {
+			
+						@Override
+						protected Void call() throws Exception {
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							return null;
+						}
+			
+					};
+					
+					new Thread(task).start();
 				
-				Task<Void> task = new Task<Void>() {
-		
-					@Override
-					protected Void call() throws Exception {
-						MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
-						return null;
-					}
-		
-				};
-				
-				new Thread(task).start();
+				}
 				
 			}
 		

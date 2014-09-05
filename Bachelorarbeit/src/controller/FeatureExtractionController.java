@@ -156,6 +156,7 @@ public class FeatureExtractionController extends Thread {
 		
 		// This is necessary to set the correct pos in matrics.
 		int numberOfEpoch = filteredEpoch.poll().intValue();
+		System.out.println("Feature Extraction # : " + numberOfEpoch);
 		
 		if (dataMatrixCreated == false) {
 			// Create data matrics in modell to keep the calculated feature values.

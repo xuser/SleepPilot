@@ -107,6 +107,8 @@ public class FilterController extends Thread {
 	}
 	
 	private void filterRawEpoch(LinkedList<Double> rawEpoch) {
+		System.out.println("Size of RawEpoch: " + rawEpoch.size());
+		System.out.println("First Element: " + rawEpoch.get(0));
 		double numberOfEpoch = rawEpoch.poll();
 		
 		LinkedList<Double> tmpFilteredEpoch = new LinkedList<Double>();
