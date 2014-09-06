@@ -90,7 +90,7 @@ public class MainController extends Application {
 				}
 				
 				// ChannelNumbersToRead contains all channel numbers, which have to be calculated
-				DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
+				final DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
 								
 				FilterController filterController = new FilterController(dataPointsModel);
@@ -128,7 +128,7 @@ public class MainController extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						FXApplicationController appController = new FXApplicationController();
+						FXApplicationController appController = new FXApplicationController(dataReaderController);
 						primaryStage.close();
 					}
 				});

@@ -95,7 +95,8 @@ public class DataReaderController extends Thread {
 						
 						// x is the epoch, which have to be calculated
 						// i is the channel, which have to be calculated
-						readSMRChannel(dataFile, channelsToRead.get(i), x);
+						tmpEpoch = readSMRChannel(dataFile, channelsToRead.get(i), x);
+						respectiveModel.addRawEpoch(tmpEpoch);
 		
 					}
 				}
@@ -128,7 +129,8 @@ public class DataReaderController extends Thread {
 								
 								// x is the epoch, which have to be calculated
 								// i is the channel, which have to be calculated
-								readDataFileInt(dataFile, channelsToRead.get(i), x);
+								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
+								respectiveModel.addRawEpoch(epoch);
 							}
 						}
 						respectiveModel.setReadingComplete(true);
@@ -136,7 +138,8 @@ public class DataReaderController extends Thread {
 					case IEEE_FLOAT_32: 
 						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
 							for (int i = 0; i < channelsToRead.size(); i++) {
-								readDataFileFloat(dataFile, channelsToRead.get(i), x);			
+								LinkedList<Double> epoch = readDataFileFloat(dataFile, channelsToRead.get(i), x);
+								respectiveModel.addRawEpoch(epoch);
 							}
 						}
 						respectiveModel.setReadingComplete(true);
@@ -321,7 +324,7 @@ public class DataReaderController extends Thread {
 		
 	}
 	
-	private void readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
+	private LinkedList<Double> readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
 		tmpEpoch = new LinkedList<Double>();
 		
 		tmpEpoch.add((double) epoch);
@@ -385,7 +388,6 @@ public class DataReaderController extends Thread {
 					 nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
 				}
 				
-				respectiveModel.addRawEpoch(tmpEpoch);
 				
 			}
 			
@@ -393,6 +395,8 @@ public class DataReaderController extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		return tmpEpoch;
 		
 	}
 	
@@ -583,9 +587,12 @@ public class DataReaderController extends Thread {
 	 * @param dataFile file with data content
 	 * @param epoch
 	 * 			the epoch which have to be read. 
+	 * @return 
 	 */
-	private void readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {		
+	private LinkedList<Double> readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {		
 					
+		LinkedList<Double> tmpEpochInt = new LinkedList<Double>();
+		
 		try {
 			/* ---- Start just for testing ---- */
 //			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
@@ -596,13 +603,14 @@ public class DataReaderController extends Thread {
 //			long start = new Date().getTime();
 //			long time;
 			
-			LinkedList<Double> tmpEpoch = new LinkedList<Double>();
-			tmpEpoch.add((double) epochToRead);
+			tmpEpochInt.add((double) epochToRead);
 			
 			FileChannel inChannel = dataFile.getChannel();
 			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
 			
-			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch) * 2);
+			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch) * 2 * respectiveModel.getNumberOfChannels());
+			
+			
 			//ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 			
@@ -619,22 +627,22 @@ public class DataReaderController extends Thread {
 				
 				// Set the start position in the file
 				//buf.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
-				
+
 				while (buf.hasRemaining()) {
 					Double value = (buf.getShort() * channelResolution);
-					
+
 					// Rounded a mantisse with value 3
 					double rValue = Math.round(value * Math.pow(10d, 3));
 					rValue = rValue / Math.pow(10d, 3);
-					tmpEpoch.add(rValue);
+					
+					tmpEpochInt.add(rValue);
 					
 					// This is the next sample in this epoch for the given channel
 					if (buf.hasRemaining()) {
 						buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*2) - 2);
 					}	
 				}
-				
-				respectiveModel.addRawEpoch(tmpEpoch);
+
 				
 				buf.clear();
 //				inChannel.close();
@@ -687,35 +695,38 @@ public class DataReaderController extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
+		
+		return tmpEpochInt;
 	}
 	
 	/**
 	 * Reads the given data file and prints it on hard disk
 	 * 
 	 * @param dataFile
+	 * @return 
 	 */
-	private void readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
+	private LinkedList<Double> readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
+		
+		LinkedList<Double> tmpEpochFloat = new LinkedList<Double>();
+		
 		try {
 			/* ---- Start just for testing ---- */
 //			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
 //			FileWriter writer = new FileWriter(file, true);
 			/* ---- End just for testing ---- */
 			
-			LinkedList<Double> tmpEpoch = new LinkedList<Double>();
-			tmpEpoch.add((double) epochToRead);
+			tmpEpochFloat.add((double) epochToRead);
 			
 			FileChannel inChannel = dataFile.getChannel();
 			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4)) + (channelToRead * 4));
 			
-			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch * 4));
+			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels());
 			buf.order(ByteOrder.LITTLE_ENDIAN);
 
 			int bytesRead = inChannel.read(buf);
 			
 			// Make buffer ready for read
 			buf.flip();
-			
 			while (buf.hasRemaining()) {
 				Double value = (buf.getFloat() * channelResolution);
 				
@@ -723,15 +734,14 @@ public class DataReaderController extends Thread {
 				double rValue = Math.round(value * Math.pow(10d, 3));
 				rValue = rValue / Math.pow(10d, 3);
 				
-				tmpEpoch.add(rValue);
+				tmpEpochFloat.add(rValue);
 				
 				// This is the next sample in this epoch for the given channel
 				if (buf.hasRemaining()) {
 					buf.position(buf.position() + (respectiveModel.getNumberOfChannels()*4) - 4);
 				}
 			}
-			
-			respectiveModel.addRawEpoch(tmpEpoch);
+						
 			
 			buf.clear();
 			
@@ -792,7 +802,8 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 		
-		respectiveModel.setReadingComplete(true);
+		return tmpEpochFloat;
+		
 	}
 	
 	/**

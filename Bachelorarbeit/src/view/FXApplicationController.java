@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import controller.DataReaderController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -14,7 +15,8 @@ import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
 	
-	private Stage primaryStage; 
+	private Stage primaryStage;
+	private DataReaderController dataReaderController;
 	
 	private BorderPane mainGrid;
 	
@@ -22,8 +24,9 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML MenuItem showAdtVisualization;
 	
-	public FXApplicationController() {
+	public FXApplicationController(DataReaderController dataReaderController) {
 		primaryStage = new Stage();
+		this.dataReaderController = dataReaderController;
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));

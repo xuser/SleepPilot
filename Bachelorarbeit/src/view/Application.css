@@ -3,6 +3,10 @@
 	-fx-background-color: rgb(76,136,174);	
 }
 
+.appBackground{
+	-fx-background-color: white;
+}
+
 .startButtons{
 	-fx-background-color: rgb(76,136,174);
 	-fx-border-style: solid;
@@ -16,6 +20,33 @@
 
 .startButtons:pressed{
 	-fx-background-color: rgb(121,191,236);	
+}
+
+.startButtons:hover{
+	-fx-background-color: rgba(121,191,236,0.5);
+}
+
+.toolBarButtons{
+	-fx-background-color: rgb(76,136,174);
+	-fx-border-style: solid;
+	-fx-border-width: 1px 1px 1px 1px;
+	-fx-border-color: rgb(160,206,224);
+	-fx-border-radius: 2; 
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+	-fx-font-size: 12.0;
+}
+
+.toolBarButtons:pressed{
+	-fx-background-color: rgb(121,191,236);	
+}
+
+.toolBarButtons:hover{
+	-fx-background-color: rgba(121,191,236,0.5);
+}
+
+.separator .line{
+	-fx-background-color: white;
 }
 
 .popup {
@@ -39,6 +70,7 @@
     -fx-padding: 0;
     -fx-alignment: center;
     -fx-halignment: center;
+    -fx-animated: true;
 	
 }
 
@@ -46,6 +78,7 @@
     -fx-background-radius: 0, 0, 0, 0;
    	-fx-alignment: center;
     -fx-halignment: center;
+    -fx-animated: true;
 }
 
 .progress-bar .bar { 
@@ -53,6 +86,7 @@
     -fx-background-radius: 0, 0, 0, 0;
     -fx-alignment: center;
     -fx-halignment: center;
+    -fx-animated: true;
 }
 
 .polygon{
@@ -70,16 +104,47 @@
 	-fx-font-family: sans-serif;
 }
 
+.text-input{
+	-fx-text-fill: rgb(3,52,83);
+	-fx-font-family: sans-serif;
+	-fx-alignment: center;
+}
+
 .menuBar{
-	-fx-background-color: lightgray;
-	-fx-border-style: solid;
-    -fx-border-width: 0px 0px 1px 0px;
-    -fx-border-color: gray;
+	-fx-background-color: rgb(76,136,174);
+    -fx-text-fill: white;
+    
+}
+
+.menu-bar .label
+{
+    -fx-font-family: sans-serif;
+    -fx-text-fill: white;
+}
+
+.menu-item .label {
+  -fx-text-fill: rgb(20,61,87);
+}
+
+.menu-item:hover .label {
+  -fx-text-fill: white;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: white;
 }
 
 .toolBar{
-	-fx-background-color: lightgray;
+	-fx-background-color: rgb(76,136,174);
 	-fx-border-style: solid;
     -fx-border-width: 0px 0px 1px 0px;
-    -fx-border-color: gray;
+    -fx-border-color: rgb(3,52,83);
+}
+
+.statusBar{
+	-fx-background-color: rgba(76,136,174,0.8);
+	-fx-border-style: solid;
+    -fx-border-width: 1px 0px 0px 0px;
+    -fx-border-color: rgb(3,52,83);
+    -fx-text-fill: white;
 }
