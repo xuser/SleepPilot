@@ -82,7 +82,6 @@ public class FeatureExtractionController extends Thread {
 			// Create instance of LPC class
 			LPC lpcExtraction = new LPC(10);
 			
-			// TODO: Später muss in der GUI hier die Variable gesetzet werden, über welchen Channel die PE berechnet werden soll.
 			// Zurzeit wird lediglich über den 0ten Channel iteriert.
 			for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
 			

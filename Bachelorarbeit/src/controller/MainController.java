@@ -59,9 +59,7 @@ public class MainController extends Application {
 		
 		primaryStage = stage;
 		
-		// TODO: Ist hier nur testweise ausgeblendet.
 		//Create start controller
-		
 		dataPointsModel = new DataPoints();
 		featureExtractionModel = new FeatureExtraxtionValues();
 		startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
@@ -128,7 +126,7 @@ public class MainController extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						FXApplicationController appController = new FXApplicationController(dataReaderController);
+						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel);
 						primaryStage.close();
 					}
 				});

@@ -2,8 +2,11 @@ package view;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import model.DataPoints;
+import model.FeatureExtraxtionValues;
 import controller.DataReaderController;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,18 +18,21 @@ import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
 	
-	private Stage primaryStage;
 	private DataReaderController dataReaderController;
+	private DataPoints dataPointsModel;
+	private FeatureExtraxtionValues featureExtractionModel;
 	
-	private BorderPane mainGrid;
-	
+	private Stage primaryStage;
+	private BorderPane mainGrid;	
 	private Scene scene;
 	
 	@FXML MenuItem showAdtVisualization;
 	
-	public FXApplicationController(DataReaderController dataReaderController) {
+	public FXApplicationController(DataReaderController dataReaderController, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
 		primaryStage = new Stage();
 		this.dataReaderController = dataReaderController;
+		this.dataPointsModel = dataPointsModel;
+		this.featureExtractionModel = featureExtractionModel;
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
@@ -49,11 +55,11 @@ public class FXApplicationController implements Initializable{
 		primaryStage.show();
 		primaryStage.setTitle("Automatic Sleep Staging - Application");
 		
+		
 	}
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		
 	}
 	
 	@FXML

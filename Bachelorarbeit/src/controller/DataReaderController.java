@@ -184,6 +184,8 @@ public class DataReaderController extends Thread {
 	private void readHeaderFromSMR() {
 		try {
 			dataFile = new RandomAccessFile(file, "rw");
+			respectiveModel.setDataFile(dataFile);
+			
 			FileChannel inChannel = dataFile.getChannel();
 			
 			// Saves the first 512 byte for the file header
@@ -324,7 +326,7 @@ public class DataReaderController extends Thread {
 		
 	}
 	
-	private LinkedList<Double> readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
+	public LinkedList<Double> readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
 		tmpEpoch = new LinkedList<Double>();
 		
 		tmpEpoch.add((double) epoch);
@@ -455,6 +457,7 @@ public class DataReaderController extends Thread {
 				if (zeile.startsWith("DataFile=")) {
 					dataFileLocation = file.getParent() + File.separator + zeile.substring(9);
 					dataFile = new RandomAccessFile(dataFileLocation, "rw");
+					respectiveModel.setDataFile(dataFile);
 				}
 				
 				// Open MarkerFile
@@ -589,7 +592,7 @@ public class DataReaderController extends Thread {
 	 * 			the epoch which have to be read. 
 	 * @return 
 	 */
-	private LinkedList<Double> readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {		
+	public LinkedList<Double> readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {		
 					
 		LinkedList<Double> tmpEpochInt = new LinkedList<Double>();
 		
@@ -705,7 +708,7 @@ public class DataReaderController extends Thread {
 	 * @param dataFile
 	 * @return 
 	 */
-	private LinkedList<Double> readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
+	public LinkedList<Double> readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
 		
 		LinkedList<Double> tmpEpochFloat = new LinkedList<Double>();
 		

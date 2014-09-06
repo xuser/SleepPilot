@@ -1,5 +1,6 @@
 package model;
 
+import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.List;
 public class DataPoints {
 	
 	private Double[][] dataPoints;
+	
+	private RandomAccessFile dataFile;
 	
 	/**
 	 * This variable holds the status if the reader has finsihed his work
@@ -891,6 +894,20 @@ public class DataPoints {
 	 */
 	public void setReadingHeaderComplete(boolean readingHeaderComplete) {
 		this.readingHeaderComplete = readingHeaderComplete;
+	}
+
+	/**
+	 * @return the dataFile
+	 */
+	public RandomAccessFile getDataFile() {
+		return dataFile;
+	}
+
+	/**
+	 * @param dataFile the dataFile to set
+	 */
+	public void setDataFile(RandomAccessFile dataFile) {
+		this.dataFile = dataFile;
 	}
 
 
