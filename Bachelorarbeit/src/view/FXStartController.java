@@ -82,6 +82,10 @@ public class FXStartController implements Initializable {
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
 	@FXML Polygon createModelForm;
+	
+	@FXML Text text1;
+	@FXML Text text2;
+	@FXML Text text3;
 		
 	
 	public FXStartController(Stage stage, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
@@ -412,6 +416,10 @@ public class FXStartController implements Initializable {
 					};
 					
 					progressBar.setVisible(true);
+					newProject.setDisable(true);		
+					openProject.setDisable(true);
+					createModel.setDisable(true);
+					
 					new Thread(task).start();
 					
 					
@@ -443,6 +451,11 @@ public class FXStartController implements Initializable {
 					};
 									
 					progressBar.setVisible(true);
+					newProject.setDisable(true);		
+					openProject.setDisable(true);
+					createModel.setDisable(true);
+					
+										
 					new Thread(task).start();
 					
 
