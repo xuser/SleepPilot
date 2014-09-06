@@ -7,28 +7,16 @@ import help.DataType;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.math.BigDecimal;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
 import java.util.LinkedList;
 
-import sun.text.normalizer.CharTrie.FriendAgent;
 import model.DataPoints;
 
 public class DataReaderController extends Thread {
@@ -97,6 +85,8 @@ public class DataReaderController extends Thread {
 			int numberOfDataPoints = ((respectiveModel.getBlocks(channelsToRead.get(0)) - 1) * respectiveModel.getMaxData(channelsToRead.get(0)) + respectiveModel.getSizeOfLastBlock(channelsToRead.get(0))); 
 			respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
 			
+			respectiveModel.setReadingHeaderComplete(true);
+			
 			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
 
 			if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
@@ -138,7 +128,7 @@ public class DataReaderController extends Thread {
 								
 								// x is the epoch, which have to be calculated
 								// i is the channel, which have to be calculated
-								readSMRChannel(dataFile, channelsToRead.get(i), x);
+								readDataFileInt(dataFile, channelsToRead.get(i), x);
 							}
 						}
 						respectiveModel.setReadingComplete(true);
@@ -573,6 +563,8 @@ public class DataReaderController extends Thread {
 				respectiveModel.setChannelNames(channelNames);
 											
 			}
+			
+		respectiveModel.setReadingHeaderComplete(true);	
 			
 		in.close();
 			

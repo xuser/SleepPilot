@@ -60,7 +60,10 @@ public class MainController extends Application {
 		
 		// TODO: Ist hier nur testweise ausgeblendet.
 		//Create start controller
-		startController = new FXStartController(primaryStage);
+		
+		dataPointsModel = new DataPoints();
+		featureExtractionModel = new FeatureExtraxtionValues();
+		startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
 		
 		//Create application controller
 //		ApplicationController appController = new ApplicationController(primaryStage);
@@ -76,9 +79,6 @@ public class MainController extends Application {
 
 			// Creats a new controller which reads the declared file
 			try {							
-				
-				dataPointsModel = new DataPoints();
-				featureExtractionModel = new FeatureExtraxtionValues();
 	
 				for (int i = 0; i < channelNumbersToRead.size(); i++) {
 					String channel = channelNames[(channelNumbersToRead.get(i))];
@@ -105,11 +105,25 @@ public class MainController extends Application {
 								
 				while (supportVectorMaschineThreadStartedFlag == false) {
 					
+			    		if (dataPointsModel.isReadingHeaderComplete()) {
+			    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+			    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+		                	double progress = calcEpoch / epochs;
+		                	startController.setProgressBar(progress);
+			    		}
+					
 					if (featureExtractionModel.getReadingAndCalculatingDone()) {
 						
 						svmController.start();
 						supportVectorMaschineThreadStartedFlag = true;
 					}
+				}
+				
+				while(featureExtractionModel.getClassificationDone() == false) {
+	    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+                	double progress = calcEpoch / epochs;
+                	startController.setProgressBar(progress);
 				}
 				
 				/*

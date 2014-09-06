@@ -14,7 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import model.DataPoints;
+import model.FeatureExtraxtionValues;
 import controller.MainController;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -30,7 +33,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.FileChooserBuilder;
 import javafx.stage.Stage;
 
 
@@ -46,6 +48,7 @@ import javafx.stage.Stage;
 public class FXStartController implements Initializable {
 	
 	//MainController mainController;
+	private FXPopUp popUp = new FXPopUp();
 
 	private boolean trainMode = false;
 	private LinkedList<Integer> channelNumbersToRead = new LinkedList<Integer>();
@@ -57,6 +60,8 @@ public class FXStartController implements Initializable {
 	private static LinkedList<String> titel = new LinkedList<String>();
 	private static LinkedList<Integer> kind = new LinkedList<Integer>();
 
+	private DataPoints dataPointsModel;
+	private FeatureExtraxtionValues featureExtractionModel;
 	
 	// JavaFx components
 	private Stage primaryStage;
@@ -65,8 +70,9 @@ public class FXStartController implements Initializable {
 	
 	private Scene scene;
 	
-	private File file;
 	private RandomAccessFile smrFile;
+	
+	@FXML ProgressBar progressBar;
 	
 	@FXML Button newProject;		
 	@FXML Button openProject;
@@ -75,11 +81,13 @@ public class FXStartController implements Initializable {
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
 	@FXML Polygon createModelForm;
+		
 	
-	
-	public FXStartController(Stage stage) {
+	public FXStartController(Stage stage, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
 		
 		primaryStage = stage;
+		this.dataPointsModel = dataPointsModel;
+		this.featureExtractionModel = featureExtractionModel;
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("StartNew.fxml"));
@@ -108,7 +116,7 @@ public class FXStartController implements Initializable {
 		openProjectForm.setVisible(false);
 		createModelForm.setVisible(false);
 		
-		
+		progressBar.setVisible(false);
 	}
 	
 	@Override
@@ -142,10 +150,10 @@ public class FXStartController implements Initializable {
 				
 				
 				// Show open file dialog
-				file = fileChooser.showOpenDialog(null);
+				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
-					startAction();
+					startAction(file);
 				} 			
 				
 			}
@@ -173,7 +181,7 @@ public class FXStartController implements Initializable {
 				
 				
 				// Show open file dialog
-				file = fileChooser.showOpenDialog(null);
+				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
 
@@ -204,7 +212,7 @@ public class FXStartController implements Initializable {
 				
 				
 				// Show open file dialog
-				file = fileChooser.showOpenDialog(null);
+				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
 					
@@ -228,14 +236,15 @@ public class FXStartController implements Initializable {
 		
 	}
 	
-	private boolean checkChannelsVHDR() {
+	private boolean checkChannelsVHDR(File datafile) {
 		
 		boolean flag = false;
 		channelNames = null;
 		int countChannels = 0;
+		channelNumbersToRead.clear();
 		
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(file));
+			BufferedReader in = new BufferedReader(new FileReader(datafile));
 
 			String zeile = null;
 						
@@ -282,12 +291,19 @@ public class FXStartController implements Initializable {
 		
 	}
 	
-	private boolean checkChannelsSMR() {
+	private boolean checkChannelsSMR(File dataFile) {
+		
+		channels = 0;
+		titel.clear();
+		kind.clear();
+		numberOfChannels = 0;
+		channelNames = null;
+		channelNumbersToRead.clear();
 		
 		boolean flag = false;
 		
 		try {
-			smrFile = new RandomAccessFile(file, "rw");
+			smrFile = new RandomAccessFile(dataFile, "rw");
 			FileChannel inChannel = smrFile.getChannel();
 			inChannel.position(30);
 			
@@ -373,11 +389,11 @@ public class FXStartController implements Initializable {
 	}
 	
 
-	private void startAction() {
+	private void startAction(final File file) {
 		
 		if (file.getName().toLowerCase().endsWith(".smr")) {
 			
-			if (checkChannelsSMR()) {
+			if (checkChannelsSMR(file)) {
 				
 				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
 				if (channelNumbersToRead.size() == 1) {
@@ -388,25 +404,29 @@ public class FXStartController implements Initializable {
 						@Override
 						protected Void call() throws Exception {
 							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							
 							return null;
 						}
 			
 					};
 					
+					progressBar.setVisible(true);
 					new Thread(task).start();
+					
+					
 				} else {
-					FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+					popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
 				}
 				
 				
 			} else {
-				FXPopUp.showPopupMessage("SMR: No trained channel for the selected dataset found!", primaryStage);
+				popUp.showPopupMessage("SMR: No trained channel for the selected dataset found!", primaryStage);
 			}
 			
 			
 		} else if(file.getName().toLowerCase().endsWith(".vhdr")) {
 		
-			if (checkChannelsVHDR()) {
+			if (checkChannelsVHDR(file)) {
 				
 				// In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
 				if (channelNumbersToRead.size() == 1) {
@@ -420,18 +440,27 @@ public class FXStartController implements Initializable {
 						}
 			
 					};
-					
+									
+					progressBar.setVisible(true);
 					new Thread(task).start();
+					
+					
+
 				} else {
-					FXPopUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+					popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
 				}
 				
 			} else {
-				FXPopUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
+				popUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
 			}
 		}
 		
 		
+	}
+
+	
+	public void setProgressBar(double value) {
+		progressBar.setProgress(value);
 	}
 	
 }

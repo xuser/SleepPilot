@@ -21,6 +21,8 @@ public class DataPoints {
 	
 	private boolean filteringComplete = false;
 	
+	private boolean readingHeaderComplete = false;
+	
 	/**
 	 * This list keeps lists with the epochs (raw data).
 	 * IMPORTANT: The head of the inter list keeps the assosiated epoch.
@@ -875,6 +877,20 @@ public class DataPoints {
 	 */
 	public void addPosOfEpochsInFile(int element) {
 		this.posOfEpochsInFile.add(element);
+	}
+
+	/**
+	 * @return the readingHeaderComplete
+	 */
+	public boolean isReadingHeaderComplete() {
+		return readingHeaderComplete;
+	}
+
+	/**
+	 * @param readingHeaderComplete the readingHeaderComplete to set
+	 */
+	public void setReadingHeaderComplete(boolean readingHeaderComplete) {
+		this.readingHeaderComplete = readingHeaderComplete;
 	}
 
 
