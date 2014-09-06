@@ -22,8 +22,8 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML MenuItem showAdtVisualization;
 	
-	public FXApplicationController(Stage stage) {
-		primaryStage = stage;
+	public FXApplicationController() {
+		primaryStage = new Stage();
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));

@@ -30,6 +30,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -444,7 +445,6 @@ public class FXStartController implements Initializable {
 					progressBar.setVisible(true);
 					new Thread(task).start();
 					
-					
 
 				} else {
 					popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
@@ -461,6 +461,11 @@ public class FXStartController implements Initializable {
 	
 	public void setProgressBar(double value) {
 		progressBar.setProgress(value);
+	}
+	
+	public void startMainApp() {
+
+
 	}
 	
 }

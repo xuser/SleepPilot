@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import view.FXApplicationController;
 import view.FXPopUp;
 import view.FXStartController;
@@ -64,9 +65,6 @@ public class MainController extends Application {
 		dataPointsModel = new DataPoints();
 		featureExtractionModel = new FeatureExtraxtionValues();
 		startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
-		
-		//Create application controller
-//		ApplicationController appController = new ApplicationController(primaryStage);
 
 		// Creating chart controller
 		//new ChartController(primaryStage, dataPointsModel);
@@ -125,6 +123,15 @@ public class MainController extends Application {
                 	double progress = calcEpoch / epochs;
                 	startController.setProgressBar(progress);
 				}
+								
+				//Create application controller
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						FXApplicationController appController = new FXApplicationController();
+						primaryStage.close();
+					}
+				});
 				
 				/*
 				// Start Data Reader Controller
