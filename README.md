@@ -6,4 +6,4 @@ In diesem Repository entsteht eine Software zu automatischen Schlafstadienklassi
 
 ### Who do I talk to? ###
 
-* Ich bin der Administrator dieses Projekts. Bei Fragen können Sie mir gerne über mail@nils-finke.com schreiben.
+Ich bin der Administrator dieses Projekts. Bei Fragen können Sie mir gerne über mail@nils-finke.com schreiben.
