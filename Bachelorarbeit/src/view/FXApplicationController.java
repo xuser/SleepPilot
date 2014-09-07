@@ -11,6 +11,8 @@ import controller.DataReaderController;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,9 +39,9 @@ public class FXApplicationController implements Initializable{
 	private FeatureExtraxtionValues featureExtractionModel;
 	
 	private int currentEpoch = 0;
-//	private double yAxisHeight = 0;
 	private double zoom = 1;
-	
+	private String[] channelNames;
+		
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
 	private Scene scene;
@@ -83,18 +85,16 @@ public class FXApplicationController implements Initializable{
 		
 		lineChart.setSnapToPixel(true);
 		
-//		yAxisHeight = yAxis.getHeight();
+		channelNames = dataPointsModel.getChannelNames();
+		ObservableList<String> choices = FXCollections.observableArrayList();
+		choices.addAll(channelNames);
+		toolBarChoiceBox.setItems(choices);
 		
+		showEpoch(currentEpoch);
 	}
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		
-//		lineChart.heightProperty().addListener(new ChangeListener<Number>() {
-//		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
-//		    	yAxisHeight = yAxis.getHeight();
-//		    }
-//		});
 		
 		//Key Listener
 		lineChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
@@ -178,7 +178,6 @@ public class FXApplicationController implements Initializable{
 			
 		});
 
-		showEpoch(currentEpoch);
 	}
 	
 	
