@@ -28,7 +28,7 @@
         <NumberAxis id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" upperBound="99.99" visible="false" />
       </xAxis>
       <yAxis>
-        <NumberAxis fx:id="yAxis" autoRanging="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
+        <NumberAxis fx:id="yAxis" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
       </yAxis>
       <padding>
         <Insets right="2.0" />
@@ -39,7 +39,7 @@
     <URL value="@Application.css" />
   </stylesheets>
   <top>
-    <GridPane prefHeight="56.0" prefWidth="800.0">
+    <GridPane id="backgroundMenuAndToolBar" prefHeight="56.0" prefWidth="800.0" styleClass="menuAndToolBarBackground">
       <children>
         <MenuBar prefHeight="28.0" prefWidth="800.0" styleClass="menuBar" GridPane.columnIndex="0" GridPane.rowIndex="0">
           <menus>

@@ -7,6 +7,10 @@
 	-fx-background-color: white;
 }
 
+.menuAndToolBarBackground{
+	-fx-background-color: linear-gradient(rgba(76,136,174,0.9), rgba(76,136,174,1));
+}
+
 .startButtons{
 	-fx-background-color: rgb(76,136,174);
 	-fx-border-style: solid;
@@ -111,7 +115,7 @@
 }
 
 .menuBar{
-	-fx-background-color: rgb(76,136,174);
+	-fx-background-color: transparent;
     -fx-text-fill: white;
     
 }
@@ -135,14 +139,14 @@
 }
 
 .toolBar{
-	-fx-background-color: rgb(76,136,174);
+	-fx-background-color: transparent;
 	-fx-border-style: solid;
     -fx-border-width: 0px 0px 1px 0px;
     -fx-border-color: rgb(3,52,83);
 }
 
 .statusBar{
-	-fx-background-color: rgba(76,136,174,0.8);
+	-fx-background-color: linear-gradient(rgba(76,136,174,0.7), rgba(76,136,174,1));
 	-fx-border-style: solid;
     -fx-border-width: 1px 0px 0px 0px;
     -fx-border-color: rgb(3,52,83);

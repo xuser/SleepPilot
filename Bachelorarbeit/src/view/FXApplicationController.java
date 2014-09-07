@@ -78,7 +78,8 @@ public class FXApplicationController implements Initializable{
 		primaryStage.show();
 		primaryStage.setTitle("Automatic Sleep Staging - Application");
 		
-		lineChart.setSnapToPixel(true);		
+		lineChart.setSnapToPixel(true);
+		yAxisHeight = yAxis.getHeight();
 	}
 	
 	@Override
@@ -159,24 +160,33 @@ public class FXApplicationController implements Initializable{
 	
 	
 	private void showEpoch(int numberOfEpoch) {
+		
+		
         series = new XYChart.Series();
-        
+        int modulo = 2;					// Take every second sample
 
         LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), 0, numberOfEpoch);
+        epoch.removeFirst(); 							//First element is just the number of the current epoch
+        double epochSize = epoch.size() / modulo;
+        double xAxis = 1;
+        
         for (int i= 0; i < epoch.size(); i++) {
-        	if (i % 2 == 1) {
-        		epoch.remove(i);
+        	if (i % modulo == 0) {
+            	double tmp = xAxis / epochSize;
+            	tmp = tmp * 100;	
+        		
+            	double value = epoch.get(i);
+            	value = value / 100;
+            	
+            	value = value * 5;					//This is just for testing
+            	value = value + (100/2);
+            	
+            	series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
+        		
+        		xAxis++;
         	}
         }
         
-        double ganz = epoch.size();
-        
-        for(double i = 1; i < epoch.size(); i++) {
-        	double tmp = i / ganz;
-        	tmp = tmp * 100;
-        	
-        	series.getData().add(new XYChart.Data<Double, Double>(tmp, epoch.get((int) i)));
-        }
 
 		lineChart.getData().add(series);
 	}
