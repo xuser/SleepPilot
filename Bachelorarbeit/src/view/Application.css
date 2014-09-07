@@ -151,7 +151,7 @@
 
 .chart-series-line {
 
-	-fx-stroke-width: 0.2px;
+	-fx-stroke-width: 0.5px;
 	-fx-effect: null;
 }
 
@@ -163,7 +163,7 @@
 
 .chart-vertical-zero-line{
 	-fx-stroke: transparent;
-	-fx-background-color: transparent;
+	-fx-background-color: lightgray;
 } 
 .chart-horizontal-zero-line  {
     -fx-stroke: transparent;

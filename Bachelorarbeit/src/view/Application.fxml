@@ -10,11 +10,11 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="800.0" styleClass="appBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <bottom>
     <ToolBar minHeight="24.0" prefHeight="24.0" prefWidth="800.0" styleClass="statusBar">
       <items>
-        <Label fx:id="statusBarLabel1" styleClass="textLabel" text="Epoch 1">
+        <Label fx:id="statusBarLabel1" styleClass="textLabel" text="Epoch 0">
           <font>
             <Font size="12.0" />
           </font>
@@ -23,15 +23,15 @@
     </ToolBar>
   </bottom>
   <center>
-    <LineChart fx:id="lineChart" alternativeRowFillVisible="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="true" legendVisible="false" minHeight="-1.0" minWidth="-1.0" verticalGridLinesVisible="true" verticalZeroLineVisible="true" visible="true">
+    <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="true" legendVisible="false" minHeight="-1.0" minWidth="-1.0" verticalGridLinesVisible="true" verticalZeroLineVisible="true" visible="true">
       <xAxis>
-        <NumberAxis autoRanging="true" label="" lowerBound="0.0" minorTickCount="5" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickMarkVisible="false" tickUnit="10.0" upperBound="100.0" visible="false" />
+        <NumberAxis id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" upperBound="99.99" visible="false" />
       </xAxis>
       <yAxis>
-        <NumberAxis minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
+        <NumberAxis fx:id="yAxis" autoRanging="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
       </yAxis>
       <padding>
-        <Insets />
+        <Insets right="2.0" />
       </padding>
     </LineChart>
   </center>

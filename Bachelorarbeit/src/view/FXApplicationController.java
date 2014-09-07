@@ -8,12 +8,15 @@ import java.util.ResourceBundle;
 import model.DataPoints;
 import model.FeatureExtraxtionValues;
 import controller.DataReaderController;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -32,6 +35,7 @@ public class FXApplicationController implements Initializable{
 	private FeatureExtraxtionValues featureExtractionModel;
 	
 	private int currentEpoch = 0;
+	private double yAxisHeight = 0;
 	
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
@@ -45,6 +49,7 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML MenuItem showAdtVisualization;
 	@FXML LineChart<Number, Number> lineChart;
+	@FXML NumberAxis yAxis;
 	
 	public FXApplicationController(DataReaderController dataReaderController, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
 		primaryStage = new Stage();
@@ -73,13 +78,19 @@ public class FXApplicationController implements Initializable{
 		primaryStage.show();
 		primaryStage.setTitle("Automatic Sleep Staging - Application");
 		
-		
+		lineChart.setSnapToPixel(true);		
 	}
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		//Listener for horn
+		lineChart.heightProperty().addListener(new ChangeListener<Number>() {
+		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
+		    	yAxisHeight = yAxis.getHeight();
+		    }
+		});
+		
+		//Key Listener
 		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
 
 			@Override
@@ -152,11 +163,11 @@ public class FXApplicationController implements Initializable{
         
 
         LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), 0, numberOfEpoch);
-//        for (int i= 0; i < epoch.size(); i++) {
-//        	if (i % 2 == 1) {
-//        		epoch.remove(i);
-//        	}
-//        }
+        for (int i= 0; i < epoch.size(); i++) {
+        	if (i % 2 == 1) {
+        		epoch.remove(i);
+        	}
+        }
         
         double ganz = epoch.size();
         
@@ -164,7 +175,7 @@ public class FXApplicationController implements Initializable{
         	double tmp = i / ganz;
         	tmp = tmp * 100;
         	
-        	series.getData().add(new XYChart.Data(tmp, epoch.get((int) i)));
+        	series.getData().add(new XYChart.Data<Double, Double>(tmp, epoch.get((int) i)));
         }
 
 		lineChart.getData().add(series);
