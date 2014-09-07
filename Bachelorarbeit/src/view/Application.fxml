@@ -108,6 +108,14 @@
                 </FXCollections>
               </items>
             </ChoiceBox>
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
+              <children>
+                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
+              </children>
+              <padding>
+                <Insets left="6.0" />
+              </padding>
+            </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Zoom:" />
@@ -116,7 +124,7 @@
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <TextField id="toolBarGoto" fx:id="toolBarZoom" focusTraversable="false" prefWidth="38.0" text="1" />
+            <TextField id="toolBarGoto" fx:id="toolBarZoom" focusTraversable="false" prefWidth="38.0" text="5.0" />
           </items>
         </ToolBar>
       </children>

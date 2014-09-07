@@ -72,6 +72,11 @@
     -fx-text-fill: white;
 }
 
+.toolBarCheckBox{
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+}
+
 .popup {
     -fx-background-color: rgb(255,88,88);
     -fx-padding: 10;

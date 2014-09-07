@@ -21,6 +21,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -39,8 +40,9 @@ public class FXApplicationController implements Initializable{
 	private FeatureExtraxtionValues featureExtractionModel;
 	
 	private int currentEpoch = 0;
-	private double zoom = 1;
+	private double zoom = 5;
 	private String[] channelNames;
+	private LinkedList<Integer> activeChannels = new LinkedList<Integer>();
 		
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
@@ -51,6 +53,7 @@ public class FXApplicationController implements Initializable{
 	@FXML TextField toolBarZoom;
 	
 	@FXML ChoiceBox<String> toolBarChoiceBox;
+	@FXML CheckBox toolBarCheckBox;
 	
 	@FXML MenuItem showAdtVisualization;
 	@FXML LineChart<Number, Number> lineChart;
@@ -83,12 +86,20 @@ public class FXApplicationController implements Initializable{
 		primaryStage.show();
 		primaryStage.setTitle("Automatic Sleep Staging - Application");
 		
+		//Configure lineChart
 		lineChart.setSnapToPixel(true);
+		lineChart.requestFocus();
 		
+		// Set Choice Box for the channels
 		channelNames = dataPointsModel.getChannelNames();
 		ObservableList<String> choices = FXCollections.observableArrayList();
 		choices.addAll(channelNames);
 		toolBarChoiceBox.setItems(choices);
+		toolBarChoiceBox.getSelectionModel().selectFirst();
+		
+		for (int i = 0; i < channelNames.length; i++) {
+			activeChannels.add(i);			
+		}
 		
 		showEpoch(currentEpoch);
 	}
@@ -177,21 +188,46 @@ public class FXApplicationController implements Initializable{
 			}
 			
 		});
+		
+//		toolBarCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+//
+//			@Override
+//			public void changed(ObservableValue<? extends Boolean> arg0,
+//					Boolean arg1, Boolean arg2) {
+//				
+//				if (toolBarCheckBox.isSelected() == false) {
+//					int channelNumber = 0;
+//					for (int i = 0; i < channelNames.length; i++) {	
+//						if (channelNames[i] == toolBarChoiceBox.getValue()) {
+//							System.out.println(toolBarChoiceBox.getValue());
+//							channelNumber = i;
+//						}
+//					}
+//					
+//					activeChannels.remove(channelNumber);
+//					
+//					lineChart.getData().clear();
+//					showEpoch(currentEpoch);
+//					lineChart.requestFocus();
+//				}
+//			}
+//
+//        });
 
 	}
 	
 	
 	private void showEpoch(int numberOfEpoch) {
-		double offsetSize = 100 / (dataPointsModel.getNumberOfChannels() + 1);
+		double offsetSize = 100 / (activeChannels.size() + 1);
 		int modulo = 3;					// Take every second sample
 		
-		for (int x = 0; x < dataPointsModel.getNumberOfChannels(); x++) {
+		for (int x = 0; x < activeChannels.size(); x++) {
 			
 			double realOffset = ((100-offsetSize) - (x * offsetSize));
 			
 			XYChart.Series series = new XYChart.Series();
 	
-	        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), x, numberOfEpoch);
+	        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannels.get(x), numberOfEpoch);
 	        epoch.removeFirst(); 							//First element is just the number of the current epoch
 	        double epochSize = epoch.size() / modulo;
 	        double xAxis = 1;
