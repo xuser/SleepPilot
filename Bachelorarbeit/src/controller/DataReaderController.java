@@ -127,10 +127,11 @@ public class DataReaderController extends Thread {
 						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
 							for (int i = 0; i < channelsToRead.size(); i++) {
 								
+								//TODO: WICHTIG: Unbedingt die nächsten beiden Zeilen wieder einkommentieren, sobald der Test fertig ist.
 								// x is the epoch, which have to be calculated
 								// i is the channel, which have to be calculated
-								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
-								respectiveModel.addRawEpoch(epoch);
+//								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
+//								respectiveModel.addRawEpoch(epoch);
 							}
 						}
 						respectiveModel.setReadingComplete(true);
@@ -609,7 +610,7 @@ public class DataReaderController extends Thread {
 			tmpEpochInt.add((double) epochToRead);
 			
 			FileChannel inChannel = dataFile.getChannel();
-			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
+			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2) * respectiveModel.getNumberOfChannels()) + (channelToRead * 2));
 			
 			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch) * 2 * respectiveModel.getNumberOfChannels());
 			
@@ -721,7 +722,7 @@ public class DataReaderController extends Thread {
 			tmpEpochFloat.add((double) epochToRead);
 			
 			FileChannel inChannel = dataFile.getChannel();
-			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4)) + (channelToRead * 4));
+			inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels()) + (channelToRead * 4));
 			
 			ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels());
 			buf.order(ByteOrder.LITTLE_ENDIAN);

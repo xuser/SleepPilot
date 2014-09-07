@@ -4,6 +4,7 @@
 <?import java.net.*?>
 <?import java.util.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
@@ -13,7 +14,7 @@
   <bottom>
     <ToolBar minHeight="24.0" prefHeight="24.0" prefWidth="800.0" styleClass="statusBar">
       <items>
-        <Label styleClass="textLabel" text="Epoch 1">
+        <Label fx:id="statusBarLabel1" styleClass="textLabel" text="Epoch 1">
           <font>
             <Font size="12.0" />
           </font>
@@ -21,6 +22,19 @@
       </items>
     </ToolBar>
   </bottom>
+  <center>
+    <LineChart fx:id="lineChart" alternativeRowFillVisible="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="true" legendVisible="false" minHeight="-1.0" minWidth="-1.0" verticalGridLinesVisible="true" verticalZeroLineVisible="true" visible="true">
+      <xAxis>
+        <NumberAxis autoRanging="true" label="" lowerBound="0.0" minorTickCount="5" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickMarkVisible="false" tickUnit="10.0" upperBound="100.0" visible="false" />
+      </xAxis>
+      <yAxis>
+        <NumberAxis minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
+      </yAxis>
+      <padding>
+        <Insets />
+      </padding>
+    </LineChart>
+  </center>
   <stylesheets>
     <URL value="@Application.css" />
   </stylesheets>
@@ -78,7 +92,7 @@
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <TextField focusTraversable="false" prefWidth="38.0" text="950" />
+            <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="0" />
           </items>
         </ToolBar>
       </children>

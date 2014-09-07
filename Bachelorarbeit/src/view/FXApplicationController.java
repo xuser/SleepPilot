@@ -8,25 +8,43 @@ import java.util.ResourceBundle;
 import model.DataPoints;
 import model.FeatureExtraxtionValues;
 import controller.DataReaderController;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
 	
+	private FXPopUp popUp = new FXPopUp();
+	
 	private DataReaderController dataReaderController;
 	private DataPoints dataPointsModel;
 	private FeatureExtraxtionValues featureExtractionModel;
+	
+	private int currentEpoch = 0;
 	
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
 	private Scene scene;
 	
+	@SuppressWarnings("rawtypes")
+	private XYChart.Series series;
+	
+	@FXML Label statusBarLabel1;
+	@FXML TextField toolBarGoto;
+	
 	@FXML MenuItem showAdtVisualization;
+	@FXML LineChart<Number, Number> lineChart;
 	
 	public FXApplicationController(DataReaderController dataReaderController, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
 		primaryStage = new Stage();
@@ -60,6 +78,96 @@ public class FXApplicationController implements Initializable{
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		
+		//Listener for horn
+		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.RIGHT) {
+					
+					if (currentEpoch < dataPointsModel.getNumberOf30sEpochs()) {
+						series.getData().clear();
+						lineChart.getData().clear();
+						
+						currentEpoch = currentEpoch + 1;
+						showEpoch(currentEpoch);
+						
+						toolBarGoto.setText(currentEpoch + "");
+						statusBarLabel1.setText("Epoch " + currentEpoch);
+					} else {
+						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
+					}
+				}
+				
+				if (ke.getCode() == KeyCode.LEFT) {
+					if (currentEpoch > 0) {
+						series.getData().clear();
+						lineChart.getData().clear();
+						
+						currentEpoch = currentEpoch - 1;
+						showEpoch(currentEpoch);
+						
+						toolBarGoto.setText(currentEpoch + "");
+						statusBarLabel1.setText("Epoch " + currentEpoch);
+					}
+				}
+			}
+			
+		});
+		
+		toolBarGoto.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.ENTER) {
+					
+					int valueTextField = Integer.parseInt(toolBarGoto.getText());
+					
+					if ((valueTextField < dataPointsModel.getNumberOf30sEpochs()) && (valueTextField >= 0)) {
+						series.getData().clear();
+						lineChart.getData().clear();
+						
+						currentEpoch = valueTextField;
+						showEpoch(currentEpoch);
+						
+						toolBarGoto.setText(currentEpoch + "");
+						statusBarLabel1.setText("Epoch " + currentEpoch);
+						
+						toolBarGoto.setFocusTraversable(false);
+					} else {
+						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
+					}
+				}
+
+			}
+		});
+
+		showEpoch(currentEpoch);
+	}
+	
+	
+	private void showEpoch(int numberOfEpoch) {
+        series = new XYChart.Series();
+        
+
+        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), 0, numberOfEpoch);
+//        for (int i= 0; i < epoch.size(); i++) {
+//        	if (i % 2 == 1) {
+//        		epoch.remove(i);
+//        	}
+//        }
+        
+        double ganz = epoch.size();
+        
+        for(double i = 1; i < epoch.size(); i++) {
+        	double tmp = i / ganz;
+        	tmp = tmp * 100;
+        	
+        	series.getData().add(new XYChart.Data(tmp, epoch.get((int) i)));
+        }
+
+		lineChart.getData().add(series);
 	}
 	
 	@FXML
@@ -87,4 +195,5 @@ public class FXApplicationController implements Initializable{
 		stage.setTitle("Additional Visualization");
 		
 	}
+
 }

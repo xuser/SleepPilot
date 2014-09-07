@@ -148,3 +148,24 @@
     -fx-border-color: rgb(3,52,83);
     -fx-text-fill: white;
 }
+
+.chart-series-line {
+
+	-fx-stroke-width: 0.2px;
+	-fx-effect: null;
+}
+
+.default-color0.chart-series-line { -fx-stroke: rgb(20,61,87); }
+
+.axis{
+	-fx-border-color: transparent;
+}
+
+.chart-vertical-zero-line{
+	-fx-stroke: transparent;
+	-fx-background-color: transparent;
+} 
+.chart-horizontal-zero-line  {
+    -fx-stroke: transparent;
+    -fx-background-color: transparent;
+}

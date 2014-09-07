@@ -90,37 +90,39 @@ public class MainController extends Application {
 				// ChannelNumbersToRead contains all channel numbers, which have to be calculated
 				final DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
-								
-				FilterController filterController = new FilterController(dataPointsModel);
-				filterController.start();
 				
-				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
-				featureExtractionController.start();
 				
-				SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
-								
-				while (supportVectorMaschineThreadStartedFlag == false) {
-					
-			    		if (dataPointsModel.isReadingHeaderComplete()) {
-			    			double epochs = dataPointsModel.getNumberOf30sEpochs();
-			    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
-		                	double progress = calcEpoch / epochs;
-		                	startController.setProgressBar(progress);
-			    		}
-					
-					if (featureExtractionModel.getReadingAndCalculatingDone()) {
-						
-						svmController.start();
-						supportVectorMaschineThreadStartedFlag = true;
-					}
-				}
-				
-				while(featureExtractionModel.getClassificationDone() == false) {
-	    			double epochs = dataPointsModel.getNumberOf30sEpochs();
-	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
-                	double progress = calcEpoch / epochs;
-                	startController.setProgressBar(progress);
-				}
+				//TODO: WICHTIG: Unbedingt wieder einkommentieren!!
+//				FilterController filterController = new FilterController(dataPointsModel);
+//				filterController.start();
+//				
+//				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
+//				featureExtractionController.start();
+//				
+//				SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
+//								
+//				while (supportVectorMaschineThreadStartedFlag == false) {
+//					
+//			    		if (dataPointsModel.isReadingHeaderComplete()) {
+//			    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+//			    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+//		                	double progress = calcEpoch / epochs;
+//		                	startController.setProgressBar(progress);
+//			    		}
+//					
+//					if (featureExtractionModel.getReadingAndCalculatingDone()) {
+//						
+//						svmController.start();
+//						supportVectorMaschineThreadStartedFlag = true;
+//					}
+//				}
+//				
+//				while(featureExtractionModel.getClassificationDone() == false) {
+//	    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+//	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+//                	double progress = calcEpoch / epochs;
+//                	startController.setProgressBar(progress);
+//				}
 								
 				//Create application controller
 				Platform.runLater(new Runnable() {
