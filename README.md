@@ -2,7 +2,7 @@
 
 ### What is this repository for? ###
 
-In diesem Repository entsteht eine Software zu automatischen Schlafstadienklassifikation basierend auf EEG Daten. Dazu werden Schlafdaten kanalweise eingelesen, hochpassgefiltert, eine Feature Extraction durchgeführt und anschließend durch eine Support Vector Maschine klassifiziert. Für die Feature Vectoren werden Permutationsentropien und LPC Koeffizienten berechnet.
+In diesem Repository entsteht eine Software zu automatischen Schlafstadienklassifikation basierend auf EEG Daten. Dazu werden Schlafdaten kanalweise eingelesen, hochpassgefiltert, eine Feature Extraction durchgeführt und anschließend durch eine Support Vector Maschine klassifiziert. Für die Feature Vectoren werden Permutationsentropien und LPC Koeffizienten bzw. Line Spectral Pairs berechnet.
 
 ### Who do I talk to? ###
 
