@@ -53,6 +53,25 @@
 	-fx-background-color: white;
 }
 
+.choiceBox{
+	-fx-background-color: rgb(76,136,174);
+	-fx-border-style: solid;
+	-fx-border-width: 1px 1px 1px 1px;
+	-fx-border-color: rgb(160,206,224);
+	-fx-border-radius: 2; 
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+	-fx-font-size: 12.0;
+}
+
+.choiceBox:hover{
+	-fx-background-color: rgba(121,191,236,0.5);
+}
+
+.choice-box .label{
+    -fx-text-fill: white;
+}
+
 .popup {
     -fx-background-color: rgb(255,88,88);
     -fx-padding: 10;

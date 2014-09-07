@@ -3,6 +3,7 @@
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.util.*?>
+<?import javafx.collections.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
@@ -67,10 +68,7 @@
         </MenuBar>
         <ToolBar minHeight="23.999900000002526" prefHeight="36.0" prefWidth="800.0" styleClass="toolBar" GridPane.columnIndex="0" GridPane.rowIndex="1">
           <items>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
-              <children>
-                <Label styleClass="textLabel" text="Stage:" />
-              </children>
+            <HBox alignment="CENTER" minWidth="3.0" prefHeight="25.0" prefWidth="3.0">
               <padding>
                 <Insets left="6.0" />
               </padding>
@@ -93,6 +91,32 @@
               </padding>
             </HBox>
             <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="0" />
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="62.0">
+              <children>
+                <Label prefWidth="54.0" styleClass="textLabel" text="Channel:" />
+              </children>
+              <padding>
+                <Insets left="6.0" />
+              </padding>
+            </HBox>
+            <ChoiceBox fx:id="toolBarChoiceBox" focusTraversable="false" styleClass="choiceBox">
+              <items>
+                <FXCollections fx:factory="observableArrayList">
+                  <String fx:value="Item 1" />
+                  <String fx:value="Item 2" />
+                  <String fx:value="Item 3" />
+                </FXCollections>
+              </items>
+            </ChoiceBox>
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
+              <children>
+                <Label styleClass="textLabel" text="Zoom:" />
+              </children>
+              <padding>
+                <Insets left="6.0" />
+              </padding>
+            </HBox>
+            <TextField id="toolBarGoto" fx:id="toolBarZoom" focusTraversable="false" prefWidth="38.0" text="1" />
           </items>
         </ToolBar>
       </children>

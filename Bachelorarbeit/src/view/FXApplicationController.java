@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import model.DataPoints;
 import model.FeatureExtraxtionValues;
 import controller.DataReaderController;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -18,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
@@ -35,17 +37,18 @@ public class FXApplicationController implements Initializable{
 	private FeatureExtraxtionValues featureExtractionModel;
 	
 	private int currentEpoch = 0;
-	private double yAxisHeight = 0;
+//	private double yAxisHeight = 0;
+	private double zoom = 1;
 	
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
 	private Scene scene;
 	
-	@SuppressWarnings("rawtypes")
-	private XYChart.Series series;
-	
 	@FXML Label statusBarLabel1;
 	@FXML TextField toolBarGoto;
+	@FXML TextField toolBarZoom;
+	
+	@FXML ChoiceBox<String> toolBarChoiceBox;
 	
 	@FXML MenuItem showAdtVisualization;
 	@FXML LineChart<Number, Number> lineChart;
@@ -79,27 +82,28 @@ public class FXApplicationController implements Initializable{
 		primaryStage.setTitle("Automatic Sleep Staging - Application");
 		
 		lineChart.setSnapToPixel(true);
-		yAxisHeight = yAxis.getHeight();
+		
+//		yAxisHeight = yAxis.getHeight();
+		
 	}
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		lineChart.heightProperty().addListener(new ChangeListener<Number>() {
-		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
-		    	yAxisHeight = yAxis.getHeight();
-		    }
-		});
+//		lineChart.heightProperty().addListener(new ChangeListener<Number>() {
+//		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
+//		    	yAxisHeight = yAxis.getHeight();
+//		    }
+//		});
 		
 		//Key Listener
-		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+		lineChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
 
 			@Override
 			public void handle(KeyEvent ke) {
 				if (ke.getCode() == KeyCode.RIGHT) {
 					
 					if (currentEpoch < dataPointsModel.getNumberOf30sEpochs()) {
-						series.getData().clear();
 						lineChart.getData().clear();
 						
 						currentEpoch = currentEpoch + 1;
@@ -114,7 +118,6 @@ public class FXApplicationController implements Initializable{
 				
 				if (ke.getCode() == KeyCode.LEFT) {
 					if (currentEpoch > 0) {
-						series.getData().clear();
 						lineChart.getData().clear();
 						
 						currentEpoch = currentEpoch - 1;
@@ -137,7 +140,6 @@ public class FXApplicationController implements Initializable{
 					int valueTextField = Integer.parseInt(toolBarGoto.getText());
 					
 					if ((valueTextField < dataPointsModel.getNumberOf30sEpochs()) && (valueTextField >= 0)) {
-						series.getData().clear();
 						lineChart.getData().clear();
 						
 						currentEpoch = valueTextField;
@@ -145,8 +147,9 @@ public class FXApplicationController implements Initializable{
 						
 						toolBarGoto.setText(currentEpoch + "");
 						statusBarLabel1.setText("Epoch " + currentEpoch);
-						
-						toolBarGoto.setFocusTraversable(false);
+
+						lineChart.requestFocus();
+
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -154,41 +157,66 @@ public class FXApplicationController implements Initializable{
 
 			}
 		});
+		
+		toolBarZoom.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.ENTER) {
+						
+					zoom = Double.parseDouble(toolBarZoom.getText());
+					
+					lineChart.getData().clear();
+							
+					showEpoch(currentEpoch);
+							
+					toolBarZoom.setText(zoom + "");
+					
+					lineChart.requestFocus();
+				}
+			}
+			
+		});
 
 		showEpoch(currentEpoch);
 	}
 	
 	
 	private void showEpoch(int numberOfEpoch) {
+		double offsetSize = 100 / (dataPointsModel.getNumberOfChannels() + 1);
+		int modulo = 3;					// Take every second sample
 		
-		
-        series = new XYChart.Series();
-        int modulo = 2;					// Take every second sample
-
-        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), 0, numberOfEpoch);
-        epoch.removeFirst(); 							//First element is just the number of the current epoch
-        double epochSize = epoch.size() / modulo;
-        double xAxis = 1;
-        
-        for (int i= 0; i < epoch.size(); i++) {
-        	if (i % modulo == 0) {
-            	double tmp = xAxis / epochSize;
-            	tmp = tmp * 100;	
-        		
-            	double value = epoch.get(i);
-            	value = value / 100;
-            	
-            	value = value * 5;					//This is just for testing
-            	value = value + (100/2);
-            	
-            	series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
-        		
-        		xAxis++;
-        	}
-        }
-        
-
-		lineChart.getData().add(series);
+		for (int x = 0; x < dataPointsModel.getNumberOfChannels(); x++) {
+			
+			double realOffset = ((100-offsetSize) - (x * offsetSize));
+			
+			XYChart.Series series = new XYChart.Series();
+	
+	        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), x, numberOfEpoch);
+	        epoch.removeFirst(); 							//First element is just the number of the current epoch
+	        double epochSize = epoch.size() / modulo;
+	        double xAxis = 1;
+	        
+	        for (int i= 0; i < epoch.size(); i++) {
+	        	if (i % modulo == 0) {
+	            	double tmp = xAxis / epochSize;
+	            	tmp = tmp * 100;	
+	        		
+	            	double value = epoch.get(i);
+	            	value = value / 100;
+	            	
+	            	value = value * zoom;
+	            	value = value + realOffset;
+	            	
+	            	series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
+	        		
+	        		xAxis++;
+	        	}
+	        }
+	        
+	
+			lineChart.getData().add(series);
+		}
 	}
 	
 	@FXML
