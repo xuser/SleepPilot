@@ -1,5 +1,6 @@
 package model;
 
+import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,6 +17,8 @@ public class DataPoints {
 	private Double[][] dataPoints;
 	
 	private RandomAccessFile dataFile;
+	
+	private File orgFile;
 	
 	/**
 	 * This variable holds the status if the reader has finsihed his work
@@ -908,6 +911,20 @@ public class DataPoints {
 	 */
 	public void setDataFile(RandomAccessFile dataFile) {
 		this.dataFile = dataFile;
+	}
+
+	/**
+	 * @return the orgFile
+	 */
+	public File getOrgFile() {
+		return orgFile;
+	}
+
+	/**
+	 * @param orgFile the orgFile to set
+	 */
+	public void setOrgFile(File orgFile) {
+		this.orgFile = orgFile;
 	}
 
 

@@ -11,6 +11,10 @@
 	-fx-background-color: linear-gradient(rgba(76,136,174,0.9), rgba(76,136,174,1));
 }
 
+.grid {
+	-fx-alignment: center;
+}
+
 .startButtons{
 	-fx-background-color: rgb(76,136,174);
 	-fx-border-style: solid;
@@ -70,6 +74,10 @@
 
 .choice-box .label{
     -fx-text-fill: white;
+}
+
+.check-box .box{
+	-fx-background-color: white;
 }
 
 .toolBarCheckBox{
@@ -179,7 +187,7 @@
 
 .chart-series-line {
 
-	-fx-stroke-width: 0.5px;
+	-fx-stroke-width: 0.7px;
 	-fx-effect: null;
 }
 
