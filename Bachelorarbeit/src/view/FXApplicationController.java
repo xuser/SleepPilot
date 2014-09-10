@@ -47,6 +47,9 @@ import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
 	
+	//This epoch is just an puffer
+	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
+	
 	private FXPopUp popUp = new FXPopUp();
 	
 	private DataReaderController dataReaderController;
@@ -116,9 +119,7 @@ public class FXApplicationController implements Initializable{
 		// Set Choice Box for the channels
 		channelNames = dataPointsModel.getChannelNames();
 		ObservableList<String> choices = FXCollections.observableArrayList();
-//		choices.addAll(channelNames);
-//		toolBarChoiceBox.setItems(choices);
-//		toolBarChoiceBox.getSelectionModel().selectFirst();
+
 		
 		//Set properties for the channels
 		for (int i = 0; i < channelNames.length; i++) {
@@ -297,43 +298,6 @@ public class FXApplicationController implements Initializable{
 				checkProp();
 		
 				
-//				if (toolBarCheckBox.isSelected() == false) {
-//					String currentChannel = toolBarChoiceBox.getValue();
-//					
-//					Double[] tempProp = activeChannels.get(currentChannel);
-//					tempProp[0] = 0.0;
-////					if (tempProp[0] == 1.0) {
-////						tempProp[0] = 0.0;
-////					} else {
-////						tempProp[0] = 1.0;
-////					}
-//					
-//					activeChannels.remove(currentChannel);
-//					activeChannels.put(currentChannel, tempProp);		
-//					
-//					
-//					lineChart.getData().clear();
-//					showEpoch(currentEpoch);
-//					lineChart.requestFocus();
-//				} else {
-//					String currentChannel = toolBarChoiceBox.getValue();
-//					
-//					Double[] tempProp = activeChannels.get(currentChannel);
-//					tempProp[0] = 1.0;
-////					if (tempProp[0] == 1.0) {
-////						tempProp[0] = 0.0;
-////					} else {
-////						tempProp[0] = 1.0;
-////					}
-//					
-//					activeChannels.remove(currentChannel);
-//					activeChannels.put(currentChannel, tempProp);		
-//					
-//					
-//					lineChart.getData().clear();
-//					showEpoch(currentEpoch);
-//					lineChart.requestFocus();
-//				}
 			}
 
         });
@@ -426,6 +390,14 @@ public class FXApplicationController implements Initializable{
 	
 			lineChart.getData().add(series);
 		}
+		
+//		for (int y = 0; y < activeChannelNumbers.size(); y++) {
+//			
+//			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	
+//		
+//		}
+		
+		
 	}
 	
 	@FXML
@@ -453,6 +425,8 @@ public class FXApplicationController implements Initializable{
 		stage.setTitle("Additional Visualization");
 		
 	}
+	
+	
 	
 	private void checkProp() {
 			

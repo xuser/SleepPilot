@@ -25,6 +25,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
@@ -79,9 +80,9 @@ public class FXStartController implements Initializable {
 	@FXML Polygon openProjectForm;
 	@FXML Polygon createModelForm;
 	
-	@FXML Text text1;
-	@FXML Text text2;
-	@FXML Text text3;
+	@FXML Label text1;
+	@FXML Label text2;
+	@FXML Label text3;
 		
 	
 	public FXStartController(Stage stage, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
@@ -416,6 +417,15 @@ public class FXStartController implements Initializable {
 					openProject.setDisable(true);
 					createModel.setDisable(true);
 					
+					text1.getStyleClass().removeAll("textLabel");
+					text1.getStyleClass().add("textLabelDisabled");
+					
+					text2.getStyleClass().removeAll("textLabel");
+					text2.getStyleClass().add("textLabelDisabled");
+					
+					text3.getStyleClass().removeAll("textLabel");
+					text3.getStyleClass().add("textLabelDisabled");
+					
 					new Thread(task).start();
 					
 					
@@ -450,6 +460,15 @@ public class FXStartController implements Initializable {
 					newProject.setDisable(true);		
 					openProject.setDisable(true);
 					createModel.setDisable(true);
+					
+					text1.getStyleClass().removeAll("textLabel");
+					text1.getStyleClass().add("textLabelDisabled");
+					
+					text2.getStyleClass().removeAll("textLabel");
+					text2.getStyleClass().add("textLabelDisabled");
+					
+					text3.getStyleClass().removeAll("textLabel");
+					text3.getStyleClass().add("textLabelDisabled");
 					
 										
 					new Thread(task).start();

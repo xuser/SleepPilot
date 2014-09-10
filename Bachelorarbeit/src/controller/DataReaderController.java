@@ -132,8 +132,8 @@ public class DataReaderController extends Thread {
 								//TODO: WICHTIG: Unbedingt die nächsten beiden Zeilen wieder einkommentieren, sobald der Test fertig ist.
 								// x is the epoch, which have to be calculated
 								// i is the channel, which have to be calculated
-//								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
-//								respectiveModel.addRawEpoch(epoch);
+								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
+								respectiveModel.addRawEpoch(epoch);
 							}
 						}
 						respectiveModel.setReadingComplete(true);

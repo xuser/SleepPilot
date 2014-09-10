@@ -93,7 +93,7 @@ public class MainController extends Application {
 				
 				
 				//TODO: WICHTIG: Unbedingt wieder einkommentieren!!
-				/*FilterController filterController = new FilterController(dataPointsModel);
+				FilterController filterController = new FilterController(dataPointsModel);
 				filterController.start();
 				
 				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
@@ -122,7 +122,7 @@ public class MainController extends Application {
 	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
                 	double progress = calcEpoch / epochs;
                 	startController.setProgressBar(progress);
-				}*/
+				}
 				
 				System.out.println("AppController starting!");
 				//Create application controller

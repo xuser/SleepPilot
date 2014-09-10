@@ -140,6 +140,11 @@
 	-fx-font-family: sans-serif;
 }
 
+.textLabelDisabled{
+	-fx-text-fill: rgba(255,255,255,0.5);
+	-fx-font-family: sans-serif;
+}
+
 .text-input{
 	-fx-text-fill: rgb(3,52,83);
 	-fx-font-family: sans-serif;

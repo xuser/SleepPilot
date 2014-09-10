@@ -21,7 +21,6 @@
         </ImageView>
       </graphic>
     </Button>
-    <Text fx:id="text2" fill="WHITE" layoutX="280.0" layoutY="257.0" scaleX="0.9999991292778578" scaleY="1.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Open an existing project" />
     <Button fx:id="newProject" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="40.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="New Project">
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
@@ -31,7 +30,6 @@
         </ImageView>
       </graphic>
     </Button>
-    <Text fx:id="text1" fill="WHITE" layoutX="67.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Start Auto-Score Mode" />
     <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="476.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="  Train">
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
@@ -41,7 +39,6 @@
         </ImageView>
       </graphic>
     </Button>
-    <Text fx:id="text3" fill="WHITE" layoutX="489.0" layoutY="257.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="Advanced: Train the system" />
     <Polygon fx:id="newProjectForm" fill="#ffffff56" layoutX="133.0" layoutY="221.0" scaleX="1.0" scaleY="0.13225160930522437" stroke="WHITE" strokeType="INSIDE">
       <points>
         <Double fx:value="-50.0" />
@@ -76,6 +73,9 @@
       </points>
     </Polygon>
     <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="184.0" layoutY="128.0" prefWidth="332.0" progress="0.0" styleClass="popupWithProgress" />
+    <Label fx:id="text1" layoutX="67.0" layoutY="244.0" styleClass="textLabel" text="Start Auto-Score Mode" />
+    <Label fx:id="text2" layoutX="280.0" layoutY="244.0" styleClass="textLabel" text="Open an existing project" />
+    <Label fx:id="text3" layoutX="489.0" layoutY="244.0" styleClass="textLabel" text="Advanced: Train the system" />
   </children>
   <stylesheets>
     <URL value="@Application.css" />
