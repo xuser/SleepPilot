@@ -227,6 +227,26 @@ public class FXApplicationController implements Initializable{
 						updateProbabilities();
 					}
 				}
+				
+				if (ke.getCode() == KeyCode.W) {
+					awakeButtonOnAction();
+				}
+				
+				if (ke.getCode() == KeyCode.R) {
+					remButtonOnAction();
+				}
+				
+				if (ke.getCode() == KeyCode.DIGIT1) {
+					s1ButtonOnAction();
+				}
+				
+				if (ke.getCode() == KeyCode.DIGIT2) {
+					s2ButtonOnAction();
+				}
+				
+				if (ke.getCode() == KeyCode.DIGIT3) {
+					s3ButtonOnAction();
+				}
 			}
 			
 		});
@@ -600,7 +620,40 @@ public class FXApplicationController implements Initializable{
 		
 	}
 	
+	@FXML
+	protected void awakeButtonOnAction(){
+		featureExtractionModel.setFeatureClassLabel(currentEpoch, 1.0);
+		updateStage();
+		lineChart.requestFocus();
+	}
 	
+	@FXML
+	protected void s1ButtonOnAction() {
+		featureExtractionModel.setFeatureClassLabel(currentEpoch, 2.0);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void s2ButtonOnAction() {
+		featureExtractionModel.setFeatureClassLabel(currentEpoch, 3.0);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void s3ButtonOnAction() {
+		featureExtractionModel.setFeatureClassLabel(currentEpoch, 4.0);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void remButtonOnAction() {
+		featureExtractionModel.setFeatureClassLabel(currentEpoch, 5.0);
+		updateStage();
+		lineChart.requestFocus();
+	}
 	
 	private void checkProp() {
 			

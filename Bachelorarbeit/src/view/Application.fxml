@@ -106,11 +106,11 @@
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <ToggleButton id="awakeButton1" fx:id="awakeButton" mnemonicParsing="false" styleClass="toolBarButtons" text="W" />
-            <ToggleButton fx:id="s1Button" mnemonicParsing="false" styleClass="toolBarButtons" text="1" />
-            <ToggleButton fx:id="s2Button" mnemonicParsing="false" styleClass="toolBarButtons" text="2" />
-            <ToggleButton id="s3Button1" fx:id="s3Button" mnemonicParsing="false" styleClass="toolBarButtons" text="3" />
-            <ToggleButton id="remButton1" fx:id="remButton" mnemonicParsing="false" selected="false" styleClass="toolBarButtons" text="REM" />
+            <ToggleButton id="awakeButton1" fx:id="awakeButton" mnemonicParsing="false" onAction="#awakeButtonOnAction" styleClass="toolBarButtons" text="W" />
+            <ToggleButton fx:id="s1Button" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="1" />
+            <ToggleButton fx:id="s2Button" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
+            <ToggleButton id="s3Button1" fx:id="s3Button" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="3" />
+            <ToggleButton id="remButton1" fx:id="remButton" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
             <ToggleButton id="arrousalButton" fx:id="artefactButton" mnemonicParsing="false" styleClass="toolBarButtons" text="A" />
             <ToggleButton id="arrousalButton1" fx:id="arrousalButton" mnemonicParsing="false" styleClass="toolBarButtons" text="MA" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
