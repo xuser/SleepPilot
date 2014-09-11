@@ -1,5 +1,7 @@
 package model;
 
+import help.BinaryFormat;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
@@ -56,6 +58,7 @@ public class DataPoints {
 	private int numberOfDataPoints;
 	private int numberOfChannels = 0;					// This variable will be used for the Spike2 Format as well
 	private int samplingIntervall;
+	private BinaryFormat binaryFormat;
 	
 	// [Channel Infos]
 	private String[] channelNames;
@@ -925,6 +928,20 @@ public class DataPoints {
 	 */
 	public void setOrgFile(File orgFile) {
 		this.orgFile = orgFile;
+	}
+
+	/**
+	 * @return the binaryFormat
+	 */
+	public BinaryFormat getBinaryFormat() {
+		return binaryFormat;
+	}
+
+	/**
+	 * @param binaryFormat the binaryFormat to set
+	 */
+	public void setBinaryFormat(BinaryFormat binaryFormat) {
+		this.binaryFormat = binaryFormat;
 	}
 
 

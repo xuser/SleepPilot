@@ -117,11 +117,18 @@ public class MainController extends Application {
 					}
 				}
 				
+				int i = 0;
 				while(featureExtractionModel.getClassificationDone() == false) {
 	    			double epochs = dataPointsModel.getNumberOf30sEpochs();
 	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
                 	double progress = calcEpoch / epochs;
                 	startController.setProgressBar(progress);
+  
+                	System.out.print(".");
+                	if (i % 200 == 0) {
+                		System.out.println("");
+                	}
+                	i++;
 				}
 				
 				System.out.println("AppController starting!");

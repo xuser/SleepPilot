@@ -531,6 +531,8 @@ public class DataReaderController extends Thread {
 					}
 				}
 				
+				respectiveModel.setBinaryFormat(binaryFormat);
+				
 				// Read endian order
 				if (zeile.startsWith("UseBigEndianOrder=")) {
 					switch (zeile.substring(18)) {

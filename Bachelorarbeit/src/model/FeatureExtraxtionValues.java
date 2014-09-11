@@ -156,6 +156,15 @@ public class FeatureExtraxtionValues {
 	}
 	
 	/**
+	 * Get the scored class label for a feature vector in the matrix.
+	 * @param row
+	 * 			the epoch of scored feature value.
+	 */
+	public int getFeatureClassLabel(int row) {
+		return (int) featureValuesPE[row][0];
+	}
+	
+	/**
 	 * Rewind the row in data matrics. This is needed in scaling of the data.
 	 */
 	public void rewindRowPosition() {
@@ -298,6 +307,16 @@ public class FeatureExtraxtionValues {
 	 */
 	public void setPredictProbabilities(int row, double[] predictProbability) {
 		predictProbabilities[row] = predictProbability;
+	}
+	
+	/**
+	 * Get the array with the predict probabilities for the current epoch.
+	 * @param row
+	 * 			the epoch for the predict probabilities.
+	 * @return 
+	 */
+	public double[] getPredictProbabilities(int row) {
+		return predictProbabilities[row];
 	}
 	
 	

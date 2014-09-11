@@ -1,5 +1,7 @@
 package view;
 
+import help.BinaryFormat;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -26,11 +28,14 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -68,13 +73,25 @@ public class FXApplicationController implements Initializable{
 	private BorderPane mainGrid;	
 	private Scene scene;
 	
+	@FXML ToggleButton awakeButton;
+	@FXML ToggleButton s1Button;
+	@FXML ToggleButton s2Button;
+	@FXML ToggleButton s3Button;
+	@FXML ToggleButton remButton;
+	@FXML ToggleButton artefactButton;
+	@FXML ToggleButton arrousalButton;
+	
 	@FXML Label statusBarLabel1;
+	@FXML Label statusBarLabel2;
 	@FXML TextField toolBarGoto;
 	@FXML TextField toolBarZoom;
 	
+	@FXML GridPane statusBarGrid;
+	@FXML ToolBar statusBar;
+	
 	@FXML Pane overlay;
-	@FXML GridPane overlayGrid;
 	@FXML StackPane stackPane;
+	@FXML HBox statusBarHBox;
 	
 	@FXML ChoiceBox<String> toolBarChoiceBox;
 	@FXML CheckBox toolBarCheckBox;
@@ -136,15 +153,44 @@ public class FXApplicationController implements Initializable{
 		toolBarChoiceBox.setItems(choices);
 		toolBarChoiceBox.getSelectionModel().selectFirst();
 		currentChannelName = toolBarChoiceBox.getItems().get(0);
+		
+//		statusBarGrid.setPrefWidth(statusBar.getWidth());
+//    	statusBarGrid.setHgrow(statusBar, Priority.ALWAYS);
+		statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+		statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+		statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
+		
 		showEpoch(currentEpoch);
 //		showLabelsForEpoch(returnActiveChannels());
-		
+				
 		checkProp();
+		updateStage();
+		updateProbabilities();
 	}
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		
+		primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
+		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+
+				statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+				statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+		    	
+		    }
+		});
+		
+		primaryStage.heightProperty().addListener(new ChangeListener<Number>() {
+		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+
+				statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+				statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+		    	
+		    }
+		});
 		
 		//Key Listener
 		lineChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
@@ -161,6 +207,8 @@ public class FXApplicationController implements Initializable{
 						
 						toolBarGoto.setText((currentEpoch+1) + "");
 						statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
+						updateStage();
+						updateProbabilities();
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -175,6 +223,8 @@ public class FXApplicationController implements Initializable{
 						
 						toolBarGoto.setText((currentEpoch+1) + "");
 						statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
+						updateStage();
+						updateProbabilities();
 					}
 				}
 			}
@@ -189,7 +239,7 @@ public class FXApplicationController implements Initializable{
 					
 					int valueTextField = Integer.parseInt(toolBarGoto.getText());
 					
-					if ((valueTextField < dataPointsModel.getNumberOf30sEpochs()) && (valueTextField >= 0)) {
+					if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
 						lineChart.getData().clear();
 						
 						currentEpoch = valueTextField - 1;
@@ -199,6 +249,8 @@ public class FXApplicationController implements Initializable{
 						statusBarLabel1.setText("Epoch " + (currentEpoch+1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
 
 						lineChart.requestFocus();
+						updateStage();
+						updateProbabilities();
 
 					} else {
 						popUp.showPopupMessage("Only " + (dataPointsModel.getNumberOf30sEpochs()-1) + " epochs available!", primaryStage);
@@ -304,6 +356,73 @@ public class FXApplicationController implements Initializable{
 
 	}
 	
+	private void updateProbabilities() {
+		double[] probabilities = featureExtractionModel.getPredictProbabilities(currentEpoch);
+		
+		double wake = (Math.round((probabilities[1] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2)) ;
+		double n1 = (Math.round((probabilities[2] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+		double n2 = (Math.round((probabilities[0] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+		double n3 = (Math.round((probabilities[3] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+		double rem = (Math.round((probabilities[4] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+		
+
+		String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N3: " + n3 + "%  REM: " + rem + "%";
+
+		statusBarLabel2.setText(print);
+		statusBarHBox.setHgrow(statusBarLabel2, Priority.ALWAYS);
+	}
+	
+	
+	
+	private void updateStage() {
+		// (1: W, 2: N1, 3: N2, 4: N3, 5: REM)
+		int label = featureExtractionModel.getFeatureClassLabel(currentEpoch);
+		switch (label) {
+		case 1:	
+			awakeButton.setSelected(true);
+			s1Button.setSelected(false);
+			s2Button.setSelected(false);
+			s3Button.setSelected(false);
+			remButton.setSelected(false);
+			break;
+		case 2:	
+			awakeButton.setSelected(false);
+			s1Button.setSelected(true);
+			s2Button.setSelected(false);
+			s3Button.setSelected(false);
+			remButton.setSelected(false);
+			break;
+		case 3:	
+			awakeButton.setSelected(false);
+			s1Button.setSelected(false);
+			s2Button.setSelected(true);
+			s3Button.setSelected(false);
+			remButton.setSelected(false);
+			break;
+		case 4:
+			awakeButton.setSelected(false);
+			s1Button.setSelected(false);
+			s2Button.setSelected(false);
+			s3Button.setSelected(true);
+			remButton.setSelected(false);
+			break;
+		case 5:	
+			awakeButton.setSelected(false);
+			s1Button.setSelected(false);
+			s2Button.setSelected(false);
+			s3Button.setSelected(false);
+			remButton.setSelected(true);
+			break;
+		default: 	
+			awakeButton.setSelected(false);
+			s1Button.setSelected(false);
+			s2Button.setSelected(false);
+			s3Button.setSelected(false);
+			remButton.setSelected(false);
+			break;
+		}
+	}
+	
 	private LinkedList<Integer> returnActiveChannels() {
 		
 		LinkedList<Integer> channels = new LinkedList<Integer>();
@@ -342,9 +461,16 @@ public class FXApplicationController implements Initializable{
 			
 			Label label = new Label(getNameFromChannel(activeChannels.get(i)));
 			label.setTextFill(Color.GRAY);
-			label.setStyle("-fx-padding: 0 0 0 10");
+			label.setLayoutX(15);
 			
-			overlayGrid.addRow(i, label);
+			double pos = overlay.getHeight();
+			double offset = pos / activeChannels.size();
+			double posf = (overlay.getHeight()-offset) - (i * offset);
+			double posfi = pos - posf;
+			label.setLayoutY(posfi);
+			
+			overlay.getChildren().add(label);
+
 			
 		}
 		
@@ -357,6 +483,8 @@ public class FXApplicationController implements Initializable{
 		double offsetSize = 100 / (activeChannelNumbers.size() + 1);
 		int modulo = 3;					// Take every second sample
 		
+//		showLabelsForEpoch(activeChannelNumbers);
+		
 		for (int x = 0; x < activeChannelNumbers.size(); x++) {
 
 			double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
@@ -364,8 +492,14 @@ public class FXApplicationController implements Initializable{
 			double realOffset = ((100-offsetSize) - (x * offsetSize));
 			
 			XYChart.Series series = new XYChart.Series();
-	
-	        LinkedList<Double> epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+			
+			LinkedList<Double> epoch;
+			if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {	
+				epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+			} else {
+				epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+			}
+			
 	        epoch.removeFirst(); 							//First element is just the number of the current epoch
 	        double epochSize = epoch.size() / modulo;
 	        double xAxis = 1;
@@ -380,6 +514,20 @@ public class FXApplicationController implements Initializable{
 	            	
 	            	value = value * zoom;
 	            	value = value + realOffset;
+	            	
+//	            	if (i == 0) {
+//	            		Label label = new Label("Fz");
+//	        			label.setTextFill(Color.GRAY);
+//	        			label.setLayoutX(15);
+//	        			
+//	        			double pos = overlay.getHeight();
+//	        			double relPos = pos/realOffset;
+//	        			relPos = relPos * 100;
+//	        			
+//	        			label.setLayoutY(relPos);
+//	        			
+//	        			overlay.getChildren().add(label);
+//	            	}
 	            	
 	            	series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
 	            	
@@ -408,7 +556,7 @@ public class FXApplicationController implements Initializable{
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("AdditionalVisualization.fxml"));
-		loader.setController(this);
+//		loader.setController(this);
 		
 		// Try to load fxml file
 		try {
@@ -423,6 +571,32 @@ public class FXApplicationController implements Initializable{
 		stage.setScene(scene);
 		stage.show();
 		stage.setTitle("Additional Visualization");
+		
+	}
+	
+	@FXML
+	protected void showHypnogrammAction() {
+		
+		Stage stage = new Stage();
+		BorderPane addGrid = new BorderPane();
+		
+		// Creating FXML Loader
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Hypnogramm.fxml"));
+//		loader.setController(this);
+		
+		// Try to load fxml file
+		try {
+			addGrid = loader.load();
+		} catch (IOException e) {
+			System.err.println("Error during loading Hypnogramm.fxml file!");
+			//e.printStackTrace();
+		}
+		
+		Scene scene = new Scene(addGrid);
+		
+		stage.setScene(scene);
+		stage.show();
+		stage.setTitle("Hypnogramm");
 		
 	}
 	
