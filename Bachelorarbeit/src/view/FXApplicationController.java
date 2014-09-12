@@ -9,8 +9,8 @@ import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import sun.security.jca.GetInstance.Instance;
-import model.DataPoints;
-import model.FeatureExtraxtionValues;
+import model.RawDataModel;
+import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -61,8 +61,8 @@ public class FXApplicationController implements Initializable{
 	private FXPopUp popUp = new FXPopUp();
 	
 	private DataReaderController dataReaderController;
-	private DataPoints dataPointsModel;
-	private FeatureExtraxtionValues featureExtractionModel;
+	private RawDataModel dataPointsModel;
+	private FeatureExtractionModel featureExtractionModel;
 	
 	private boolean initStarted = false;
 	private String currentChannelName = null;
@@ -104,7 +104,7 @@ public class FXApplicationController implements Initializable{
 	@FXML LineChart<Number, Number> lineChart;
 	@FXML NumberAxis yAxis;
 	
-	public FXApplicationController(DataReaderController dataReaderController, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
+	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
 		primaryStage = new Stage();
 		this.dataReaderController = dataReaderController;
 		this.dataPointsModel = dataPointsModel;
@@ -171,6 +171,7 @@ public class FXApplicationController implements Initializable{
 		checkProp();
 		updateStage();
 		updateProbabilities();
+		
 	}
 	
 	@Override
@@ -225,6 +226,10 @@ public class FXApplicationController implements Initializable{
 						updateStage();
 						updateProbabilities();
 						
+						if (featureExtractionModel.isHypnogrammActive()) {
+							hypnogramm.changeCurrentEpochMarker(currentEpoch);
+						}
+						
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -242,13 +247,20 @@ public class FXApplicationController implements Initializable{
 						updateStage();
 						updateProbabilities();
 						
+						if (featureExtractionModel.isHypnogrammActive()) {
+							hypnogramm.changeCurrentEpochMarker(currentEpoch);
+						}
+						
 					}
 				}
 				
 				if (ke.getCode() == KeyCode.H) {
 					if (featureExtractionModel.isHypnogrammActive() == false) {
 						hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+						hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						featureExtractionModel.setHypnogrammActive(true);
+					} else {
+						hypnogramm.bringToFront();
 					}
 				}
 				
@@ -323,6 +335,10 @@ public class FXApplicationController implements Initializable{
 						lineChart.requestFocus();
 						updateStage();
 						updateProbabilities();
+						
+						if (featureExtractionModel.isHypnogrammActive()) {
+							hypnogramm.changeCurrentEpochMarker(currentEpoch);
+						}
 
 					} else {
 						popUp.showPopupMessage("Only " + (dataPointsModel.getNumberOf30sEpochs()-1) + " epochs available!", primaryStage);
@@ -565,6 +581,26 @@ public class FXApplicationController implements Initializable{
 		
 	}
 	
+	//TODO: Actual2
+	public void goToEpoch(int epoch) {
+		
+		lineChart.getData().clear();
+		
+		currentEpoch = epoch;
+		showEpoch(currentEpoch);
+		
+		toolBarGoto.setText((currentEpoch+1) + "");
+		statusBarLabel1.setText("Epoch " + (currentEpoch+1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
+		
+		lineChart.requestFocus();
+		updateStage();
+		updateProbabilities();
+		
+		if (featureExtractionModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+	}
+	
 	
 	private void showEpoch(int numberOfEpoch) {
 		LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -653,7 +689,10 @@ public class FXApplicationController implements Initializable{
 	protected void showHypnogrammAction() {
 		if (featureExtractionModel.isHypnogrammActive() == false) {
 			hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
 			featureExtractionModel.setHypnogrammActive(true);
+		} else {
+			hypnogramm.bringToFront();
 		}
 		
 	}

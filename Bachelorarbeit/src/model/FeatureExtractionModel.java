@@ -2,6 +2,7 @@ package model;
 
 import java.util.LinkedList;
 
+import view.FXApplicationController;
 import help.ChannelNames;
 
 /**
@@ -10,7 +11,7 @@ import help.ChannelNames;
  * @author Nils Finke
  *
  */
-public class FeatureExtraxtionValues {
+public class FeatureExtractionModel {
 	
 	/**
 	 * This matrix saves continuously for each epoch their permutation entropies.
@@ -70,6 +71,8 @@ public class FeatureExtraxtionValues {
 	private int numberOfEpochs;
 	
 	private boolean hypnogrammActive = false;
+	
+	private FXApplicationController appController;
 	
 	/**
 	 * The channel name of the samples in the training file.
@@ -335,6 +338,22 @@ public class FeatureExtraxtionValues {
 	 */
 	public void setHypnogrammActive(boolean hypnogrammActive) {
 		this.hypnogrammActive = hypnogrammActive;
+	}
+
+
+	/**
+	 * @return the appController
+	 */
+	public FXApplicationController getAppController() {
+		return appController;
+	}
+
+
+	/**
+	 * @param appController the appController to set
+	 */
+	public void setAppController(FXApplicationController appController) {
+		this.appController = appController;
 	}
 	
 	

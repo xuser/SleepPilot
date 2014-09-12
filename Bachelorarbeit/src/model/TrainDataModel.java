@@ -10,7 +10,7 @@ import java.util.List;
  * 
  * @author Nils Finke
  */
-public class TrainDataPoints {
+public class TrainDataModel {
 	
 	/**
 	 * Holds all samples from the current epoch.

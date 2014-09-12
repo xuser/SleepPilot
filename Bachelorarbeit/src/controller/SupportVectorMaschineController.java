@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 import help.svm_scale;
 import libsvm.*;
-import model.FeatureExtraxtionValues;
+import model.FeatureExtractionModel;
 
 /**
  * This class starts the support vector maschine and uses the LIBSVM framework.
@@ -18,7 +18,7 @@ import model.FeatureExtraxtionValues;
  */
 public class SupportVectorMaschineController extends Thread {
 	
-	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	private FeatureExtractionModel respectiveFeatureExtractionModel;
 	
 	private Thread t;
 	private boolean fPause = false;
@@ -36,7 +36,7 @@ public class SupportVectorMaschineController extends Thread {
 	/**
 	 * This constructor initializes the class.
 	 */
-	public SupportVectorMaschineController(FeatureExtraxtionValues featureExtractionModel, boolean trainMode) {
+	public SupportVectorMaschineController(FeatureExtractionModel featureExtractionModel, boolean trainMode) {
 		
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		this.trainMode = trainMode;

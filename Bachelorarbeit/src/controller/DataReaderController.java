@@ -17,12 +17,12 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
-import model.DataPoints;
+import model.RawDataModel;
 
 public class DataReaderController extends Thread {
 	
 	private String fileLocationPath;
-	private DataPoints respectiveModel;
+	private RawDataModel respectiveModel;
 	private Thread t;
 	private LinkedList<Integer> channelsToRead;
 	private int numberOfSamplesForOneEpoch;
@@ -65,7 +65,7 @@ public class DataReaderController extends Thread {
 	 * Constructor which initialize this reader class.
 	 * @throws IOException 
 	 */
-	public DataReaderController(File fileLocation, DataPoints dataPointsModel, LinkedList<Integer> channelsToRead) throws IOException {
+	public DataReaderController(File fileLocation, RawDataModel dataPointsModel, LinkedList<Integer> channelsToRead) throws IOException {
 		file = fileLocation;
 		respectiveModel = dataPointsModel;
 		this.channelsToRead = channelsToRead;

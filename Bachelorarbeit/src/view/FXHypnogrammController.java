@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import model.DataPoints;
-import model.FeatureExtraxtionValues;
+import model.RawDataModel;
+import model.FeatureExtractionModel;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,25 +14,28 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class FXHypnogrammController implements Initializable{
-
-	private FeatureExtraxtionValues featureExtractionModel;
-	private DataPoints dataPointsModel;
+	
+	private FXApplicationController appController;
+	private FeatureExtractionModel featureExtractionModel;
+	private RawDataModel dataPointsModel;
 	
 	Stage stage;
 	
 	@FXML LineChart<Number, Number> lineChart;
 	@FXML Label toolBarLabel;
 	
-	public FXHypnogrammController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
+	public FXHypnogrammController(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
 		
 		this.featureExtractionModel = featureExtractionModel;
 		this.dataPointsModel = dataPointsModel;
+		appController = featureExtractionModel.getAppController();
 		
 		stage = new Stage();
 		BorderPane addGrid = new BorderPane();
@@ -58,6 +61,7 @@ public class FXHypnogrammController implements Initializable{
 		
 		toolBarLabel.setText("Experimentee: " + dataPointsModel.getOrgFile().getName());
 		
+		appController.goToEpoch(200);
 	}
 	
 	
@@ -70,6 +74,18 @@ public class FXHypnogrammController implements Initializable{
 			public void handle(WindowEvent we) {
 				featureExtractionModel.setHypnogrammActive(false);
 				System.out.println("Hypnogramm is closing.");
+			}
+		});
+		
+		//Key Listener
+		stage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.H) {	
+					featureExtractionModel.setHypnogrammActive(false);
+					stage.close();
+				}
 			}
 		});
 		
@@ -109,6 +125,30 @@ public class FXHypnogrammController implements Initializable{
 		
 		
 		lineChart.getData().add(series);
+	}
+	
+	public void changeCurrentEpochMarker(double currentEpoch) {
+//		lineChart.getData().get(1).getData().clear();
+		lineChart.getData().clear();
+		loadHypnogramm();
+		
+		XYChart.Series marker = new XYChart.Series();
+		
+		double xAxis = currentEpoch;
+		double numberOfEpochs = dataPointsModel.getNumberOf30sEpochs();
+    	double tmp = xAxis / numberOfEpochs;
+    	tmp = tmp * 100;
+		
+		
+		marker.getData().add(new XYChart.Data<Double, Double>(tmp,0.0));
+		marker.getData().add(new XYChart.Data<Double, Double>(tmp,6.0));
+		
+		lineChart.getData().add(marker);
+		
+	}
+	
+	public void bringToFront() {
+		stage.toFront();
 	}
 	
 	

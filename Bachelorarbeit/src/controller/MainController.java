@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import javafx.application.Application;
 import javafx.application.Platform;
 import view.FXApplicationController;
+import view.FXHypnogrammController;
 import view.FXPopUp;
 import view.FXStartController;
 import javafx.fxml.FXML;
@@ -17,9 +18,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import model.DataPoints;
-import model.FeatureExtraxtionValues;
-import model.TrainDataPoints;
+import model.RawDataModel;
+import model.FeatureExtractionModel;
+import model.TrainDataModel;
 
 /**
  * Starts the application and creates necessary initial controllers.
@@ -37,10 +38,10 @@ public class MainController extends Application {
 	
 	private static Stage primaryStage;
 	
-	private static DataPoints dataPointsModel;
-	private static TrainDataPoints trainDataPointsModel;
+	private static RawDataModel dataPointsModel;
+	private static TrainDataModel trainDataPointsModel;
 	
-	private static FeatureExtraxtionValues featureExtractionModel;
+	private static FeatureExtractionModel featureExtractionModel;
 	private static FXStartController startController;
 	
 	private static boolean filterThreadStartedFlag = false;
@@ -60,8 +61,8 @@ public class MainController extends Application {
 		primaryStage = stage;
 		
 		//Create start controller
-		dataPointsModel = new DataPoints();
-		featureExtractionModel = new FeatureExtraxtionValues();
+		dataPointsModel = new RawDataModel();
+		featureExtractionModel = new FeatureExtractionModel();
 		startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
 
 		// Creating chart controller
@@ -137,120 +138,18 @@ public class MainController extends Application {
 					@Override
 					public void run() {
 						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel);
+						featureExtractionModel.setAppController(appController);
 						primaryStage.close();
 					}
 				});
 				
-				/*
-				// Start Data Reader Controller
-				DataReaderController dataReaderController = new DataReaderController(
-						fileLocation, dataPointsModel);
-				dataReaderController.setPriority(10);
-				dataReaderController.start();
-
-				// Start Filter Controller
-				FilterController filterController = new FilterController(
-						dataPointsModel, dataReaderController);
-				filterController.setPriority(9);
-
-				while (filterThreadStartedFlag == false) {
-					if (dataPointsModel.getRowInSampleFile() >= 1) {
-//						startController.setProgressBar(0.18);
-						filterController.start();
-
-						filterThreadStartedFlag = true;
-					}
-				}
-
-				// During hole reading process we pause the reading process to
-				// avoid nullpointer exceptions.
-				while (dataPointsModel.getReadingCompleteStatus() == false) {
-
-					// Synchronize the access on readed data.
-					if (((dataPointsModel.getRowInSampleFile() + 1) % 4) == 0) {
-						synchronized (filterController) {
-							filterController.proceed();
-						}
-					} else {
-						synchronized (filterController) {
-							filterController.pause();
-						}
-
-					}
-				}
-
-				synchronized (filterController) {
-					filterController.proceed();
-				}
-
-				// Start Feature Extraction Controller
-				featureExtractionModel = new FeatureExtraxtionValues();
-				FeatureExtractionController featureExtractionController = new FeatureExtractionController(
-						dataPointsModel, featureExtractionModel, null,
-						trainMode);
-				featureExtractionController.setPriority(8);
-
-				while (featureExtractionThreadStartedFlag == false) {
-					if (dataPointsModel.getRowFilteredValues() > (dataPointsModel
-							.getSamplingRateConvertedToHertz() * 30)) {
-//						startController.setProgressBar(0.38);
-						featureExtractionController.start();
-
-						featureExtractionThreadStartedFlag = true;
-					}
-				}
-
-				while (dataPointsModel.getFilteringComplete() == false) {
-					synchronized (featureExtractionController) {
-						featureExtractionController.pause();
-					}
-				}
-
-				synchronized (featureExtractionController) {
-					featureExtractionController.proceed();
-				}
-
-				// Start Support Vector Maschine Controller
-				SupportVectorMaschineController svmController = new SupportVectorMaschineController(
-						featureExtractionModel, false);
-				svmController.setPriority(7);
-
-				while (supportVectorMaschineThreadStartedFlag == false) {
-					if (featureExtractionModel.getNumberOfcalculatedEpoch() >= dataPointsModel
-							.getNumberOf30sEpochs()) {
-						
-//						startController.setProgressBar(0.69);
-						svmController.start();
-
-						supportVectorMaschineThreadStartedFlag = true;
-					}
-				}
-				
-				while (finishedClassificationFlag == false) {
-					if (featureExtractionModel.getClassificationDone() == true) {
-//						startController.setProgressBar(1.0);
-//						startController.setProgressIndicator(1.0);
-						
-						finishedClassificationFlag = true;
-					}
-					
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						System.err.println("Error by taking thread to sleep for one second.");
-//						e.printStackTrace();
-					}
-				
-					
-				}*/
-
 			} catch (Exception e) {
 				System.err.println("Unexpected error occured during reading the file.");
 				e.printStackTrace();
 			}
 		} else {
 
-			FeatureExtraxtionValues featureExtractionModel = new FeatureExtraxtionValues();
+			FeatureExtractionModel featureExtractionModel = new FeatureExtractionModel();
 
 			// Start/ Create Train Data Reader Controller
 			TrainController trainController = new TrainController(

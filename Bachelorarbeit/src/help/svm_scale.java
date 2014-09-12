@@ -1,7 +1,7 @@
 package help;
 
 import libsvm.*;
-import model.FeatureExtraxtionValues;
+import model.FeatureExtractionModel;
 
 import java.io.*;
 import java.util.*;
@@ -32,12 +32,12 @@ public class svm_scale {
 	private String save_filename = null;
 	private String restore_filename = null;
 	
-	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	private FeatureExtractionModel respectiveFeatureExtractionModel;
 	
 	/**
 	 * This constructor initializes the class.
 	 */
-	public svm_scale(FeatureExtraxtionValues featureExtractionModel, double l, double u, String save_filename, String restore_filename) {
+	public svm_scale(FeatureExtractionModel featureExtractionModel, double l, double u, String save_filename, String restore_filename) {
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		
 		this.lower = l;

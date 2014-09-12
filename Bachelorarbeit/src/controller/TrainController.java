@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import model.FeatureExtraxtionValues;
-import model.TrainDataPoints;
+import model.FeatureExtractionModel;
+import model.TrainDataModel;
 
 /**
  * This controller is only for reading training data with special format
@@ -33,7 +33,7 @@ public class TrainController extends Thread {
 	
 	private RandomAccessFile trainDataFile;
 	
-	private TrainDataPoints respectiveTrainDataPointsModel;
+	private TrainDataModel respectiveTrainDataPointsModel;
 	private String fileLocationPath;
 	
 	private int numberOfReadSamples = 0;
@@ -51,9 +51,9 @@ public class TrainController extends Thread {
 	
 	private LPC lpcExtraction;
 	
-	private FeatureExtraxtionValues respectiveFeatureExtraxtionModel;
+	private FeatureExtractionModel respectiveFeatureExtraxtionModel;
 	
-	public TrainController(TrainDataPoints trainModel, String fileLocation, FeatureExtraxtionValues model) {
+	public TrainController(TrainDataModel trainModel, String fileLocation, FeatureExtractionModel model) {
 		
 		respectiveTrainDataPointsModel = trainModel;
 		fileLocationPath = fileLocation;

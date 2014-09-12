@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import model.DataPoints;
-import model.FeatureExtraxtionValues;
-import model.TrainDataPoints;
+import model.RawDataModel;
+import model.FeatureExtractionModel;
+import model.TrainDataModel;
 
 /**
  * This class calls the feature extraction methods for extracting relevant features to create 
@@ -23,14 +23,14 @@ import model.TrainDataPoints;
  */
 public class FeatureExtractionController extends Thread {
 	
-	private DataPoints respectiveModel;
+	private RawDataModel respectiveModel;
 	
 	private Thread t;
 	private boolean fPause = false;
 	
 	private boolean dataMatrixCreated = false;
 	
-	private FeatureExtraxtionValues respectiveFeatureExtractionModel;
+	private FeatureExtractionModel respectiveFeatureExtractionModel;
 	
 	private boolean trainMode;
 	
@@ -53,7 +53,7 @@ public class FeatureExtractionController extends Thread {
 	/**
 	 * Constructor which initializes the class.
 	 */
-	public FeatureExtractionController(DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel, boolean trainMode){
+	public FeatureExtractionController(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, boolean trainMode){
 		
 		respectiveModel = dataPointsModel;
 		respectiveFeatureExtractionModel = featureExtractionModel;

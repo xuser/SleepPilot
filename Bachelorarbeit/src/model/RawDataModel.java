@@ -14,7 +14,7 @@ import java.util.List;
  * 
  * @author Nils Finke
  */
-public class DataPoints {
+public class RawDataModel {
 	
 	private Double[][] dataPoints;
 	

@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
-import model.DataPoints;
-import model.FeatureExtraxtionValues;
+import model.RawDataModel;
+import model.FeatureExtractionModel;
 import controller.MainController;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -58,8 +58,8 @@ public class FXStartController implements Initializable {
 	private static LinkedList<String> titel = new LinkedList<String>();
 	private static LinkedList<Integer> kind = new LinkedList<Integer>();
 
-	private DataPoints dataPointsModel;
-	private FeatureExtraxtionValues featureExtractionModel;
+	private RawDataModel dataPointsModel;
+	private FeatureExtractionModel featureExtractionModel;
 	
 	// JavaFx components
 	private Stage primaryStage;
@@ -85,7 +85,7 @@ public class FXStartController implements Initializable {
 	@FXML Label text3;
 		
 	
-	public FXStartController(Stage stage, DataPoints dataPointsModel, FeatureExtraxtionValues featureExtractionModel) {
+	public FXStartController(Stage stage, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
 		
 		primaryStage = stage;
 		this.dataPointsModel = dataPointsModel;

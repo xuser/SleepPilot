@@ -2,7 +2,7 @@ package controller;
 
 import java.util.LinkedList;
 
-import model.DataPoints;
+import model.RawDataModel;
 
 /**
  * This class contains methods for filtering the given data.
@@ -12,7 +12,7 @@ import model.DataPoints;
  */
 public class FilterController extends Thread {
 	
-	DataPoints respectiveModel;
+	RawDataModel respectiveModel;
 	
 	private Thread t;
 	private boolean fPause = false;
@@ -32,7 +32,7 @@ public class FilterController extends Thread {
 	/**
 	 * Constructor for initializing this class.
 	 */
-	public FilterController(DataPoints dataPointsFromModel) {
+	public FilterController(RawDataModel dataPointsFromModel) {
 		respectiveModel = dataPointsFromModel;
 	}
 	
