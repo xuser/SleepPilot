@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import sun.security.jca.GetInstance.Instance;
+import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
@@ -59,6 +60,7 @@ public class FXApplicationController implements Initializable{
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
 	
 	private FXPopUp popUp = new FXPopUp();
+	private FXViewModel viewModel;
 	
 	private DataReaderController dataReaderController;
 	private RawDataModel dataPointsModel;
@@ -104,11 +106,12 @@ public class FXApplicationController implements Initializable{
 	@FXML LineChart<Number, Number> lineChart;
 	@FXML NumberAxis yAxis;
 	
-	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
+	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
 		primaryStage = new Stage();
 		this.dataReaderController = dataReaderController;
 		this.dataPointsModel = dataPointsModel;
 		this.featureExtractionModel = featureExtractionModel;
+		this.viewModel = viewModel;
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
@@ -226,7 +229,7 @@ public class FXApplicationController implements Initializable{
 						updateStage();
 						updateProbabilities();
 						
-						if (featureExtractionModel.isHypnogrammActive()) {
+						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
 						
@@ -247,7 +250,7 @@ public class FXApplicationController implements Initializable{
 						updateStage();
 						updateProbabilities();
 						
-						if (featureExtractionModel.isHypnogrammActive()) {
+						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
 						
@@ -255,10 +258,10 @@ public class FXApplicationController implements Initializable{
 				}
 				
 				if (ke.getCode() == KeyCode.H) {
-					if (featureExtractionModel.isHypnogrammActive() == false) {
-						hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+					if (viewModel.isHypnogrammActive() == false) {
+						hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
 						hypnogramm.changeCurrentEpochMarker(currentEpoch);
-						featureExtractionModel.setHypnogrammActive(true);
+						viewModel.setHypnogrammActive(true);
 					} else {
 						hypnogramm.bringToFront();
 					}
@@ -275,7 +278,7 @@ public class FXApplicationController implements Initializable{
 				if (ke.getCode() == KeyCode.W) {
 					awakeButtonOnAction();
 					
-					if (featureExtractionModel.isHypnogrammActive()) {
+					if (viewModel.isHypnogrammActive()) {
 						hypnogramm.reloadHypnogramm();
 					}
 				}
@@ -283,7 +286,7 @@ public class FXApplicationController implements Initializable{
 				if (ke.getCode() == KeyCode.R) {
 					remButtonOnAction();
 					
-					if (featureExtractionModel.isHypnogrammActive()) {
+					if (viewModel.isHypnogrammActive()) {
 						hypnogramm.reloadHypnogramm();
 					}
 				}
@@ -291,7 +294,7 @@ public class FXApplicationController implements Initializable{
 				if (ke.getCode() == KeyCode.DIGIT1) {
 					s1ButtonOnAction();
 					
-					if (featureExtractionModel.isHypnogrammActive()) {
+					if (viewModel.isHypnogrammActive()) {
 						hypnogramm.reloadHypnogramm();
 					}
 				}
@@ -299,7 +302,7 @@ public class FXApplicationController implements Initializable{
 				if (ke.getCode() == KeyCode.DIGIT2) {
 					s2ButtonOnAction();
 					
-					if (featureExtractionModel.isHypnogrammActive()) {
+					if (viewModel.isHypnogrammActive()) {
 						hypnogramm.reloadHypnogramm();
 					}
 				}
@@ -307,7 +310,7 @@ public class FXApplicationController implements Initializable{
 				if (ke.getCode() == KeyCode.DIGIT3) {
 					s3ButtonOnAction();
 					
-					if (featureExtractionModel.isHypnogrammActive()) {
+					if (viewModel.isHypnogrammActive()) {
 						hypnogramm.reloadHypnogramm();
 					}
 				}
@@ -336,7 +339,7 @@ public class FXApplicationController implements Initializable{
 						updateStage();
 						updateProbabilities();
 						
-						if (featureExtractionModel.isHypnogrammActive()) {
+						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
 
@@ -459,6 +462,11 @@ public class FXApplicationController implements Initializable{
 		}
 		
 		showEpoch(currentEpoch);
+	}
+	
+	
+	public void bringToFront() {
+		primaryStage.toFront();
 	}
 	
 	private void updateProbabilities() {
@@ -596,7 +604,7 @@ public class FXApplicationController implements Initializable{
 		updateStage();
 		updateProbabilities();
 		
-		if (featureExtractionModel.isHypnogrammActive()) {
+		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
 		}
 	}
@@ -687,10 +695,10 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void showHypnogrammAction() {
-		if (featureExtractionModel.isHypnogrammActive() == false) {
-			hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+		if (viewModel.isHypnogrammActive() == false) {
+			hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
-			featureExtractionModel.setHypnogrammActive(true);
+			viewModel.setHypnogrammActive(true);
 		} else {
 			hypnogramm.bringToFront();
 		}

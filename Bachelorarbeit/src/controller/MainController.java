@@ -18,6 +18,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import model.TrainDataModel;
@@ -137,8 +138,9 @@ public class MainController extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel);
-						featureExtractionModel.setAppController(appController);
+						FXViewModel viewModel = new FXViewModel();
+						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel);
+						viewModel.setAppController(appController);
 						primaryStage.close();
 					}
 				});

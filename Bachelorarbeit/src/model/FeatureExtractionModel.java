@@ -70,10 +70,6 @@ public class FeatureExtractionModel {
 	 */
 	private int numberOfEpochs;
 	
-	private boolean hypnogrammActive = false;
-	
-	private FXApplicationController appController;
-	
 	/**
 	 * The channel name of the samples in the training file.
 	 */
@@ -323,39 +319,6 @@ public class FeatureExtractionModel {
 	public double[] getPredictProbabilities(int row) {
 		return predictProbabilities[row];
 	}
-
-
-	/**
-	 * @return the hypnogrammActive
-	 */
-	public boolean isHypnogrammActive() {
-		return hypnogrammActive;
-	}
-
-
-	/**
-	 * @param hypnogrammActive the hypnogrammActive to set
-	 */
-	public void setHypnogrammActive(boolean hypnogrammActive) {
-		this.hypnogrammActive = hypnogrammActive;
-	}
-
-
-	/**
-	 * @return the appController
-	 */
-	public FXApplicationController getAppController() {
-		return appController;
-	}
-
-
-	/**
-	 * @param appController the appController to set
-	 */
-	public void setAppController(FXApplicationController appController) {
-		this.appController = appController;
-	}
-	
 	
 	
 }
