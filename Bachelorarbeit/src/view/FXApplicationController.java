@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import sun.security.jca.GetInstance.Instance;
 import model.DataPoints;
 import model.FeatureExtraxtionValues;
 import controller.DataReaderController;
@@ -38,6 +39,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -52,6 +54,7 @@ import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
 	
+	private FXHypnogrammController hypnogramm;
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
 	
@@ -63,6 +66,7 @@ public class FXApplicationController implements Initializable{
 	
 	private boolean initStarted = false;
 	private String currentChannelName = null;
+	private double generalZoom = 1.0;
 	
 	private int currentEpoch = 0;
 	private String[] channelNames;
@@ -192,6 +196,17 @@ public class FXApplicationController implements Initializable{
 		    }
 		});
 		
+		lineChart.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent arg0) {
+				
+				lineChart.requestFocus();
+				
+			}
+		});
+		
+		
 		//Key Listener
 		lineChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
 
@@ -209,6 +224,7 @@ public class FXApplicationController implements Initializable{
 						statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
 						updateStage();
 						updateProbabilities();
+						
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -225,27 +241,63 @@ public class FXApplicationController implements Initializable{
 						statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
 						updateStage();
 						updateProbabilities();
+						
 					}
 				}
 				
+				if (ke.getCode() == KeyCode.H) {
+					if (featureExtractionModel.isHypnogrammActive() == false) {
+						hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+						featureExtractionModel.setHypnogrammActive(true);
+					}
+				}
+				
+//				if (ke.getCode() == KeyCode.UP) {
+//					refreshZoom(generalZoom + 0.25);
+//				}
+//				
+//				if (ke.getCode() == KeyCode.DOWN) {
+//					refreshZoom(generalZoom - 0.25);
+//				}
+				
 				if (ke.getCode() == KeyCode.W) {
 					awakeButtonOnAction();
+					
+					if (featureExtractionModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
 				}
 				
 				if (ke.getCode() == KeyCode.R) {
 					remButtonOnAction();
+					
+					if (featureExtractionModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
 				}
 				
 				if (ke.getCode() == KeyCode.DIGIT1) {
 					s1ButtonOnAction();
+					
+					if (featureExtractionModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
 				}
 				
 				if (ke.getCode() == KeyCode.DIGIT2) {
 					s2ButtonOnAction();
+					
+					if (featureExtractionModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
 				}
 				
 				if (ke.getCode() == KeyCode.DIGIT3) {
 					s3ButtonOnAction();
+					
+					if (featureExtractionModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
 				}
 			}
 			
@@ -374,6 +426,23 @@ public class FXApplicationController implements Initializable{
 
         });
 
+	}
+	
+	//TODO: ACTUAL
+	private void refreshZoom(double zoom) {
+		lineChart.getData().clear();
+		
+		generalZoom = zoom;
+		for(int i = 0; i < channelNames.length; i++) {
+			Double[] tempProp = activeChannels.get(channelNames[i]);
+			activeChannels.remove(channelNames[i]);
+			
+			tempProp[1] = zoom;
+			
+			activeChannels.put(channelNames[i], tempProp);
+		}
+		
+		showEpoch(currentEpoch);
 	}
 	
 	private void updateProbabilities() {
@@ -534,20 +603,7 @@ public class FXApplicationController implements Initializable{
 	            	
 	            	value = value * zoom;
 	            	value = value + realOffset;
-	            	
-//	            	if (i == 0) {
-//	            		Label label = new Label("Fz");
-//	        			label.setTextFill(Color.GRAY);
-//	        			label.setLayoutX(15);
-//	        			
-//	        			double pos = overlay.getHeight();
-//	        			double relPos = pos/realOffset;
-//	        			relPos = relPos * 100;
-//	        			
-//	        			label.setLayoutY(relPos);
-//	        			
-//	        			overlay.getChildren().add(label);
-//	            	}
+	          
 	            	
 	            	series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
 	            	
@@ -564,7 +620,6 @@ public class FXApplicationController implements Initializable{
 //			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	
 //		
 //		}
-		
 		
 	}
 	
@@ -596,27 +651,10 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void showHypnogrammAction() {
-		
-		Stage stage = new Stage();
-		BorderPane addGrid = new BorderPane();
-		
-		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Hypnogramm.fxml"));
-//		loader.setController(this);
-		
-		// Try to load fxml file
-		try {
-			addGrid = loader.load();
-		} catch (IOException e) {
-			System.err.println("Error during loading Hypnogramm.fxml file!");
-			//e.printStackTrace();
+		if (featureExtractionModel.isHypnogrammActive() == false) {
+			hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel);
+			featureExtractionModel.setHypnogrammActive(true);
 		}
-		
-		Scene scene = new Scene(addGrid);
-		
-		stage.setScene(scene);
-		stage.show();
-		stage.setTitle("Hypnogramm");
 		
 	}
 	

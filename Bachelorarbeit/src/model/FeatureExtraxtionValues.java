@@ -69,6 +69,8 @@ public class FeatureExtraxtionValues {
 	 */
 	private int numberOfEpochs;
 	
+	private boolean hypnogrammActive = false;
+	
 	/**
 	 * The channel name of the samples in the training file.
 	 */
@@ -317,6 +319,22 @@ public class FeatureExtraxtionValues {
 	 */
 	public double[] getPredictProbabilities(int row) {
 		return predictProbabilities[row];
+	}
+
+
+	/**
+	 * @return the hypnogrammActive
+	 */
+	public boolean isHypnogrammActive() {
+		return hypnogrammActive;
+	}
+
+
+	/**
+	 * @param hypnogrammActive the hypnogrammActive to set
+	 */
+	public void setHypnogrammActive(boolean hypnogrammActive) {
+		this.hypnogrammActive = hypnogrammActive;
 	}
 	
 	
