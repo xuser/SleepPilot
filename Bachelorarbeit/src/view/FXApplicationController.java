@@ -161,15 +161,13 @@ public class FXApplicationController implements Initializable{
 		toolBarChoiceBox.getSelectionModel().selectFirst();
 		currentChannelName = toolBarChoiceBox.getItems().get(0);
 		
-//		statusBarGrid.setPrefWidth(statusBar.getWidth());
-//    	statusBarGrid.setHgrow(statusBar, Priority.ALWAYS);
 		statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 		statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
 		statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
-
 		
 		showEpoch(currentEpoch);
-//		showLabelsForEpoch(returnActiveChannels());
+		LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+		showLabelsForEpoch(activeChannelNumbers);
 				
 		checkProp();
 		updateStage();
@@ -196,6 +194,11 @@ public class FXApplicationController implements Initializable{
 				statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+				
+				if (initStarted) {
+					LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+					showLabelsForEpoch(activeChannelNumbers);
+				}
 		    	
 		    }
 		});
@@ -375,6 +378,8 @@ public class FXApplicationController implements Initializable{
 					lineChart.requestFocus();
 					
 					checkProp();
+					
+					
 				}
 			}
 			
@@ -401,11 +406,10 @@ public class FXApplicationController implements Initializable{
 					toolBarZoom.setText(tempProp[1] + "");
 					
 					
-					checkProp();
+					checkProp();				// This is just for testing
 				} else {
 					initStarted = true;
 				}
-				
 				
 			}
 			
@@ -438,7 +442,10 @@ public class FXApplicationController implements Initializable{
 				
 				lineChart.requestFocus();
 				
-				checkProp();
+				LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+				showLabelsForEpoch(activeChannelNumbers);
+				
+				checkProp();			// This is just for testing
 		
 				
 			}
@@ -447,7 +454,7 @@ public class FXApplicationController implements Initializable{
 
 	}
 	
-	//TODO: ACTUAL
+	//TODO: FIX Zoom
 	private void refreshZoom(double zoom) {
 		lineChart.getData().clear();
 		
@@ -570,26 +577,26 @@ public class FXApplicationController implements Initializable{
 	
 	private void showLabelsForEpoch(LinkedList<Integer> activeChannels) {
 		
+		overlay.getChildren().clear();
+		double labelHeight = overlay.getHeight() / activeChannels.size();
+		double offset = (overlay.getHeight()-labelHeight) / activeChannels.size();
+		
 		for(int i = 0; i < activeChannels.size(); i++) {
-			
+						
 			Label label = new Label(getNameFromChannel(activeChannels.get(i)));
 			label.setTextFill(Color.GRAY);
-			label.setLayoutX(15);
+			label.setStyle("-fx-font-family: sans-serif;");
+			label.setLayoutX(18);
 			
-			double pos = overlay.getHeight();
-			double offset = pos / activeChannels.size();
-			double posf = (overlay.getHeight()-offset) - (i * offset);
-			double posfi = pos - posf;
-			label.setLayoutY(posfi);
-			
+			double labelPos = ((i+1) * offset);			
+			label.setLayoutY(labelPos + 15);
+			 
 			overlay.getChildren().add(label);
-
-			
+	
 		}
 		
 	}
 	
-	//TODO: Actual2
 	public void goToEpoch(int epoch) {
 		
 		lineChart.getData().clear();
@@ -658,7 +665,7 @@ public class FXApplicationController implements Initializable{
 	
 			lineChart.getData().add(series);
 		}
-		
+				
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
 //			
 //			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	

@@ -96,29 +96,29 @@ public class FXHypnogrammController implements Initializable{
 		});
 		
 		
-		//TODO: Actual
+		//TODO: Fix Jump to different epochs
 		lineChart.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 		    @Override
 		    public void handle(MouseEvent mouseEvent) {
 		    	
 		    	double widthLineChart = lineChart.getWidth();
+		    	
 		    	System.out.println("Width LineChart: " + widthLineChart);
 		    	
 		    	double mouseXPos = mouseEvent.getX();
 		    	
-		    	double tmpRelationPos = (mouseXPos / widthLineChart) * 100;
+		    	double tmpRelationPos = (mouseXPos / widthLineChart);
+		    	tmpRelationPos = tmpRelationPos * 100;
 		    	System.out.println("Relativ Mousepos: " + tmpRelationPos);
 		    	
 		    	double numberOfEpochs = dataPointsModel.getNumberOf30sEpochs();
 		    	
-		    	int currentEpoch = (int)((tmpRelationPos * numberOfEpochs) / 100);
-		    	
-		    	System.out.println("Goto Epoch: " + currentEpoch);
-		    	
+		    	int currentEpoch = (int) ((tmpRelationPos * numberOfEpochs) / 100);		    
+		 			    	
 		    	if ((currentEpoch <= numberOfEpochs)  && (currentEpoch >= 0)) {
 		    		appController.goToEpoch(currentEpoch);
 		    	}
-		    	
+		    			    	
 		        System.out.println("X: " + mouseEvent.getX());
 		        System.out.println("Y: " + mouseEvent.getY());
 

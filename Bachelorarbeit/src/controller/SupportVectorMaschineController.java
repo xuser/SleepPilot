@@ -115,11 +115,13 @@ public class SupportVectorMaschineController extends Thread {
 		    //				Chose the best values of C and Gamma so that the cross validation accuracy is at his best.
 		    
 		    // These to variables are overwriten each time when the validation accuracy is at his best
-		    /*double tmpC = 0;
+		    /*
+		    double tmpC = 0;
 		    double tmpGamma = 0;
 		    double tmpAccuracy = 0; 
 		    
-		    double c[] = {Math.pow(2, -5), Math.pow(2, -3), Math.pow(2, -1), 
+		    //Already tested Math.pow(2, -5), for full Crossvalidation add later to the c[] array
+		    double c[] = {Math.pow(2, -3), Math.pow(2, -1), 
 		    			  Math.pow(2, 1), Math.pow(2, 3), Math.pow(2, 5),
 		    			  Math.pow(2, 7), Math.pow(2, 7), Math.pow(2, 9),
 		    			  Math.pow(2, 11), Math.pow(2, 13), Math.pow(2, 15)};

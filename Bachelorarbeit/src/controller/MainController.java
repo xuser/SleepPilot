@@ -3,6 +3,7 @@ package controller;
 import help.ChannelNames;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
@@ -131,10 +132,10 @@ public class MainController extends Application {
                 		System.out.println("");
                 	}
                 	i++;
+                	//Create application controller
 				}
 				
 				System.out.println("AppController starting!");
-				//Create application controller
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
