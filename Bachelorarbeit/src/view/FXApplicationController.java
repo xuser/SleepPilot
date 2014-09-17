@@ -147,14 +147,25 @@ public class FXApplicationController implements Initializable{
 		
 		//Set properties for the channels
 		for (int i = 0; i < channelNames.length; i++) {
-			choices.add(channelNames[i]);
+			if (i < 6) {
+				choices.add(channelNames[i]);
 			
-			//The first value represents wheater the channel is shown
-			//The second value represents the current zoom level
-			Double[] channelProp = new Double[2];
-			channelProp[0] = 1.0;
-			channelProp[1] = 5.0;
-			activeChannels.put(channelNames[i], channelProp);
+				//The first value represents wheater the channel is shown
+				//The second value represents the current zoom level
+				Double[] channelProp = new Double[2];
+				channelProp[0] = 1.0;
+				channelProp[1] = 5.0;
+				activeChannels.put(channelNames[i], channelProp);
+			} else {
+				choices.add(channelNames[i]);
+				
+				//The first value represents wheater the channel is shown
+				//The second value represents the current zoom level
+				Double[] channelProp = new Double[2];
+				channelProp[0] = 0.0;
+				channelProp[1] = 5.0;
+				activeChannels.put(channelNames[i], channelProp);
+			}
 			
 		}	
 		toolBarChoiceBox.setItems(choices);
@@ -630,9 +641,7 @@ public class FXApplicationController implements Initializable{
 		
 		double offsetSize = 100 / (activeChannelNumbers.size() + 1);
 		int modulo = 3;					// Take every second sample
-		
-//		showLabelsForEpoch(activeChannelNumbers);
-		
+				
 		for (int x = 0; x < activeChannelNumbers.size(); x++) {
 
 			double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
@@ -641,11 +650,18 @@ public class FXApplicationController implements Initializable{
 			
 			XYChart.Series series = new XYChart.Series();
 			
-			LinkedList<Double> epoch;
-			if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {	
-				epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
-			} else {
-				epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+			LinkedList<Double> epoch = null;
+			
+			if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
+				
+				if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {	
+					epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+				} else {
+					epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+				}
+				
+			} else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
+				epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
 			}
 			
 	        epoch.removeFirst(); 							//First element is just the number of the current epoch
