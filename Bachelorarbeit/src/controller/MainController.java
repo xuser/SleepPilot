@@ -132,9 +132,9 @@ public class MainController extends Application {
                 		System.out.println("");
                 	}
                 	i++;
-                	//Create application controller
 				}
 				
+				//Create application controller
 				System.out.println("AppController starting!");
 				Platform.runLater(new Runnable() {
 					@Override

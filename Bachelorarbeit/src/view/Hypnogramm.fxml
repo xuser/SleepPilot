@@ -50,7 +50,7 @@
         </Text>
         <Text fill="$x2" layoutX="24.0" layoutY="105.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S1" />
         <Text fill="$x2" layoutX="23.0" layoutY="145.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S2" />
-        <Text fill="$x2" layoutX="23.0" layoutY="185.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S3" />
+        <Text fill="$x2" layoutX="29.0" layoutY="185.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="N" />
         <Text fill="$x2" layoutX="28.0" layoutY="225.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="M" />
       </children>
     </Pane>

@@ -327,7 +327,15 @@ public class FXApplicationController implements Initializable{
 			public void handle(KeyEvent ke) {
 				if (ke.getCode() == KeyCode.ENTER) {
 					
-					int valueTextField = Integer.parseInt(toolBarGoto.getText());
+					// TODO: Unsauberer Code => Verbessern!
+					int valueTextField = -1;
+					
+					try {
+						valueTextField = Integer.parseInt(toolBarGoto.getText());
+						
+					} catch (NumberFormatException e) {
+						popUp.showPopupMessage("Only numbers are allowed!", primaryStage);
+					}
 					
 					if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
 						lineChart.getData().clear();

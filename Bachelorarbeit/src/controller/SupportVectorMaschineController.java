@@ -1,15 +1,20 @@
 package controller;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import help.svm_scale;
 import libsvm.*;
 import model.FeatureExtractionModel;
+
 
 /**
  * This class starts the support vector maschine and uses the LIBSVM framework.
@@ -96,12 +101,9 @@ public class SupportVectorMaschineController extends Thread {
 		    // Create SVM parameters
 		    svm_parameter param = new svm_parameter();
 		    
-		    // If you not do cross validation set this parameter to 1
-		    param.probability = 1;
-		    
 		    // We set these parameters during the crossvalidation
 		    param.gamma = 0.5;
-		    param.C = 100;
+		    param.C = 32768;
 		    
 		    param.svm_type = svm_parameter.C_SVC;
 		    param.kernel_type = svm_parameter.RBF;
@@ -110,7 +112,7 @@ public class SupportVectorMaschineController extends Thread {
 		    
 		    
 		    // *************** START OF CROSSVALIDATION ***************
-		    
+		    	    
 		    // IMPORTANT: 	Kind of Grid Search for different parameters of C and Gamma have to be done.
 		    //				Chose the best values of C and Gamma so that the cross validation accuracy is at his best.
 		    
@@ -120,9 +122,8 @@ public class SupportVectorMaschineController extends Thread {
 		    double tmpGamma = 0;
 		    double tmpAccuracy = 0; 
 		    
-		    //Already tested Math.pow(2, -5), for full Crossvalidation add later to the c[] array
-		    double c[] = {Math.pow(2, -3), Math.pow(2, -1), 
-		    			  Math.pow(2, 1), Math.pow(2, 3), Math.pow(2, 5),
+		    double c[] = {Math.pow(2, -5), Math.pow(2, 1), Math.pow(2, -3), Math.pow(2, -1), 
+		    		 	  Math.pow(2, 3), Math.pow(2, 5),
 		    			  Math.pow(2, 7), Math.pow(2, 7), Math.pow(2, 9),
 		    			  Math.pow(2, 11), Math.pow(2, 13), Math.pow(2, 15)};
 		    
@@ -157,7 +158,17 @@ public class SupportVectorMaschineController extends Thread {
 		    			tmpAccuracy = accuracy;
 		    		}
 		    		
-		    		System.out.print("Cross Validation Accuracy = " + accuracy + "%"+ " C = " + param.C + " g = " + param.gamma + "\n");    		
+		    		String output = "Cross Validation Accuracy = " + accuracy + "%"+ " C = " + param.C + " g = " + param.gamma;    		
+					System.out.println(output);
+					
+					try {
+						String name = "Cross" + x + "" + y + ".txt";
+						PrintWriter writer = new PrintWriter(name, "UTF-8");
+						writer.println(output);
+						writer.close();
+					} catch (FileNotFoundException | UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
 		    		
 		    	}	    	
 		    }
@@ -166,12 +177,11 @@ public class SupportVectorMaschineController extends Thread {
 		    param.C = tmpC;
 		    param.gamma = tmpGamma;
 		    // We set the probability mode after the crossvalidation, because with this option an additional cross-validation will be performed
-		    param.probability = 1;
 		    
 	        */
 	        // *************** END OF CROSSVALIDATION ***************
-			
 		    // Train the SVM and generate the model on which the actual classification have to be done.
+		    param.probability = 1;
 		    model = svm.svm_train(prob, param);
 		    
 		    String storeModelName = "model" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
@@ -265,7 +275,7 @@ public class SupportVectorMaschineController extends Thread {
 		}
 		
 	}
-	
+
 	
 	public void start() {
 		System.out.println("Starting Support Vector Maschine Thread");
