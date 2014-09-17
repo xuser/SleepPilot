@@ -334,7 +334,7 @@ public class FXApplicationController implements Initializable{
 						valueTextField = Integer.parseInt(toolBarGoto.getText());
 						
 					} catch (NumberFormatException e) {
-						popUp.showPopupMessage("Only numbers are allowed!", primaryStage);
+						toolBarGoto.setText((currentEpoch+1) + "");
 					}
 					
 					if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
@@ -355,7 +355,7 @@ public class FXApplicationController implements Initializable{
 						}
 
 					} else {
-						popUp.showPopupMessage("Only " + (dataPointsModel.getNumberOf30sEpochs()-1) + " epochs available!", primaryStage);
+						toolBarGoto.setText((currentEpoch+1) + "");
 					}
 				}
 
