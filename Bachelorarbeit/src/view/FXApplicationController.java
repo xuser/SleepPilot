@@ -295,6 +295,9 @@ public class FXApplicationController implements Initializable{
 				}
 				
 				if (ke.getCode() == KeyCode.UP) {
+					
+					evaluationWindow.updateLabels();
+					
 					refreshZoom(+1);
 				}
 				

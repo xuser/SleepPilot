@@ -29,6 +29,24 @@ public class FXEvaluationWindowController implements Initializable {
 	
 	@FXML private Label toolBarLabel;
 	
+	@FXML private Label awakePer;
+	@FXML private Label s1Per;
+	@FXML private Label s2Per;
+	@FXML private Label nPer;
+	@FXML private Label remPer;
+	@FXML private Label artefactPer;
+	@FXML private Label arrousalPer;
+	@FXML private Label stimulationPer;
+	
+	@FXML private Label awakeMin;
+	@FXML private Label s1Min;
+	@FXML private Label s2Min;
+	@FXML private Label nMin;
+	@FXML private Label remMin;
+	@FXML private Label artefactMin;
+	@FXML private Label arrousalMin;
+	@FXML private Label stimulationMin;
+	
 	public FXEvaluationWindowController(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
 		
 		this.featureExtractionModel = featureExtractionModel;
@@ -78,8 +96,34 @@ public class FXEvaluationWindowController implements Initializable {
 		});
 	}
 	
-	private void updateLabels() {
+	public void updateLabels() {
 		
+		double epochs = dataPointsModel.getNumberOf30sEpochs();
+		System.out.println("#Epochs: " + epochs);
+		
+		double awakePerD = featureExtractionModel.getCountWake();
+		System.out.println("#awake: " + awakePerD);
+		
+		double awakeMinD = (awakePerD * 30.0) / 60;
+		System.out.println("#awakeMin: " + awakeMinD);
+		
+		awakePerD = (awakePerD / epochs) * 100.0;
+		System.out.println("#awakePer: " + awakePerD);
+		
+		awakePer.setText(awakePerD + "%");
+		awakeMin.setText(awakeMinD + " min");
+		
+		double s1PerD = featureExtractionModel.getCountS1();
+		System.out.println("#s1: " + s1PerD);
+		
+		double s1MinD = (s1PerD * 30.0) / 60;
+		System.out.println("#s1Min: " + s1MinD);
+		
+		s1PerD = (s1PerD / epochs) * 100.0;
+		System.out.println("#s1Per: " + s1PerD);
+		
+		s1Per.setText(s1PerD + "%");
+		s1Min.setText(s1MinD + " min");
 	}
 	
 	

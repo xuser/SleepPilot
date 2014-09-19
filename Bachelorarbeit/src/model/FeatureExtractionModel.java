@@ -289,12 +289,15 @@ public class FeatureExtractionModel {
 			case 4: countN--;
 				break;
 			case 5: countREM--;
+				break;
 			default: System.err.println("Error during setting the class label!");
+//			System.out.println(label);
+//			System.exit(0);
 				break;
 			}
 		}
-		
-		switch ((int) label) {
+		int intLabel = (int) label;
+		switch (intLabel) {
 		case 1: countWake++;
 			break;
 		case 2: countS1++;
@@ -304,7 +307,11 @@ public class FeatureExtractionModel {
 		case 4: countN++;
 			break;
 		case 5: countREM++;
+			break;
 		default: System.err.println("Error during setting the class label!");
+//		System.out.println(intLabel);
+//		System.exit(0);
+
 			break;
 		}
 		
