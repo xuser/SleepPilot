@@ -1,5 +1,6 @@
 package model;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import view.FXApplicationController;
@@ -21,6 +22,18 @@ public class FeatureExtractionModel {
 	 * IMPORTANT: The first column is for training mode. Holds the manual classified sleep stage.
 	 */
 	private float[][] featureValuesPE;
+	
+	/**
+	 * This HashMap keeps additional information for some epochs. The key keeps the respective epoch number
+	 * and the value holds an array with the information.
+	 * 
+	 * IMPORTANT: Only add values to the hashmap if any additional information have to be set
+	 * 
+	 * 1st in array: 1 if artefact, else 0
+	 * 2nd in array: 1 if arrousal, else 0
+	 * 3hd in array: 1 if stimulation, else 0
+	 */
+	private HashMap<Integer, Integer[]> epochProperties = new HashMap<Integer, Integer[]>();
 	
 	/**
 	 * Predict probabilities for the different classes. Each row keeps one array with
@@ -94,6 +107,91 @@ public class FeatureExtractionModel {
 		numberOfChannels = columns;
 		featureValuesPE = new float[rows][columns + 1];
 		predictProbabilities = new double[rows][];
+	}
+	
+	
+	/**
+	 * Add additional information to some epochs (HashMap). The key keeps the respective epoch number
+	 * and the value holds an array with the information.
+	 * 
+	 * IMPORTANT: Only add values to the hashmap if any additional information have to be set
+	 * 
+	 * 1st in array: 1 if artefact, else 0
+	 * 2nd in array: 1 if arrousal, else 0
+	 * 3hd in array: 1 if stimulation, else 0
+	 */
+	public void addEpochProperty(int epoch, boolean artefact, boolean arrousal, boolean stimulation) {
+						
+		Integer[] prop;
+		if (epochProperties.containsKey(epoch)) {
+			prop = epochProperties.get(epoch);
+			epochProperties.remove(epoch);
+		
+			if (artefact && prop[0] == 0) {
+				prop[0] = 1;
+			} else if (!artefact) {
+				prop[0] = 0;
+			}
+			
+			if (arrousal && prop[1] == 0) {
+				prop[1] = 1;
+			} else {
+				prop[1] = 0;
+			}
+			
+			if (stimulation && prop[2] == 0) {
+				prop[2] = 1;
+			} else {
+				prop[2] = 0;
+			}
+			
+			epochProperties.put(epoch, prop);
+		
+		
+		} else {
+			prop = new Integer[3];
+			
+			if (artefact) {
+				prop[0] = 1;
+			} else {
+				prop[0] = 0;
+			}
+			
+			if (arrousal) {
+				prop[1] = 1;
+			} else {
+				prop[1] = 0;
+			}
+			
+			if (stimulation) {
+				prop[2] = 1;
+			} else {
+				prop[2] = 0;
+			}
+			
+			epochProperties.put(epoch, prop);
+		}
+		
+		
+	}
+	
+	/**
+	 * Return all additional epoch properties
+	 * @param epoch
+	 * 			the number of the needed epoch
+	 * @return
+	 * 		the array with the properties.
+	 * 			1st in array: 1 if artefact, else 0
+	 * 			2nd in array: 1 if arrousal, else 0
+	 * 			3hd in array: 1 if stimulation, else 0
+	 */
+	public Integer[] getEpochProperty(int epoch) {
+		
+		if (epochProperties.containsKey(epoch)) {
+			return epochProperties.get(epoch);
+		} else {
+			return null;
+		}
 	}
 	
 	

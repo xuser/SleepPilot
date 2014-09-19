@@ -61,9 +61,6 @@
 	-fx-border-radius: 2; 
 }
 
-.separator .line{
-	-fx-background-color: white;
-}
 
 .choiceBox{
 	-fx-background-color: rgb(76,136,174);

@@ -19,7 +19,10 @@
 }
 
 .default-color0.chart-series-line { -fx-stroke: rgb(20,61,87); }
-.default-color1.chart-series-line { -fx-stroke: red; }
+.default-color1.chart-series-line { -fx-stroke: rgb(20,61,87); }
+.default-color2.chart-series-line { -fx-stroke: rgb(20,61,87); }
+.default-color3.chart-series-line { -fx-stroke: rgb(20,61,87); }
+.default-color4.chart-series-line { -fx-stroke: red; }
 
 .axis{
 	-fx-border-color: transparent;

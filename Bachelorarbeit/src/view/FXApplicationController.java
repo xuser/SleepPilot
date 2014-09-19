@@ -86,6 +86,8 @@ public class FXApplicationController implements Initializable{
 	@FXML ToggleButton remButton;
 	@FXML ToggleButton artefactButton;
 	@FXML ToggleButton arrousalButton;
+	@FXML ToggleButton stimulationButton;
+	@FXML ToggleButton clearButton;
 	
 	@FXML Label statusBarLabel1;
 	@FXML Label statusBarLabel2;
@@ -328,6 +330,38 @@ public class FXApplicationController implements Initializable{
 						hypnogramm.reloadHypnogramm();
 					}
 				}
+				
+				if (ke.getCode() == KeyCode.A) {
+					artefactButtonOnAction();
+					
+					if (viewModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
+				}
+				
+				if (ke.getCode() == KeyCode.M) {
+					arrousalButtonOnAction();
+					
+					if (viewModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
+				}
+				
+				if (ke.getCode() == KeyCode.S) {
+					stimulationButtonOnAction();
+					
+					if (viewModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
+				}
+				
+				if (ke.getCode() == KeyCode.C) {
+					clearButtonOnAction();
+					
+					if (viewModel.isHypnogrammActive()) {
+						hypnogramm.reloadHypnogramm();
+					}
+				}
 			}
 			
 		});
@@ -338,7 +372,6 @@ public class FXApplicationController implements Initializable{
 			public void handle(KeyEvent ke) {
 				if (ke.getCode() == KeyCode.ENTER) {
 					
-					// TODO: Unsauberer Code => Verbessern!
 					int valueTextField = -1;
 					
 					try {
@@ -560,6 +593,33 @@ public class FXApplicationController implements Initializable{
 			remButton.setSelected(false);
 			break;
 		}
+		
+		if (featureExtractionModel.getEpochProperty(currentEpoch) != null) {
+			Integer[] prop = featureExtractionModel.getEpochProperty(currentEpoch);
+			
+			if (prop[0] == 1) {
+				artefactButton.setSelected(true);
+			} else {				
+				artefactButton.setSelected(false);
+			}
+			
+			if (prop[1] == 1) {
+				arrousalButton.setSelected(true);
+			} else {				
+				arrousalButton.setSelected(false);
+			}
+			
+			if (prop[2] == 1) {
+				stimulationButton.setSelected(true);
+			} else {				
+				stimulationButton.setSelected(false);
+			}
+			
+		} else {
+			artefactButton.setSelected(false);
+			arrousalButton.setSelected(false);
+			stimulationButton.setSelected(false);
+		}
 	}
 	
 	private LinkedList<Integer> returnActiveChannels() {
@@ -770,6 +830,36 @@ public class FXApplicationController implements Initializable{
 		updateStage();
 		lineChart.requestFocus();
 	}
+	
+	@FXML
+	protected void artefactButtonOnAction() {
+		featureExtractionModel.addEpochProperty(currentEpoch, true, false, false);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void arrousalButtonOnAction() {
+		featureExtractionModel.addEpochProperty(currentEpoch, true, true, false);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void stimulationButtonOnAction() {
+		featureExtractionModel.addEpochProperty(currentEpoch, false, false, true);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void clearButtonOnAction() {
+		featureExtractionModel.addEpochProperty(currentEpoch, false, false, false);
+		clearButton.setSelected(false);
+		updateStage();
+		lineChart.requestFocus();
+	}
+	
 	
 	private void checkProp() {
 			

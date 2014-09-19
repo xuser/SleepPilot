@@ -111,8 +111,12 @@
             <ToggleButton fx:id="s2Button" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
             <ToggleButton id="s3Button1" fx:id="s3Button" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="3" />
             <ToggleButton id="remButton1" fx:id="remButton" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
-            <ToggleButton id="arrousalButton" fx:id="artefactButton" mnemonicParsing="false" styleClass="toolBarButtons" text="A" />
-            <ToggleButton id="arrousalButton1" fx:id="arrousalButton" mnemonicParsing="false" styleClass="toolBarButtons" text="MA" />
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <ToggleButton id="arrousalButton" fx:id="artefactButton" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
+            <ToggleButton id="arrousalButton1" fx:id="arrousalButton" mnemonicParsing="false" onAction="#arrousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
+            <ToggleButton id="arrousalButton1" fx:id="stimulationButton" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="S" />
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <ToggleButton id="arrousalButton1" fx:id="clearButton" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Goto:" />

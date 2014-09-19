@@ -11,6 +11,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -128,8 +129,13 @@ public class FXHypnogrammController implements Initializable{
 		loadHypnogramm();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void loadHypnogramm() {
+		@SuppressWarnings("rawtypes")
 		XYChart.Series series = new XYChart.Series();
+		XYChart.Series seriesArtefact = new XYChart.Series();
+		XYChart.Series seriesArrousal = new XYChart.Series();
+		XYChart.Series seriesStimulation = new XYChart.Series();
 		
 		double xAxis = 1.0;
 		double numberOfEpochs = dataPointsModel.getNumberOf30sEpochs();
@@ -140,35 +146,68 @@ public class FXHypnogrammController implements Initializable{
         	
         	double label;
         	switch ((int) featureExtractionModel.getFeatureClassLabel(i)) {
-			case 1: label = 6.0;
+			case 1: label = 9.0;
 				break;
-			case 2: label = 4.0;
+			case 2: label = 7.0;
 			break;
-			case 3: label = 3.0;
+			case 3: label = 6.0;
 			break;
-			case 4: label = 2.0;
+			case 4: label = 5.0;
 			break;
-			case 5: label = 5.0;
+			case 5: label = 8.0;
 			break;
-			default: label = 0.0;
+			default: label = 4.0;
 				break;
 			}
 			
 			series.getData().add(new XYChart.Data<Double, Double>(tmp,label));			//tmp is xaxis
 			
+			if (featureExtractionModel.getEpochProperty(i) != null) {
+				Integer[] prob = featureExtractionModel.getEpochProperty(i);
+				
+				if (prob[0] == 1) {
+					seriesArtefact.getData().add(new XYChart.Data<Double, Double>(tmp,3.0));			//tmp is xaxis
+					seriesArtefact.getData().add(new XYChart.Data<Double, Double>(tmp,3.8));			//tmp is xaxis
+				}
+				
+				if (prob[1] == 1) {
+					seriesArrousal.getData().add(new XYChart.Data<Double, Double>(tmp,2.0));			//tmp is xaxis					
+					seriesArrousal.getData().add(new XYChart.Data<Double, Double>(tmp,2.8));			//tmp is xaxis
+				}
+				
+				if (prob[2] == 1) {
+					seriesStimulation.getData().add(new XYChart.Data<Double, Double>(tmp,1.0));			//tmp is xaxis
+					seriesStimulation.getData().add(new XYChart.Data<Double, Double>(tmp,1.8));			//tmp is xaxis
+					
+				}
+
+			} else {
+				seriesArtefact.getData().add(new XYChart.Data<Double, Double>(tmp,3.0));			//tmp is xaxis
+				seriesArrousal.getData().add(new XYChart.Data<Double, Double>(tmp,2.0));			//tmp is xaxis
+				seriesStimulation.getData().add(new XYChart.Data<Double, Double>(tmp,1.0));			//tmp is xaxis
+
+
+			}
+
+			
 			xAxis++;
-		}
-		
+		}		
 		
 		lineChart.getData().add(series);
+		lineChart.getData().add(seriesArtefact);
+		lineChart.getData().add(seriesArrousal);
+		lineChart.getData().add(seriesStimulation);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void changeCurrentEpochMarker(double currentEpoch) {
 //		lineChart.getData().get(1).getData().clear();
 		lineChart.getData().clear();
 		loadHypnogramm();
 		
+		@SuppressWarnings("rawtypes")
 		XYChart.Series marker = new XYChart.Series();
+		marker.setName("marker");
 		
 		double xAxis = currentEpoch;
 		double numberOfEpochs = dataPointsModel.getNumberOf30sEpochs();
@@ -177,7 +216,13 @@ public class FXHypnogrammController implements Initializable{
 		
 		
 		marker.getData().add(new XYChart.Data<Double, Double>(tmp,0.0));
-		marker.getData().add(new XYChart.Data<Double, Double>(tmp,6.0));
+		marker.getData().add(new XYChart.Data<Double, Double>(tmp,9.0));
+		
+//		for (int i = 0; i < lineChart.getData().size(); i++) {
+//		    for (Node node : lineChart.lookupAll(".series4")) {
+//		        node.getStyleClass().add("default-color4");
+//		    }
+//		}
 		
 		lineChart.getData().add(marker);
 		

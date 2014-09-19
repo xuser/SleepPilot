@@ -10,7 +10,7 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane prefHeight="301.0" prefWidth="536.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<BorderPane prefHeight="347.0" prefWidth="574.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <bottom>
     <ToolBar minHeight="25.0" prefHeight="25.0" prefWidth="516.0" styleClass="menuAndToolBarBackground">
       <items>
@@ -23,12 +23,12 @@
     </ToolBar>
   </bottom>
   <center>
-    <LineChart fx:id="lineChart" animated="false" createSymbols="false" horizontalZeroLineVisible="true" legendVisible="false">
+    <LineChart fx:id="lineChart" animated="false" createSymbols="false" horizontalZeroLineVisible="true" legendVisible="false" prefHeight="332.0" prefWidth="504.0">
       <xAxis>
         <NumberAxis autoRanging="false" forceZeroInRange="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
       </xAxis>
       <yAxis>
-        <NumberAxis autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickUnit="1.0" upperBound="6.0">
+        <NumberAxis autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickUnit="1.0" upperBound="9.0">
           <tickLabelFill>
             <Color blue="0.375" green="0.375" red="0.375" fx:id="x1" />
           </tickLabelFill>
@@ -43,15 +43,21 @@
     <Pane prefHeight="259.0" prefWidth="32.0">
       <children>
         <Text fill="$x1" layoutX="26.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="W" />
-        <Text layoutX="10.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="REM">
+        <Text layoutX="10.0" layoutY="56.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="REM">
           <fill>
             <Color blue="0.376" green="0.376" red="0.376" fx:id="x2" />
           </fill>
         </Text>
-        <Text fill="$x2" layoutX="24.0" layoutY="105.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S1" />
-        <Text fill="$x2" layoutX="23.0" layoutY="145.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S2" />
-        <Text fill="$x2" layoutX="29.0" layoutY="185.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="N" />
-        <Text fill="$x2" layoutX="28.0" layoutY="225.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="M" />
+        <Text fill="$x2" layoutX="24.0" layoutY="88.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S1" />
+        <Text fill="$x2" layoutX="23.0" layoutY="120.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S2" />
+        <Text fill="$x2" layoutX="29.0" layoutY="153.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="N" />
+        <Text fill="$x2" layoutX="29.0" layoutY="216.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="A" />
+        <Text layoutX="19.0" layoutY="246.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="MA">
+          <fill>
+            <Color blue="0.376" green="0.376" red="0.376" fx:id="x3" />
+          </fill>
+        </Text>
+        <Text fill="$x3" layoutX="30.0" layoutY="278.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S" />
       </children>
     </Pane>
   </left>
