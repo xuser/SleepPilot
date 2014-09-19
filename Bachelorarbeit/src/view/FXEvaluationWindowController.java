@@ -7,9 +7,14 @@ import java.util.ResourceBundle;
 import model.FXViewModel;
 import model.FeatureExtractionModel;
 import model.RawDataModel;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -21,6 +26,8 @@ public class FXEvaluationWindowController implements Initializable {
 	private RawDataModel dataPointsModel;
 	
 	private Stage stage;
+	
+	@FXML private Label toolBarLabel;
 	
 	public FXEvaluationWindowController(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
 		
@@ -52,13 +59,23 @@ public class FXEvaluationWindowController implements Initializable {
 		stage.show();
 		stage.setTitle("Evaluation Window");
 		
-//		toolBarLabel.setText("Experimentee: " + dataPointsModel.getOrgFile().getName());
+		toolBarLabel.setText("Experimentee: " + dataPointsModel.getOrgFile().getName());
 		
 	}
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
+		//Key Listener
+		stage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.E) {	
+					appController.bringToFront();
+				}
+			}
+		});
 	}
 	
 	private void updateLabels() {

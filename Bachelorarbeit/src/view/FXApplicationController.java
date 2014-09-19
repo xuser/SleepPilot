@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import com.sun.javafx.scene.control.behavior.KeyBinding;
+
 import sun.security.jca.GetInstance.Instance;
 import model.FXViewModel;
 import model.RawDataModel;
@@ -69,7 +71,6 @@ public class FXApplicationController implements Initializable{
 	
 	private boolean initStarted = false;
 	private String currentChannelName = null;
-	private double generalZoom = 1.0;
 	
 	private int currentEpoch = 0;
 	private String[] channelNames;
@@ -284,13 +285,23 @@ public class FXApplicationController implements Initializable{
 					}
 				}
 				
-//				if (ke.getCode() == KeyCode.UP) {
-//					refreshZoom(generalZoom + 0.25);
-//				}
-//				
-//				if (ke.getCode() == KeyCode.DOWN) {
-//					refreshZoom(generalZoom - 0.25);
-//				}
+				if (ke.getCode() == KeyCode.E) {
+					if (viewModel.isEvaluationWindowActive() == false) {
+						evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
+						viewModel.setEvaluationWindowActive(true);
+					} else {
+						evaluationWindow.bringToFront();
+					}
+				}
+				
+				if (ke.getCode() == KeyCode.UP) {
+					refreshZoom(+1);
+				}
+				
+				if (ke.getCode() == KeyCode.DOWN) {
+					refreshZoom(-1);
+				}
+				
 				
 				if (ke.getCode() == KeyCode.W) {
 					awakeButtonOnAction();
@@ -509,19 +520,30 @@ public class FXApplicationController implements Initializable{
 	
 	//TODO: FIX Zoom
 	private void refreshZoom(double zoom) {
-		lineChart.getData().clear();
+		lineChart.getData().clear();		
 		
-		generalZoom = zoom;
 		for(int i = 0; i < channelNames.length; i++) {
+			
 			Double[] tempProp = activeChannels.get(channelNames[i]);
-			activeChannels.remove(channelNames[i]);
 			
-			tempProp[1] = zoom;
-			
-			activeChannels.put(channelNames[i], tempProp);
+			if (zoom < 0) {
+				if (tempProp[1] > 1.0) {
+					activeChannels.remove(channelNames[i]);
+					tempProp[1] = tempProp[1] + zoom;
+					activeChannels.put(channelNames[i], tempProp);
+				}
+			} else {
+				activeChannels.remove(channelNames[i]);
+				tempProp[1] = tempProp[1] + zoom;
+				activeChannels.put(channelNames[i], tempProp);
+			}
 		}
 		
+		Double[] tempProp = activeChannels.get(currentChannelName);
+		toolBarZoom.setText(tempProp[1] + "");
+				
 		showEpoch(currentEpoch);
+		lineChart.requestFocus();
 	}
 	
 	
@@ -822,6 +844,11 @@ public class FXApplicationController implements Initializable{
 	protected void artefactButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, true, false, false);
 		updateStage();
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -829,6 +856,11 @@ public class FXApplicationController implements Initializable{
 	protected void arrousalButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, true, true, false);
 		updateStage();
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -836,6 +868,11 @@ public class FXApplicationController implements Initializable{
 	protected void stimulationButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, false, false, true);
 		updateStage();
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -844,6 +881,11 @@ public class FXApplicationController implements Initializable{
 		featureExtractionModel.addEpochProperty(currentEpoch, false, false, false);
 		clearButton.setSelected(false);
 		updateStage();
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
 		lineChart.requestFocus();
 	}
 	

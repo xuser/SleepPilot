@@ -106,17 +106,17 @@
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <ToggleButton id="awakeButton1" fx:id="awakeButton" mnemonicParsing="false" onAction="#awakeButtonOnAction" styleClass="toolBarButtons" text="W" />
-            <ToggleButton fx:id="s1Button" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="1" />
-            <ToggleButton fx:id="s2Button" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
-            <ToggleButton id="s3Button1" fx:id="s3Button" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="3" />
-            <ToggleButton id="remButton1" fx:id="remButton" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
+            <ToggleButton id="awakeButton1" fx:id="awakeButton" focusTraversable="false" mnemonicParsing="false" onAction="#awakeButtonOnAction" styleClass="toolBarButtons" text="W" />
+            <ToggleButton fx:id="s1Button" focusTraversable="false" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="1" />
+            <ToggleButton fx:id="s2Button" focusTraversable="false" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
+            <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="3" />
+            <ToggleButton id="remButton1" fx:id="remButton" focusTraversable="false" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <ToggleButton id="arrousalButton" fx:id="artefactButton" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
-            <ToggleButton id="arrousalButton1" fx:id="arrousalButton" mnemonicParsing="false" onAction="#arrousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
-            <ToggleButton id="arrousalButton1" fx:id="stimulationButton" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="S" />
+            <ToggleButton id="arrousalButton" fx:id="artefactButton" focusTraversable="false" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
+            <ToggleButton id="arrousalButton1" fx:id="arrousalButton" focusTraversable="false" mnemonicParsing="false" onAction="#arrousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
+            <ToggleButton id="arrousalButton1" fx:id="stimulationButton" focusTraversable="false" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="S" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <ToggleButton id="arrousalButton1" fx:id="clearButton" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
+            <ToggleButton id="arrousalButton1" fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Goto:" />
@@ -145,7 +145,7 @@
             </ChoiceBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
               <children>
-                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
+                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" focusTraversable="false" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
               </children>
               <padding>
                 <Insets left="6.0" />
