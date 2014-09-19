@@ -30,7 +30,7 @@ public class FXHypnogrammController implements Initializable{
 	private FeatureExtractionModel featureExtractionModel;
 	private RawDataModel dataPointsModel;
 	
-	Stage stage;
+	private Stage stage;
 	
 	@FXML LineChart<Number, Number> lineChart;
 	@FXML Label toolBarLabel;
@@ -188,7 +188,6 @@ public class FXHypnogrammController implements Initializable{
 
 
 			}
-
 			
 			xAxis++;
 		}		

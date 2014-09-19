@@ -56,6 +56,7 @@ import javafx.stage.Stage;
 public class FXApplicationController implements Initializable{
 	
 	private FXHypnogrammController hypnogramm;
+	private FXEvaluationWindowController evaluationWindow;
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
 	
@@ -761,26 +762,12 @@ public class FXApplicationController implements Initializable{
 	@FXML
 	protected void showAdtVisualizationAction() {
 		
-		Stage stage = new Stage();
-		BorderPane addGrid = new BorderPane();
-		
-		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("AdditionalVisualization.fxml"));
-//		loader.setController(this);
-		
-		// Try to load fxml file
-		try {
-			addGrid = loader.load();
-		} catch (IOException e) {
-			System.err.println("Error during loading AdditionalVisualization.fxml file!");
-			//e.printStackTrace();
+		if (viewModel.isEvaluationWindowActive() == false) {
+			evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
+			viewModel.setEvaluationWindowActive(true);
+		} else {
+			evaluationWindow.bringToFront();
 		}
-		
-		Scene scene = new Scene(addGrid);
-		
-		stage.setScene(scene);
-		stage.show();
-		stage.setTitle("Additional Visualization");
 		
 	}
 	

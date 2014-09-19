@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane prefHeight="448.0" prefWidth="326.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <bottom>
+    <ToolBar minHeight="24.0" prefHeight="24.0" prefWidth="300.0" styleClass="menuAndToolBarBackground" />
+  </bottom>
+  <stylesheets>
+    <URL value="@EvaluationWindow.css" />
+  </stylesheets>
+</BorderPane>
