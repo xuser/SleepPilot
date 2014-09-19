@@ -116,7 +116,7 @@
             <ToggleButton id="arrousalButton1" fx:id="arrousalButton" focusTraversable="false" mnemonicParsing="false" onAction="#arrousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
             <ToggleButton id="arrousalButton1" fx:id="stimulationButton" focusTraversable="false" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="S" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <ToggleButton id="arrousalButton1" fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
+            <Button fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Goto:" />

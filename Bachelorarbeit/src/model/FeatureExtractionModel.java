@@ -35,6 +35,15 @@ public class FeatureExtractionModel {
 	 */
 	private HashMap<Integer, Integer[]> epochProperties = new HashMap<Integer, Integer[]>();
 	
+	private int countWake = 0;
+	private int countS1 = 0;
+	private int countS2 = 0;
+	private int countN = 0;
+	private int countREM = 0;
+	private int countA = 0;
+	private int countMA = 0;
+	private int countS = 0;
+	
 	/**
 	 * Predict probabilities for the different classes. Each row keeps one array with
 	 * the probabilities for the epoch with the rowindex. 
@@ -122,57 +131,72 @@ public class FeatureExtractionModel {
 	 */
 	public void addEpochProperty(int epoch, boolean artefact, boolean arrousal, boolean stimulation) {
 						
-		Integer[] prop;
+		Integer[] tempProp = {0,0,0};					// Initialize to avoid exceptions later on
 		if (epochProperties.containsKey(epoch)) {
-			prop = epochProperties.get(epoch);
+			tempProp = epochProperties.get(epoch);
 			epochProperties.remove(epoch);
-		
-			if (artefact && prop[0] == 0) {
-				prop[0] = 1;
-			} else if (!artefact) {
-				prop[0] = 0;
+			
+			if (tempProp[0] == 1) {
+				countA--;
 			}
 			
-			if (arrousal && prop[1] == 0) {
-				prop[1] = 1;
-			} else {
-				prop[1] = 0;
+			if (tempProp[1] == 1) {
+				countMA--;
 			}
 			
-			if (stimulation && prop[2] == 0) {
-				prop[2] = 1;
-			} else {
-				prop[2] = 0;
+			if (tempProp[2] == 1) {
+				countS--;
 			}
 			
-			epochProperties.put(epoch, prop);
-		
-		
-		} else {
-			prop = new Integer[3];
-			
-			if (artefact) {
-				prop[0] = 1;
-			} else {
-				prop[0] = 0;
-			}
-			
-			if (arrousal) {
-				prop[1] = 1;
-			} else {
-				prop[1] = 0;
-			}
-			
-			if (stimulation) {
-				prop[2] = 1;
-			} else {
-				prop[2] = 0;
-			}
-			
-			epochProperties.put(epoch, prop);
 		}
 		
+		Integer[] prop = new Integer[3];
+
+		if (artefact || tempProp[0] == 1) {
+			prop[0] = 1;
+			countA++;
+		} else {
+			prop[0] = 0;
+		}
+
+		if (arrousal || tempProp[1] == 1) {
+			prop[1] = 1;
+			countMA++;
+		} else {
+			prop[1] = 0;
+		}
+
+		if (stimulation || tempProp[2] == 1) {
+			prop[2] = 1;
+			countS++;
+		} else {
+			prop[2] = 0;
+		}
+
+		epochProperties.put(epoch, prop);
 		
+		
+		
+	}
+	
+	public void clearProperties(int epoch) {
+		if (epochProperties.containsKey(epoch)) {
+			Integer[] tempProp = epochProperties.get(epoch);
+			epochProperties.remove(epoch);
+			
+			if (tempProp[0] == 1) {
+				countA--;
+			}
+			
+			if (tempProp[1] == 1) {
+				countMA--;
+			}
+			
+			if (tempProp[2] == 1) {
+				countS--;
+			}
+			
+		}
 	}
 	
 	/**
@@ -251,6 +275,39 @@ public class FeatureExtractionModel {
 	 * 			the class label to set.
 	 */
 	public void setFeatureClassLabel(int row, double label) {
+		
+		if(classificationDone) {
+			int tmpLabel = getFeatureClassLabel(row);
+			
+			switch ((int) label) {
+			case 1: countWake--;
+				break;
+			case 2: countS1--;
+				break;
+			case 3: countS2--;
+				break;
+			case 4: countN--;
+				break;
+			case 5: countREM--;
+			default: System.err.println("Error during setting the class label!");
+				break;
+			}
+		}
+		
+		switch ((int) label) {
+		case 1: countWake++;
+			break;
+		case 2: countS1++;
+			break;
+		case 3: countS2++;
+			break;
+		case 4: countN++;
+			break;
+		case 5: countREM++;
+		default: System.err.println("Error during setting the class label!");
+			break;
+		}
+		
 		featureValuesPE[row][0] =  (float) label;
 	}
 	
@@ -416,6 +473,70 @@ public class FeatureExtractionModel {
 	 */
 	public double[] getPredictProbabilities(int row) {
 		return predictProbabilities[row];
+	}
+
+
+	/**
+	 * @return the countWake
+	 */
+	public int getCountWake() {
+		return countWake;
+	}
+
+
+	/**
+	 * @return the countS1
+	 */
+	public int getCountS1() {
+		return countS1;
+	}
+
+
+	/**
+	 * @return the countS2
+	 */
+	public int getCountS2() {
+		return countS2;
+	}
+
+
+	/**
+	 * @return the countN
+	 */
+	public int getCountN() {
+		return countN;
+	}
+
+
+	/**
+	 * @return the countREM
+	 */
+	public int getCountREM() {
+		return countREM;
+	}
+
+
+	/**
+	 * @return the countA
+	 */
+	public int getCountA() {
+		return countA;
+	}
+
+
+	/**
+	 * @return the countMA
+	 */
+	public int getCountMA() {
+		return countMA;
+	}
+
+
+	/**
+	 * @return the countS
+	 */
+	public int getCountS() {
+		return countS;
 	}
 	
 	

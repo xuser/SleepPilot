@@ -89,7 +89,7 @@ public class FXApplicationController implements Initializable{
 	@FXML ToggleButton artefactButton;
 	@FXML ToggleButton arrousalButton;
 	@FXML ToggleButton stimulationButton;
-	@FXML ToggleButton clearButton;
+	@FXML Button clearButton;
 	
 	@FXML Label statusBarLabel1;
 	@FXML Label statusBarLabel2;
@@ -518,7 +518,6 @@ public class FXApplicationController implements Initializable{
 
 	}
 	
-	//TODO: FIX Zoom
 	private void refreshZoom(double zoom) {
 		lineChart.getData().clear();		
 		
@@ -551,6 +550,7 @@ public class FXApplicationController implements Initializable{
 		primaryStage.toFront();
 	}
 	
+	@SuppressWarnings("static-access")
 	private void updateProbabilities() {
 		double[] probabilities = featureExtractionModel.getPredictProbabilities(currentEpoch);
 		
@@ -731,6 +731,7 @@ public class FXApplicationController implements Initializable{
 			
 			double realOffset = ((100-offsetSize) - (x * offsetSize));
 			
+			@SuppressWarnings("rawtypes")
 			XYChart.Series series = new XYChart.Series();
 			
 			LinkedList<Double> epoch = null;
@@ -878,8 +879,7 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void clearButtonOnAction() {
-		featureExtractionModel.addEpochProperty(currentEpoch, false, false, false);
-		clearButton.setSelected(false);
+		featureExtractionModel.clearProperties(currentEpoch);
 		updateStage();
 		
 		if (viewModel.isHypnogrammActive()) {
