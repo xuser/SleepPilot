@@ -118,6 +118,91 @@ public class FeatureExtractionModel {
 		predictProbabilities = new double[rows][];
 	}
 	
+	public void addArtefactToEpochProperty(int epoch) {
+		if (epochProperties.containsKey(epoch)) {
+			Integer[] tempProp = epochProperties.get(epoch);
+			epochProperties.remove(epoch);
+			
+			if (tempProp[0] == 1) {
+				countA--;
+			}
+			
+			if (tempProp[1] == 1) {
+				countMA--;
+			}
+			
+			if (tempProp[2] == 1) {
+				countS--;
+			}
+			
+			Integer[] prop = {1,0,0};
+			countA++;
+			epochProperties.put(epoch, prop);
+			
+		} else {
+			Integer[] prop = {1,0,0};
+			countA++;
+			epochProperties.put(epoch, prop);
+		}
+	}
+	
+	public void addArrousalToEpochProperty(int epoch) {
+		if (epochProperties.containsKey(epoch)) {
+			Integer[] tempProp = epochProperties.get(epoch);
+			epochProperties.remove(epoch);
+			
+			if (tempProp[0] == 1) {
+				countA--;
+			}
+			
+			if (tempProp[1] == 1) {
+				countMA--;
+			}
+			
+			if (tempProp[2] == 1) {
+				countS--;
+			}
+			
+			Integer[] prop = {1,1,0};
+			countA++;
+			countMA++;
+			epochProperties.put(epoch, prop);
+			
+		} else {
+			Integer[] prop = {1,1,0};
+			countA++;
+			countMA++;
+			epochProperties.put(epoch, prop);
+		}
+	}
+	
+	public void addStimulationToEpochProperty(int epoch) {
+		if (epochProperties.containsKey(epoch)) {
+			Integer[] tempProp = epochProperties.get(epoch);
+			epochProperties.remove(epoch);
+			
+			if (tempProp[0] == 1) {
+				countA--;
+			}
+			
+			if (tempProp[1] == 1) {
+				countMA--;
+			}
+			
+			if (tempProp[2] == 1) {
+				countS--;
+			}
+			
+			Integer[] prop = {0,0,1};
+			countS++;
+			epochProperties.put(epoch, prop);
+			
+		} else {
+			Integer[] prop = {0,0,1};
+			countS++;
+			epochProperties.put(epoch, prop);
+		}
+	}
 	
 	/**
 	 * Add additional information to some epochs (HashMap). The key keeps the respective epoch number
@@ -183,6 +268,16 @@ public class FeatureExtractionModel {
 		}
 
 		if (stimulation || tempProp[2] == 1) {
+			
+			if(tempProp[0] == 1) {
+				prop[0] = 0;
+				countA--;			
+			}
+			if (tempProp[1] == 1) {
+				prop[1] = 0;
+				countMA--;
+			}
+			
 			prop[2] = 1;
 			countS++;
 			

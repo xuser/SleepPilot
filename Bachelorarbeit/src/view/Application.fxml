@@ -78,6 +78,8 @@
           <menus>
             <Menu mnemonicParsing="false" text="File">
               <items>
+                <MenuItem mnemonicParsing="false" onAction="#importHypnogrammAction" text="Import Hypnogramm" />
+                <MenuItem mnemonicParsing="false" onAction="#exportHypnogrammAction" text="Export Hypnogramm" />
                 <MenuItem mnemonicParsing="false" text="Close" />
               </items>
             </Menu>
@@ -109,7 +111,7 @@
             <ToggleButton id="awakeButton1" fx:id="awakeButton" focusTraversable="false" mnemonicParsing="false" onAction="#awakeButtonOnAction" styleClass="toolBarButtons" text="W" />
             <ToggleButton fx:id="s1Button" focusTraversable="false" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="1" />
             <ToggleButton fx:id="s2Button" focusTraversable="false" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
-            <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="3" />
+            <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="N" />
             <ToggleButton id="remButton1" fx:id="remButton" focusTraversable="false" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
             <ToggleButton id="arrousalButton" fx:id="artefactButton" focusTraversable="false" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />

@@ -2,11 +2,17 @@ package view;
 
 import help.BinaryFormat;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 import com.sun.javafx.scene.control.behavior.KeyBinding;
 
@@ -53,6 +59,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class FXApplicationController implements Initializable{
@@ -561,7 +568,7 @@ public class FXApplicationController implements Initializable{
 		double rem = (Math.round((probabilities[4] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
 		
 
-		String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N3: " + n3 + "%  REM: " + rem + "%";
+		String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N: " + n3 + "%  REM: " + rem + "%";
 
 		statusBarLabel2.setText(print);
 		statusBarHBox.setHgrow(statusBarLabel2, Priority.ALWAYS);
@@ -807,10 +814,147 @@ public class FXApplicationController implements Initializable{
 	}
 	
 	@FXML
+	protected void importHypnogrammAction() {
+		FileChooser fileChooser = new FileChooser();
+		
+		// Set extension filter
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+		fileChooser.getExtensionFilters().add(extFilter);	
+		
+		// Show open file dialog
+		final File file = fileChooser.showOpenDialog(primaryStage);
+		
+		if (file != null) {
+			try {
+				openFile(file);
+				updateStage();
+				
+				if (viewModel.isHypnogrammActive()) {
+					hypnogramm.reloadHypnogramm();
+				}
+				
+				if (viewModel.isEvaluationWindowActive()) {
+					evaluationWindow.reloadEvaluationWindow();
+				}
+				
+				System.out.println("Finished importing Hypnogramm!");
+				
+			} catch (IOException e) {
+				System.err.println("Error during importing Hypnogramm!");
+				popUp.createPopup("Error during importing Hypnogramm!");
+				e.printStackTrace();
+			}
+		} 
+	}
+	
+	// First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+	// Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+	private void openFile(File file) throws IOException {
+		BufferedReader in = new BufferedReader(new FileReader(file));
+		String row = null;
+		int epoch = 0;
+		
+		while (((row = in.readLine()) != null) && (epoch < dataPointsModel.getNumberOf30sEpochs()-1)) {
+			String[] rowArray = row.split(" ");
+			
+			if (Integer.parseInt(rowArray[0]) == 5) {
+				featureExtractionModel.setFeatureClassLabel(epoch, 5);
+			} else {
+				int label = Integer.parseInt(rowArray[0]);
+				featureExtractionModel.setFeatureClassLabel(epoch, label + 1);
+			}
+			
+			if (Integer.parseInt(rowArray[1]) == 1) {
+				featureExtractionModel.addArrousalToEpochProperty(epoch);
+			}
+			
+			if (Integer.parseInt(rowArray[1]) == 2) {
+				featureExtractionModel.addArrousalToEpochProperty(epoch);
+			}
+			
+			if (Integer.parseInt(rowArray[1]) == 3) {
+				featureExtractionModel.addStimulationToEpochProperty(epoch);
+			}
+			
+			epoch++;
+		}
+		
+		in.close();
+
+	}
+	
+	@FXML
+	protected void exportHypnogrammAction() {
+		FileChooser fileChooser = new FileChooser();
+		  
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(primaryStage);
+        
+        if(file != null){
+            saveFile(file);
+        }
+	}
+	
+	// First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+	// Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+	 private void saveFile(File file){
+	        try {
+	            FileWriter fileWriter = null;
+	             
+	            fileWriter = new FileWriter(file);
+	            
+	            for (int i = 0; i < dataPointsModel.getNumberOf30sEpochs(); i++) {
+	            	int prop = 0;
+	            	
+	            	if (featureExtractionModel.getEpochProperty(i) != null) {
+	            		Integer[] property = featureExtractionModel.getEpochProperty(i);
+	            		
+	            		if (property[0] == 1) {
+	            			prop = 2;
+	            		}
+	            		
+	            		if (property[1] == 1) {
+	            			prop = 1;
+	            		}
+	            		
+	            		if (property[2] == 1) {
+	            			prop = 3;
+	            		}
+	            	}
+	            	
+	            	int classLabel = featureExtractionModel.getFeatureClassLabel(i);
+	            	
+	            	if (classLabel == 5) {
+	            		classLabel = 5;
+	            	} else {
+	            		classLabel = classLabel - 1;
+	            	}
+	            	
+	            	String content = classLabel + " " + prop + "\n";
+					fileWriter.write(content);
+				}
+	            
+	            fileWriter.close();
+	            System.out.println("Finish writing!");
+	        } catch (IOException ex) {
+	        	popUp.createPopup("Could not save Hypnogramm!");
+	        }
+	         
+	    }
+	
+	@FXML
 	protected void awakeButtonOnAction(){
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 1.0);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -818,7 +962,11 @@ public class FXApplicationController implements Initializable{
 	protected void s1ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 2.0);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -826,7 +974,11 @@ public class FXApplicationController implements Initializable{
 	protected void s2ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 3.0);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -834,7 +986,11 @@ public class FXApplicationController implements Initializable{
 	protected void s3ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 4.0);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
 		lineChart.requestFocus();
 	}
 	
@@ -842,15 +998,23 @@ public class FXApplicationController implements Initializable{
 	protected void remButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 5.0);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
 		lineChart.requestFocus();
 	}
 	
 	@FXML
 	protected void artefactButtonOnAction() {
-		featureExtractionModel.addEpochProperty(currentEpoch, true, false, false);
+//		featureExtractionModel.addEpochProperty(currentEpoch, true, false, false);
+		featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -861,9 +1025,13 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void arrousalButtonOnAction() {
-		featureExtractionModel.addEpochProperty(currentEpoch, true, true, false);
+//		featureExtractionModel.addEpochProperty(currentEpoch, true, true, false);
+		featureExtractionModel.addArrousalToEpochProperty(currentEpoch);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -874,9 +1042,13 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void stimulationButtonOnAction() {
-		featureExtractionModel.addEpochProperty(currentEpoch, false, false, true);
+//		featureExtractionModel.addEpochProperty(currentEpoch, false, false, true);
+		featureExtractionModel.addStimulationToEpochProperty(currentEpoch);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -889,7 +1061,10 @@ public class FXApplicationController implements Initializable{
 	protected void clearButtonOnAction() {
 		featureExtractionModel.clearProperties(currentEpoch);
 		updateStage();
-		evaluationWindow.reloadEvaluationWindow();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
