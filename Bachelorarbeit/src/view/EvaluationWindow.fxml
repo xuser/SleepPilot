@@ -145,6 +145,16 @@
             <Label fx:id="stimulationMin" styleClass="textLabel" text="Label" />
           </children>
         </HBox>
+        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="11">
+          <children>
+            <Label styleClass="textLabel" text="In Total:" />
+          </children>
+        </HBox>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="11">
+          <children>
+            <Label fx:id="totalCount" styleClass="textLabel" text="Label" />
+          </children>
+        </HBox>
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

@@ -45,7 +45,7 @@ public class SupportVectorMaschineController extends Thread {
 		
 		respectiveFeatureExtractionModel = featureExtractionModel;
 		this.trainMode = trainMode;
-		
+
 	}
 	
 	/**

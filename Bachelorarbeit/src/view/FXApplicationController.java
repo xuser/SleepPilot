@@ -294,10 +294,7 @@ public class FXApplicationController implements Initializable{
 					}
 				}
 				
-				if (ke.getCode() == KeyCode.UP) {
-					
-					evaluationWindow.updateLabels();
-					
+				if (ke.getCode() == KeyCode.UP) {					
 					refreshZoom(+1);
 				}
 				
@@ -813,6 +810,7 @@ public class FXApplicationController implements Initializable{
 	protected void awakeButtonOnAction(){
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 1.0);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		lineChart.requestFocus();
 	}
 	
@@ -820,6 +818,7 @@ public class FXApplicationController implements Initializable{
 	protected void s1ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 2.0);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		lineChart.requestFocus();
 	}
 	
@@ -827,6 +826,7 @@ public class FXApplicationController implements Initializable{
 	protected void s2ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 3.0);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		lineChart.requestFocus();
 	}
 	
@@ -834,6 +834,7 @@ public class FXApplicationController implements Initializable{
 	protected void s3ButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 4.0);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		lineChart.requestFocus();
 	}
 	
@@ -841,6 +842,7 @@ public class FXApplicationController implements Initializable{
 	protected void remButtonOnAction() {
 		featureExtractionModel.setFeatureClassLabel(currentEpoch, 5.0);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		lineChart.requestFocus();
 	}
 	
@@ -848,6 +850,7 @@ public class FXApplicationController implements Initializable{
 	protected void artefactButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, true, false, false);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -860,6 +863,7 @@ public class FXApplicationController implements Initializable{
 	protected void arrousalButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, true, true, false);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -872,6 +876,7 @@ public class FXApplicationController implements Initializable{
 	protected void stimulationButtonOnAction() {
 		featureExtractionModel.addEpochProperty(currentEpoch, false, false, true);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);
@@ -884,6 +889,7 @@ public class FXApplicationController implements Initializable{
 	protected void clearButtonOnAction() {
 		featureExtractionModel.clearProperties(currentEpoch);
 		updateStage();
+		evaluationWindow.reloadEvaluationWindow();
 		
 		if (viewModel.isHypnogrammActive()) {
 			hypnogramm.changeCurrentEpochMarker(currentEpoch);

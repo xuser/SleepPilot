@@ -146,6 +146,22 @@ public class FeatureExtractionModel {
 			
 			if (tempProp[2] == 1) {
 				countS--;
+				
+				int label = getFeatureClassLabel(epoch);
+				switch (label) {
+				case 1: countWake++;
+					break;
+				case 2: countS1++;
+					break;
+				case 3: countS2++;
+					break;
+				case 4: countN++;
+					break;
+				case 5: countREM++;
+					break;
+				default: System.err.println("Error during setting stats!");
+					break;
+				}
 			}
 			
 		}
@@ -169,6 +185,22 @@ public class FeatureExtractionModel {
 		if (stimulation || tempProp[2] == 1) {
 			prop[2] = 1;
 			countS++;
+			
+			int label = getFeatureClassLabel(epoch);
+			switch (label) {
+			case 1: countWake--;
+				break;
+			case 2: countS1--;
+				break;
+			case 3: countS2--;
+				break;
+			case 4: countN--;
+				break;
+			case 5: countREM--;
+				break;
+			default: System.err.println("Error during setting stats!");
+				break;
+			}
 		} else {
 			prop[2] = 0;
 		}
@@ -194,7 +226,24 @@ public class FeatureExtractionModel {
 			
 			if (tempProp[2] == 1) {
 				countS--;
+				
+				int label = getFeatureClassLabel(epoch);
+				switch (label) {
+				case 1: countWake++;
+					break;
+				case 2: countS1++;
+					break;
+				case 3: countS2++;
+					break;
+				case 4: countN++;
+					break;
+				case 5: countREM++;
+					break;
+				default: System.err.println("Error during setting stats!");
+					break;
+				}
 			}
+			
 			
 		}
 	}
@@ -279,7 +328,7 @@ public class FeatureExtractionModel {
 		if(classificationDone) {
 			int tmpLabel = getFeatureClassLabel(row);
 			
-			switch ((int) label) {
+			switch (tmpLabel) {
 			case 1: countWake--;
 				break;
 			case 2: countS1--;
@@ -290,9 +339,9 @@ public class FeatureExtractionModel {
 				break;
 			case 5: countREM--;
 				break;
+			case 0:	System.out.print("Case 0: SVM_Scale");			// Case 0 is just caused by svm_scale				
+				break;
 			default: System.err.println("Error during setting the class label!");
-//			System.out.println(label);
-//			System.exit(0);
 				break;
 			}
 		}
@@ -308,10 +357,9 @@ public class FeatureExtractionModel {
 			break;
 		case 5: countREM++;
 			break;
+		case 0:	System.out.print("Case 0: SVM_Scale");				// Case 0 is just caused by svm_scale
+			break;
 		default: System.err.println("Error during setting the class label!");
-//		System.out.println(intLabel);
-//		System.exit(0);
-
 			break;
 		}
 		
