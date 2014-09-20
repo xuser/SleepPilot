@@ -80,12 +80,8 @@
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#importHypnogrammAction" text="Import Hypnogramm" />
                 <MenuItem mnemonicParsing="false" onAction="#exportHypnogrammAction" text="Export Hypnogramm" />
-                <MenuItem mnemonicParsing="false" text="Close" />
-              </items>
-            </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
-              <items>
-                <MenuItem mnemonicParsing="false" text="Delete" />
+                <SeparatorMenuItem mnemonicParsing="false" />
+                <MenuItem mnemonicParsing="false" onAction="#closeAction" text="Close" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Show">
@@ -96,7 +92,7 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
               <items>
-                <MenuItem mnemonicParsing="false" text="About" />
+                <MenuItem mnemonicParsing="false" onAction="#aboutAction" text="About" />
               </items>
             </Menu>
           </menus>

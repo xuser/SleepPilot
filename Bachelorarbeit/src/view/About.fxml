@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <!-- TODO Add Nodes -->
+  <children>
+    <Pane layoutX="0.0" layoutY="0.0" prefHeight="100.0" prefWidth="277.0">
+      <children>
+        <Label layoutX="75.0" layoutY="22.0" styleClass="textLabel" text="Autoscore Version 1.0" />
+        <Label layoutX="57.0" layoutY="50.0" styleClass="textLabel" text="Copyright © 2014 Nils Finke" />
+        <Label layoutX="80.0" layoutY="71.0" styleClass="textLabel" text="mail@nils-finke.com" />
+      </children>
+    </Pane>
+  </children>
+  <stylesheets>
+    <URL value="@EvaluationWindow.css" />
+  </stylesheets>
+</AnchorPane>

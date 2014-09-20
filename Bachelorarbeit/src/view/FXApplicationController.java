@@ -49,6 +49,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -811,6 +812,36 @@ public class FXApplicationController implements Initializable{
 			hypnogramm.bringToFront();
 		}
 		
+	}
+	
+	@FXML
+	protected void closeAction() {
+		System.exit(0);
+	}
+	
+	@FXML
+	protected void aboutAction() {
+		Stage stage = new Stage();
+		AnchorPane addGrid = new AnchorPane();
+		
+		// Creating FXML Loader
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("About.fxml"));
+		loader.setController(this);
+		
+		// Try to load fxml file
+		try {
+			addGrid = loader.load();
+		} catch (IOException e) {
+			System.err.println("Error during loading About.fxml file!");
+			//e.printStackTrace();
+		}
+		
+		Scene scene = new Scene(addGrid);
+		
+		stage.setResizable(false);
+		stage.setScene(scene);
+		stage.show();
+		stage.setTitle("About");
 	}
 	
 	@FXML
