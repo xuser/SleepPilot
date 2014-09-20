@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import model.FXStartModel;
+import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.MainController;
@@ -60,6 +62,12 @@ public class FXStartController implements Initializable {
 
 	private RawDataModel dataPointsModel;
 	private FeatureExtractionModel featureExtractionModel;
+	
+	FXViewModel viewModel = new FXViewModel();
+	private FXStartModel startModel = new FXStartModel();
+
+	
+	private FXSettingController settings;
 	
 	// JavaFx components
 	private Stage primaryStage;
@@ -222,7 +230,7 @@ public class FXStartController implements Initializable {
 			
 						@Override
 						protected Void call() throws Exception {
-							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
 							return null;
 						}
 			
@@ -405,7 +413,7 @@ public class FXStartController implements Initializable {
 			
 						@Override
 						protected Void call() throws Exception {
-							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
 							
 							return null;
 						}
@@ -450,7 +458,7 @@ public class FXStartController implements Initializable {
 			
 						@Override
 						protected Void call() throws Exception {
-							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames);
+							MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
 							return null;
 						}
 			
@@ -484,6 +492,11 @@ public class FXStartController implements Initializable {
 		}
 		
 		
+	}
+	
+	@FXML
+	protected void settingOnAction() {
+		settings = new FXSettingController(startModel);
 	}
 
 	

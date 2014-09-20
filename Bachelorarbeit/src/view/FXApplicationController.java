@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import com.sun.javafx.scene.control.behavior.KeyBinding;
 
 import sun.security.jca.GetInstance.Instance;
+import model.FXStartModel;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -77,6 +78,7 @@ public class FXApplicationController implements Initializable{
 	private RawDataModel dataPointsModel;
 	private FeatureExtractionModel featureExtractionModel;
 	
+	private final boolean autoMode;
 	private boolean initStarted = false;
 	private String currentChannelName = null;
 	
@@ -118,12 +120,13 @@ public class FXApplicationController implements Initializable{
 	@FXML LineChart<Number, Number> lineChart;
 	@FXML NumberAxis yAxis;
 	
-	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
+	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode) {
 		primaryStage = new Stage();
 		this.dataReaderController = dataReaderController;
 		this.dataPointsModel = dataPointsModel;
 		this.featureExtractionModel = featureExtractionModel;
 		this.viewModel = viewModel;
+		this.autoMode = autoMode;
 		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
@@ -560,19 +563,23 @@ public class FXApplicationController implements Initializable{
 	
 	@SuppressWarnings("static-access")
 	private void updateProbabilities() {
-		double[] probabilities = featureExtractionModel.getPredictProbabilities(currentEpoch);
+		if (autoMode) {
+			double[] probabilities = featureExtractionModel.getPredictProbabilities(currentEpoch);
 		
-		double wake = (Math.round((probabilities[1] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2)) ;
-		double n1 = (Math.round((probabilities[2] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
-		double n2 = (Math.round((probabilities[0] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
-		double n3 = (Math.round((probabilities[3] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
-		double rem = (Math.round((probabilities[4] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+			double wake = (Math.round((probabilities[1] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2)) ;
+			double n1 = (Math.round((probabilities[2] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+			double n2 = (Math.round((probabilities[0] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+			double n3 = (Math.round((probabilities[3] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
+			double rem = (Math.round((probabilities[4] * 100) * Math.pow(10d, 2))/Math.pow(10d, 2));
 		
 
-		String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N: " + n3 + "%  REM: " + rem + "%";
+			String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N: " + n3 + "%  REM: " + rem + "%";
 
-		statusBarLabel2.setText(print);
-		statusBarHBox.setHgrow(statusBarLabel2, Priority.ALWAYS);
+			statusBarLabel2.setText(print);
+			statusBarHBox.setHgrow(statusBarLabel2, Priority.ALWAYS);
+		} else {
+			statusBarLabel2.setVisible(false);
+		}
 	}
 	
 	

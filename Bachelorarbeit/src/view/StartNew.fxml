@@ -76,6 +76,15 @@
     <Label fx:id="text1" layoutX="67.0" layoutY="244.0" styleClass="textLabel" text="Start Auto-Score Mode" />
     <Label fx:id="text2" layoutX="280.0" layoutY="244.0" styleClass="textLabel" text="Open an existing project" />
     <Label fx:id="text3" layoutX="489.0" layoutY="244.0" styleClass="textLabel" text="Advanced: Train the system" />
+    <Button layoutX="659.0" layoutY="7.0" minHeight="30.0" minWidth="32.0" mnemonicParsing="false" onAction="#settingOnAction" prefHeight="30.0" prefWidth="32.0" styleClass="settingButton" text="">
+      <graphic>
+        <ImageView fitHeight="25.0" fitWidth="25.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+          <image>
+            <Image url="@img/settings.png" />
+          </image>
+        </ImageView>
+      </graphic>
+    </Button>
   </children>
   <stylesheets>
     <URL value="@Application.css" />

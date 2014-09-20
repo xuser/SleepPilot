@@ -19,6 +19,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import model.FXStartModel;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -72,7 +73,7 @@ public class MainController extends Application {
 	
 	}
 	
-	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames) {
+	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames, final boolean autoMode) {
 		
 		if (trainMode == false) {
 
@@ -94,44 +95,50 @@ public class MainController extends Application {
 				final DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
 				dataReaderController.start();
 				
-				
-				//TODO: WICHTIG: Unbedingt wieder einkommentieren!!
-				FilterController filterController = new FilterController(dataPointsModel);
-				filterController.start();
-				
-				FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
-				featureExtractionController.start();
-				
-				SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
-								
-				while (supportVectorMaschineThreadStartedFlag == false) {
+				if (autoMode) {
+					FilterController filterController = new FilterController(dataPointsModel);
+					filterController.start();
 					
-			    		if (dataPointsModel.isReadingHeaderComplete()) {
-			    			double epochs = dataPointsModel.getNumberOf30sEpochs();
-			    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
-		                	double progress = calcEpoch / epochs;
-		                	startController.setProgressBar(progress);
-			    		}
+					FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
+					featureExtractionController.start();
 					
-					if (featureExtractionModel.getReadingAndCalculatingDone()) {
+					SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
+									
+					while (supportVectorMaschineThreadStartedFlag == false) {
 						
-						svmController.start();
-						supportVectorMaschineThreadStartedFlag = true;
+				    		if (dataPointsModel.isReadingHeaderComplete()) {
+				    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+				    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+			                	double progress = calcEpoch / epochs;
+			                	startController.setProgressBar(progress);
+				    		}
+						
+						if (featureExtractionModel.getReadingAndCalculatingDone()) {
+							
+							svmController.start();
+							supportVectorMaschineThreadStartedFlag = true;
+						}
 					}
-				}
-				
-				int i = 0;
-				while(featureExtractionModel.getClassificationDone() == false) {
-	    			double epochs = dataPointsModel.getNumberOf30sEpochs();
-	    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
-                	double progress = calcEpoch / epochs;
-                	startController.setProgressBar(progress);
-  
-                	System.out.print(".");
-                	if (i % 200 == 0) {
-                		System.out.println("");
-                	}
-                	i++;
+					
+					int i = 0;
+					while(featureExtractionModel.getClassificationDone() == false) {
+		    			double epochs = dataPointsModel.getNumberOf30sEpochs();
+		    			double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
+	                	double progress = calcEpoch / epochs;
+	                	startController.setProgressBar(progress);
+	  
+	                	System.out.print(".");
+	                	if (i % 200 == 0) {
+	                		System.out.println("");
+	                	}
+	                	i++;
+					}
+				} else {
+					while (!dataPointsModel.isReadingHeaderComplete()) {
+						if (dataPointsModel.isReadingHeaderComplete()) {
+							featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
+						}
+					}
 				}
 				
 				//Create application controller
@@ -140,7 +147,7 @@ public class MainController extends Application {
 					@Override
 					public void run() {
 						FXViewModel viewModel = new FXViewModel();
-						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel);
+						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, autoMode);
 						viewModel.setAppController(appController);
 						primaryStage.close();
 					}
