@@ -56,6 +56,8 @@ public class FeatureExtractionModel {
 	 */
 	private int numberOfcalculatedEpoch = 0;
 	
+	private String selectedModel;
+	
 	/**
 	 * Keeps the number of feature vectors.
 	 */
@@ -202,108 +204,6 @@ public class FeatureExtractionModel {
 			countS++;
 			epochProperties.put(epoch, prop);
 		}
-	}
-	
-	/**
-	 * Add additional information to some epochs (HashMap). The key keeps the respective epoch number
-	 * and the value holds an array with the information.
-	 * 
-	 * IMPORTANT: Only add values to the hashmap if any additional information have to be set
-	 * 
-	 * 1st in array: 1 if artefact, else 0
-	 * 2nd in array: 1 if arrousal, else 0
-	 * 3hd in array: 1 if stimulation, else 0
-	 */
-	public void addEpochProperty(int epoch, boolean artefact, boolean arrousal, boolean stimulation) {
-						
-		Integer[] tempProp = {0,0,0};					// Initialize to avoid exceptions later on
-		if (epochProperties.containsKey(epoch)) {
-			tempProp = epochProperties.get(epoch);
-			epochProperties.remove(epoch);
-			
-			if (tempProp[0] == 1) {
-				countA--;
-			}
-			
-			if (tempProp[1] == 1) {
-				countMA--;
-			}
-			
-			if (tempProp[2] == 1) {
-				countS--;
-				
-				int label = getFeatureClassLabel(epoch);
-				switch (label) {
-				case 1: countWake++;
-					break;
-				case 2: countS1++;
-					break;
-				case 3: countS2++;
-					break;
-				case 4: countN++;
-					break;
-				case 5: countREM++;
-					break;
-				default: System.err.println("Error during setting stats!");
-					break;
-				}
-			}
-			
-		}
-		
-		Integer[] prop = new Integer[3];
-
-		if (artefact || tempProp[0] == 1) {
-			prop[0] = 1;
-			countA++;
-		} else {
-			prop[0] = 0;
-		}
-
-		if (arrousal || tempProp[1] == 1) {
-			prop[1] = 1;
-			countMA++;
-		} else {
-			prop[1] = 0;
-		}
-
-		if (stimulation || tempProp[2] == 1) {
-			
-			if(tempProp[0] == 1) {
-				prop[0] = 0;
-				countA--;			
-			}
-			if (tempProp[1] == 1) {
-				prop[1] = 0;
-				countMA--;
-			}
-			
-			prop[2] = 1;
-			countS++;
-			
-			int label = getFeatureClassLabel(epoch);
-			switch (label) {
-			case 1: countWake--;
-				break;
-			case 2: countS1--;
-				break;
-			case 3: countS2--;
-				break;
-			case 4: countN--;
-				break;
-			case 5: countREM--;
-				break;
-			default: System.err.println("Error during setting stats!");
-				break;
-			}
-		} else {
-			prop[2] = 0;
-		}
-
-		epochProperties.put(epoch, prop);
-		
-		
-		
 	}
 	
 	public void clearProperties(int epoch) {
@@ -687,6 +587,20 @@ public class FeatureExtractionModel {
 	 */
 	public int getCountS() {
 		return countS;
+	}
+
+	/**
+	 * @return the selectedModel
+	 */
+	public String getSelectedModel() {
+		return selectedModel;
+	}
+
+	/**
+	 * @param selectedModel the selectedModel to set
+	 */
+	public void setSelectedModel(String selectedModel) {
+		this.selectedModel = selectedModel;
 	}
 	
 	

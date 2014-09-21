@@ -83,6 +83,7 @@ public class FXStartController implements Initializable {
 	@FXML Button newProject;		
 	@FXML Button openProject;
 	@FXML Button createModel;
+	@FXML Button setting;
 	
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
@@ -127,6 +128,7 @@ public class FXStartController implements Initializable {
 		createModelForm.setVisible(false);
 		
 		progressBar.setVisible(false);
+		
 	}
 	
 	@Override
@@ -163,7 +165,12 @@ public class FXStartController implements Initializable {
 				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
-					startAction(file);
+					if (startModel.getSelectedModel() != null) {
+						featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
+						startAction(file);
+					} else {
+						popUp.showPopupMessage("Please first go to settings and select a model!", primaryStage);
+					}
 				} 			
 				
 			}
@@ -424,6 +431,8 @@ public class FXStartController implements Initializable {
 					newProject.setDisable(true);		
 					openProject.setDisable(true);
 					createModel.setDisable(true);
+					setting.setDisable(true);
+					
 					
 					text1.getStyleClass().removeAll("textLabel");
 					text1.getStyleClass().add("textLabelDisabled");
@@ -468,6 +477,7 @@ public class FXStartController implements Initializable {
 					newProject.setDisable(true);		
 					openProject.setDisable(true);
 					createModel.setDisable(true);
+					setting.setDisable(true);
 					
 					text1.getStyleClass().removeAll("textLabel");
 					text1.getStyleClass().add("textLabelDisabled");

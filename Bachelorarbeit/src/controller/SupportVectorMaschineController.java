@@ -194,11 +194,13 @@ public class SupportVectorMaschineController extends Thread {
 			}
 		    
 		    System.out.println("Finished training of the SVM! C: " + param.C + " Gamma: " + param.gamma);
-		    respectiveFeatureExtractionModel.setClassificationDone(true);
+//		    respectiveFeatureExtractionModel.setClassificationDone(true);
 		    
 		} else {
 			
-			String loadModelName = "model" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
+//			String loadModelName = "model" + respectiveFeatureExtractionModel.getChannelName().toString().replaceAll(" ", "");
+			String loadModelName = respectiveFeatureExtractionModel.getSelectedModel().replaceAll(" ", "");
+			System.out.println("LoadName: " + loadModelName);
 			
 			try {
 				model = svm.svm_load_model(loadModelName);
@@ -271,9 +273,9 @@ public class SupportVectorMaschineController extends Thread {
 			}
 			
 			System.out.println("Finished testing!");
-			respectiveFeatureExtractionModel.setClassificationDone(true);
 		}
 		
+		respectiveFeatureExtractionModel.setClassificationDone(true);
 	}
 
 	

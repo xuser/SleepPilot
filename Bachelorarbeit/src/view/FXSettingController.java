@@ -12,7 +12,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
@@ -20,11 +22,12 @@ import javafx.stage.Stage;
 public class FXSettingController implements Initializable {
 
 	private Stage stage;
-	private FXStartModel startModel;
-	private boolean autoModeFlag;
+	private FXStartModel startModel = null;
+	private boolean autoModeFlag = true;
 	
-	@FXML private ToggleButton classificationFlag;
+	@FXML private Button classificationFlag;
 	@FXML private ChoiceBox<String> choiceBox;
+	@FXML private Label label2;
 	
 	public FXSettingController(FXStartModel startModel) {
 		
@@ -59,13 +62,6 @@ public class FXSettingController implements Initializable {
 			if (file.getName().contains("model")) {
 				choices.add(file.getName());
 			}
-			
-//			for (int i = 0; i < channelNames.length; i++) { 
-//				if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
-//					flag = true;
-//					channelNumbersToRead.add(i);
-//				} 	
-//			}
 		}
 		
 		choiceBox.setItems(choices);
@@ -81,6 +77,10 @@ public class FXSettingController implements Initializable {
 	@FXML
 	protected void applyAction(){
 		startModel.setAutoModeFlag(autoModeFlag);
+		
+		String item = choiceBox.getSelectionModel().getSelectedItem();
+		startModel.setSelectedModel(item);
+		
 		stage.close();
 	}
 	
@@ -89,9 +89,16 @@ public class FXSettingController implements Initializable {
 		if (classificationFlag.getText().equals("ON")) {
 			classificationFlag.setText("OFF");
 			autoModeFlag = false;
+			choiceBox.setDisable(true);
+			label2.getStyleClass().removeAll("textLabel");
+			label2.getStyleClass().add("textLabelDisabled");
+			
 		} else {
 			classificationFlag.setText("ON");
 			autoModeFlag = true;
+			choiceBox.setDisable(false);
+			label2.getStyleClass().removeAll("textLabelDisabled");
+			label2.getStyleClass().add("textLabel");
 		}
 	}
 	
