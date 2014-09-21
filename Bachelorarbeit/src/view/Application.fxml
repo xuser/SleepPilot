@@ -9,6 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
 <BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
@@ -65,6 +66,12 @@
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" fx:id="x2" />
           </padding>
         </Pane>
+        <Pane fx:id="overlay2" prefHeight="200.0" prefWidth="200.0">
+          <children>
+            <Line fx:id="line1" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="106.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+            <Line fx:id="line2" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="136.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+          </children>
+        </Pane>
       </children>
     </StackPane>
   </center>
@@ -88,6 +95,7 @@
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Evaluation Window" />
                 <MenuItem mnemonicParsing="false" onAction="#showHypnogrammAction" text="Hypnogram" />
+                <MenuItem mnemonicParsing="false" onAction="#help1MenuItemOnAction" text="Auxiliary Ruler" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
@@ -141,14 +149,6 @@
                 </FXCollections>
               </items>
             </ChoiceBox>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
-              <children>
-                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" focusTraversable="false" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
-              </children>
-              <padding>
-                <Insets left="6.0" />
-              </padding>
-            </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Zoom:" />
@@ -158,6 +158,16 @@
               </padding>
             </HBox>
             <TextField id="toolBarGoto" fx:id="toolBarZoom" focusTraversable="false" prefWidth="38.0" text="5.0" />
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
+              <children>
+                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" focusTraversable="false" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
+              </children>
+              <padding>
+                <Insets left="6.0" />
+              </padding>
+            </HBox>
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <Button fx:id="help1" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="20µV" />
           </items>
         </ToolBar>
       </children>

@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
+
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -46,6 +47,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -77,34 +79,41 @@ public class FXApplicationController implements Initializable{
 	private BorderPane mainGrid;	
 	private Scene scene;
 	
-	@FXML ToggleButton awakeButton;
-	@FXML ToggleButton s1Button;
-	@FXML ToggleButton s2Button;
-	@FXML ToggleButton s3Button;
-	@FXML ToggleButton remButton;
-	@FXML ToggleButton artefactButton;
-	@FXML ToggleButton arrousalButton;
-	@FXML ToggleButton stimulationButton;
-	@FXML Button clearButton;
+	@FXML private ToggleButton awakeButton;
+	@FXML private ToggleButton s1Button;
+	@FXML private ToggleButton s2Button;
+	@FXML private ToggleButton s3Button;
+	@FXML private ToggleButton remButton;
+	@FXML private ToggleButton artefactButton;
+	@FXML private ToggleButton arrousalButton;
+	@FXML private ToggleButton stimulationButton;
+	@FXML private Button clearButton;
 	
-	@FXML Label statusBarLabel1;
-	@FXML Label statusBarLabel2;
-	@FXML TextField toolBarGoto;
-	@FXML TextField toolBarZoom;
+	@FXML private Button help1;
+	private boolean help1Flag = false;
 	
-	@FXML GridPane statusBarGrid;
-	@FXML ToolBar statusBar;
+	@FXML private Label statusBarLabel1;
+	@FXML private Label statusBarLabel2;
+	@FXML private TextField toolBarGoto;
+	@FXML private TextField toolBarZoom;
 	
-	@FXML Pane overlay;
-	@FXML StackPane stackPane;
-	@FXML HBox statusBarHBox;
+	@FXML private GridPane statusBarGrid;
+	@FXML private ToolBar statusBar;
 	
-	@FXML ChoiceBox<String> toolBarChoiceBox;
-	@FXML CheckBox toolBarCheckBox;
+	@FXML private Pane overlay;
+	@FXML private Pane overlay2;
+	@FXML private StackPane stackPane;
+	@FXML private HBox statusBarHBox;
 	
-	@FXML MenuItem showAdtVisualization;
-	@FXML LineChart<Number, Number> lineChart;
-	@FXML NumberAxis yAxis;
+	@FXML private ChoiceBox<String> toolBarChoiceBox;
+	@FXML private CheckBox toolBarCheckBox;
+	
+	@FXML private MenuItem showAdtVisualization;
+	@FXML private LineChart<Number, Number> lineChart;
+	@FXML private NumberAxis yAxis;
+	
+	@FXML private Line line1;
+	@FXML private Line line2;
 	
 	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode) {
 		primaryStage = new Stage();
@@ -177,6 +186,9 @@ public class FXApplicationController implements Initializable{
 		toolBarChoiceBox.getSelectionModel().selectFirst();
 		currentChannelName = toolBarChoiceBox.getItems().get(0);
 		
+		line1.setVisible(false);
+		line2.setVisible(false);
+		
 		statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 		statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
 		statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
@@ -186,9 +198,11 @@ public class FXApplicationController implements Initializable{
 		showLabelsForEpoch(activeChannelNumbers);
 				
 		checkProp();
+		
 		if (autoMode) {
 			updateStage();			
 		}
+		
 		updateProbabilities();
 		
 	}
@@ -196,12 +210,35 @@ public class FXApplicationController implements Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
+		//TODO
+		overlay2.setOnMouseMoved(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent mouse) {
+				
+//				System.out.println("getY: " + mouse.getY());
+
+//				double mousePos = overlay2.getHeight() - mouse.getY();
+//				mousePos = mousePos / overlay2.getHeight() * 100;
+				
+				if (help1Flag) {
+					paintSpacing(mouse.getY());
+				}
+			}
+			
+		});
+		
 		primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
 		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
 
 				statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+				
+				if (help1Flag) {
+					line1.setEndX(overlay2.getWidth());
+					line2.setEndX(overlay2.getWidth());
+				}
 		    	
 		    }
 		});
@@ -221,7 +258,7 @@ public class FXApplicationController implements Initializable{
 		    }
 		});
 		
-		lineChart.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		overlay2.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
 			@Override
 			public void handle(MouseEvent arg0) {
@@ -295,6 +332,10 @@ public class FXApplicationController implements Initializable{
 					} else {
 						evaluationWindow.bringToFront();
 					}
+				}
+				
+				if (ke.getCode() == KeyCode.L) {
+					help1OnAction();
 				}
 				
 				if (ke.getCode() == KeyCode.UP) {					
@@ -689,6 +730,13 @@ public class FXApplicationController implements Initializable{
 		}
 	}
 	
+	//TODO
+	private void paintSpacing(double yAxis) {
+		
+		line1.setLayoutY(yAxis + 5);
+		line2.setLayoutY(yAxis - 5);
+
+	}
 	
 	private void showEpoch(int numberOfEpoch) {
 		LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -751,6 +799,30 @@ public class FXApplicationController implements Initializable{
 //		
 //		}
 		
+	}
+	
+	@FXML
+	protected void help1OnAction() {
+		if (help1Flag){
+			help1Flag = false;
+			line1.setVisible(false);
+			line2.setVisible(false);
+		} else {
+			help1Flag = true;
+			line1.setVisible(true);
+			line2.setVisible(true);
+			
+			line1.setEndX(overlay2.getWidth());
+			line2.setEndX(overlay2.getWidth());
+			
+		}
+		
+		lineChart.requestFocus();
+	}
+	
+	@FXML
+	protected void help1MenuItemOnAction() {
+		help1OnAction();
 	}
 	
 	@FXML
