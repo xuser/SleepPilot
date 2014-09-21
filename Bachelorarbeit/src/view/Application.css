@@ -132,6 +132,22 @@
 	
 }
 
+.popupButton{
+	-fx-background-color: rgb(255,88,88);
+	-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.5, 0.0, 0.0);
+	-fx-border-style: dotted;
+	-fx-border-width: 1px 1px 1px 1px;
+	-fx-border-color: red;
+	-fx-border-radius: 2; 
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+	-fx-font-size: 12.0;
+}
+
+.popupButton:hover{
+	-fx-background-color: rgba(255,88,88,0.8);
+}
+
 .progress-bar .track{
     -fx-background-radius: 0, 0, 0, 0;
    	-fx-alignment: center;

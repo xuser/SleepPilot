@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -84,6 +85,7 @@ public class FXStartController implements Initializable {
 	@FXML Button openProject;
 	@FXML Button createModel;
 	@FXML Button setting;
+	@FXML Button cancelButton;
 	
 	@FXML Polygon newProjectForm;
 	@FXML Polygon openProjectForm;
@@ -128,6 +130,7 @@ public class FXStartController implements Initializable {
 		createModelForm.setVisible(false);
 		
 		progressBar.setVisible(false);
+		cancelButton.setVisible(false);
 		
 	}
 	
@@ -428,6 +431,7 @@ public class FXStartController implements Initializable {
 					};
 					
 					progressBar.setVisible(true);
+					cancelButton.setVisible(true);
 					newProject.setDisable(true);		
 					openProject.setDisable(true);
 					createModel.setDisable(true);
@@ -474,6 +478,7 @@ public class FXStartController implements Initializable {
 					};
 									
 					progressBar.setVisible(true);
+					cancelButton.setVisible(true);
 					newProject.setDisable(true);		
 					openProject.setDisable(true);
 					createModel.setDisable(true);
@@ -507,6 +512,27 @@ public class FXStartController implements Initializable {
 	@FXML
 	protected void settingOnAction() {
 		settings = new FXSettingController(startModel);
+	}
+	
+	@FXML
+	protected void cancelButtonOnAction() {
+		StringBuilder cmd = new StringBuilder();
+        cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");
+        
+        for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            cmd.append(jvmArg + " ");
+        }
+        
+        cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
+        cmd.append(MainController.class.getName()).append(" ");
+        
+        try {
+			Runtime.getRuntime().exec(cmd.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+        System.exit(0);
 	}
 
 	
