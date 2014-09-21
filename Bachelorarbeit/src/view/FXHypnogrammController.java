@@ -63,7 +63,7 @@ public class FXHypnogrammController implements Initializable{
 		stage.setResizable(false);
 		stage.setScene(scene);
 		stage.show();
-		stage.setTitle("Hypnogramm");
+		stage.setTitle("Hypnogram");
 		
 		toolBarLabel.setText("Experimentee: " + dataPointsModel.getOrgFile().getName());
 		

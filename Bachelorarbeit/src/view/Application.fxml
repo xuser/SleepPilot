@@ -87,7 +87,7 @@
             <Menu mnemonicParsing="false" text="Show">
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Evaluation Window" />
-                <MenuItem mnemonicParsing="false" onAction="#showHypnogrammAction" text="Hypogram" />
+                <MenuItem mnemonicParsing="false" onAction="#showHypnogrammAction" text="Hypnogram" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
