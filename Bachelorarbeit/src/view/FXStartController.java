@@ -165,7 +165,7 @@ public class FXStartController implements Initializable {
 				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
-					if (startModel.getSelectedModel() != null) {
+					if ((startModel.getSelectedModel() != null) || (startModel.isAutoModeFlag() == false)) {
 						featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
 						startAction(file);
 					} else {
