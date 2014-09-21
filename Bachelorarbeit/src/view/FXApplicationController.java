@@ -182,7 +182,9 @@ public class FXApplicationController implements Initializable{
 		showLabelsForEpoch(activeChannelNumbers);
 				
 		checkProp();
-		updateStage();
+		if (autoMode) {
+			updateStage();			
+		}
 		updateProbabilities();
 		
 	}

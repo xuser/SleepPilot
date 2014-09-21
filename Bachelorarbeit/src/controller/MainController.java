@@ -125,6 +125,7 @@ public class MainController extends Application {
 						if (dataPointsModel.isReadingHeaderComplete()) {
 							featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
 						}
+						System.out.println(".");
 					}
 				}
 				
