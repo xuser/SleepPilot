@@ -101,7 +101,7 @@ public class FXStartController implements Initializable {
 		this.featureExtractionModel = featureExtractionModel;
 		
 		// Creating FXML Loader
-		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("StartNew.fxml"));
+		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Start.fxml"));
 		loader.setController(this);
 		
 		// Try to load fxml file
