@@ -578,7 +578,7 @@ public class FXApplicationController implements Initializable{
 			statusBarLabel2.setText(print);
 			statusBarHBox.setHgrow(statusBarLabel2, Priority.ALWAYS);
 		} else {
-			statusBarLabel2.setVisible(false);
+			statusBarLabel2.setText("Manual Mode");
 		}
 	}
 	

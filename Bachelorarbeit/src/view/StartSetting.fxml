@@ -12,9 +12,9 @@
   <children>
     <Pane layoutX="0.0" layoutY="0.0" prefHeight="158.0" prefWidth="347.0" styleClass="background">
       <children>
-        <Label layoutX="66.0" layoutY="32.0" styleClass="textLabel" text="Auto Classification Mode:" />
-        <ToggleButton fx:id="classificationFlag" layoutX="239.0" layoutY="29.0" mnemonicParsing="false" onAction="#classificationFlagAction" styleClass="toolBarButtons" text="ON" />
-        <ChoiceBox layoutX="185.0" layoutY="74.0" styleClass="choiceBox">
+        <Label layoutX="48.0" layoutY="32.0" styleClass="textLabel" text="Auto Classification Mode:" />
+        <ToggleButton fx:id="classificationFlag" layoutX="215.0" layoutY="29.0" mnemonicParsing="false" onAction="#classificationFlagAction" styleClass="toolBarButtons" text="ON" />
+        <ChoiceBox layoutX="215.0" layoutY="74.0" styleClass="choiceBox">
           <items>
             <FXCollections fx:factory="observableArrayList">
               <String fx:value="Item 1" />
@@ -23,7 +23,7 @@
             </FXCollections>
           </items>
         </ChoiceBox>
-        <Label layoutX="74.0" layoutY="77.0" styleClass="textLabel" text="Select Model:" />
+        <Label layoutX="48.0" layoutY="77.0" styleClass="textLabel" text="Select Model:" />
         <Button layoutX="142.0" layoutY="124.0" mnemonicParsing="false" onAction="#applyAction" styleClass="toolBarButtons" text="Apply" />
       </children>
     </Pane>
