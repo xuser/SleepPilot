@@ -114,6 +114,10 @@ public class FXApplicationController implements Initializable{
 		this.viewModel = viewModel;
 		this.autoMode = autoMode;
 		
+		if (!autoMode) {
+			featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
+		}
+		
 		// Creating FXML Loader
 		FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
 		loader.setController(this);

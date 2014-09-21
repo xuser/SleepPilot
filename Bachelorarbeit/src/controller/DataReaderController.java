@@ -27,6 +27,8 @@ public class DataReaderController extends Thread {
 	private LinkedList<Integer> channelsToRead;
 	private int numberOfSamplesForOneEpoch;
 	
+	private boolean autoMode;
+	
 	// These two variables are necessary for setting the value into the right dataPoint position.
 	int column = 0;
 	int row = 0;
@@ -63,12 +65,14 @@ public class DataReaderController extends Thread {
 	
 	/**
 	 * Constructor which initialize this reader class.
+	 * @param autoMode 
 	 * @throws IOException 
 	 */
-	public DataReaderController(File fileLocation, RawDataModel dataPointsModel, LinkedList<Integer> channelsToRead) throws IOException {
+	public DataReaderController(File fileLocation, RawDataModel dataPointsModel, LinkedList<Integer> channelsToRead, boolean autoMode) throws IOException {
 		file = fileLocation;
 		respectiveModel = dataPointsModel;
 		this.channelsToRead = channelsToRead;
+		this.autoMode = autoMode;
 		
 		respectiveModel.setOrgFile(file);
 	
@@ -90,21 +94,23 @@ public class DataReaderController extends Thread {
 			respectiveModel.setReadingHeaderComplete(true);
 			
 			numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-
-			if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
-				for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-					for (int i = 0; i < channelsToRead.size(); i++) {
-						
-						// x is the epoch, which have to be calculated
-						// i is the channel, which have to be calculated
-						tmpEpoch = readSMRChannel(dataFile, channelsToRead.get(i), x);
-						respectiveModel.addRawEpoch(tmpEpoch);
-		
+			
+			if (autoMode) {
+				if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
+					for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+						for (int i = 0; i < channelsToRead.size(); i++) {
+							
+							// x is the epoch, which have to be calculated
+							// i is the channel, which have to be calculated
+							tmpEpoch = readSMRChannel(dataFile, channelsToRead.get(i), x);
+							respectiveModel.addRawEpoch(tmpEpoch);
+			
+						}
 					}
+					respectiveModel.setReadingComplete(true);
+				} else {
+					System.err.println("Channel #" + channelsToRead.get(0) + ": No waveform data found!");
 				}
-				respectiveModel.setReadingComplete(true);
-			} else {
-				System.err.println("Channel #" + channelsToRead.get(0) + ": No waveform data found!");
 			}
 			
 			System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
@@ -121,45 +127,46 @@ public class DataReaderController extends Thread {
 	
 			printPropertiesVHDR();
 			
-			if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
-				
-				if (dataFormat.equals(DataFormat.BINARY)) {
-					switch (binaryFormat) {
-					case INT_16:
-						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-							for (int i = 0; i < channelsToRead.size(); i++) {
-								
-								//TODO: WICHTIG: Unbedingt die nächsten beiden Zeilen wieder einkommentieren, sobald der Test fertig ist.
-								// x is the epoch, which have to be calculated
-								// i is the channel, which have to be calculated
-								LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
-								respectiveModel.addRawEpoch(epoch);
+			if (autoMode) {
+				if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
+					
+					if (dataFormat.equals(DataFormat.BINARY)) {
+						switch (binaryFormat) {
+						case INT_16:
+							for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+								for (int i = 0; i < channelsToRead.size(); i++) {
+									
+									// x is the epoch, which have to be calculated
+									// i is the channel, which have to be calculated
+									LinkedList<Double> epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
+									respectiveModel.addRawEpoch(epoch);
+								}
 							}
-						}
-						respectiveModel.setReadingComplete(true);
-						break;
-					case IEEE_FLOAT_32: 
-						for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-							for (int i = 0; i < channelsToRead.size(); i++) {
-								LinkedList<Double> epoch = readDataFileFloat(dataFile, channelsToRead.get(i), x);
-								respectiveModel.addRawEpoch(epoch);
+							respectiveModel.setReadingComplete(true);
+							break;
+						case IEEE_FLOAT_32: 
+							for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
+								for (int i = 0; i < channelsToRead.size(); i++) {
+									LinkedList<Double> epoch = readDataFileFloat(dataFile, channelsToRead.get(i), x);
+									respectiveModel.addRawEpoch(epoch);
+								}
 							}
+							respectiveModel.setReadingComplete(true);
+							break;
+						default: System.err.println("No compatible binary format!");
+							break;
 						}
-						respectiveModel.setReadingComplete(true);
-						break;
-					default: System.err.println("No compatible binary format!");
-						break;
+					//} else if (dataFormat.equals(DataFormat.ASCII)) {
+					//	readDataFileAscii(dataFileForAscii);
+						
+					} else {
+						System.err.println("No compatible data format!");
+						
 					}
-				//} else if (dataFormat.equals(DataFormat.ASCII)) {
-				//	readDataFileAscii(dataFileForAscii);
 					
 				} else {
-					System.err.println("No compatible data format!");
-					
+					System.err.println("No supported data orientation, data type or count of skip columns! ");
 				}
-				
-			} else {
-				System.err.println("No supported data orientation, data type or count of skip columns! ");
 			}
 		
 		}

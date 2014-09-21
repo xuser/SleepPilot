@@ -92,7 +92,7 @@ public class MainController extends Application {
 				}
 				
 				// ChannelNumbersToRead contains all channel numbers, which have to be calculated
-				final DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead);
+				final DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead, autoMode);
 				dataReaderController.start();
 				
 				if (autoMode) {
@@ -120,13 +120,6 @@ public class MainController extends Application {
 						}
 					}
 					
-				} else {
-					while (!dataPointsModel.isReadingHeaderComplete()) {
-						if (dataPointsModel.isReadingHeaderComplete()) {
-							featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
-						}
-						System.out.println(".");
-					}
 				}
 				
 				//Create application controller
