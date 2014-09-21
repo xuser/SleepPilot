@@ -52,10 +52,23 @@ public class FXSettingController implements Initializable {
 		stage.show();
 		stage.setTitle("Start Settings");
 		
-//		ObservableList<String> choices = FXCollections.observableArrayList();
-//		choices.add("Test");
-//		choiceBox.setItems(choices);
-//		choiceBox.getSelectionModel().selectFirst();
+		ObservableList<String> choices = FXCollections.observableArrayList();
+		
+		File folder = new File(".").getAbsoluteFile();
+		for( File file : folder.listFiles() ) {	
+			if (file.getName().contains("model")) {
+				choices.add(file.getName());
+			}
+			
+//			for (int i = 0; i < channelNames.length; i++) { 
+//				if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
+//					flag = true;
+//					channelNumbersToRead.add(i);
+//				} 	
+//			}
+		}
+		
+		choiceBox.setItems(choices);
 		
 	}
 	

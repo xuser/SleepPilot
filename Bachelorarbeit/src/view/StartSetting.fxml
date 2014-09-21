@@ -14,7 +14,7 @@
       <children>
         <Label layoutX="48.0" layoutY="32.0" styleClass="textLabel" text="Auto Classification Mode:" />
         <ToggleButton fx:id="classificationFlag" layoutX="215.0" layoutY="29.0" mnemonicParsing="false" onAction="#classificationFlagAction" styleClass="toolBarButtons" text="ON" />
-        <ChoiceBox layoutX="215.0" layoutY="74.0" styleClass="choiceBox">
+        <ChoiceBox fx:id="choiceBox" layoutX="215.0" layoutY="74.0" styleClass="choiceBox">
           <items>
             <FXCollections fx:factory="observableArrayList">
               <String fx:value="Item 1" />

@@ -4,7 +4,6 @@ import help.BinaryFormat;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,12 +11,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
-
-import com.sun.javafx.scene.control.behavior.KeyBinding;
-
-import sun.security.jca.GetInstance.Instance;
-import model.FXStartModel;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -30,11 +23,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -52,15 +40,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -68,6 +53,7 @@ public class FXApplicationController implements Initializable{
 	
 	private FXHypnogrammController hypnogramm;
 	private FXEvaluationWindowController evaluationWindow;
+	
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
 	
