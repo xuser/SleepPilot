@@ -956,7 +956,12 @@ public class FXApplicationController implements Initializable{
 				popUp.createPopup("Error during importing Hypnogramm!");
 				e.printStackTrace();
 			}
-		} 
+		}
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
 	}
 	
 	// First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
