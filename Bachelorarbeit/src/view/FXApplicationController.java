@@ -216,13 +216,34 @@ public class FXApplicationController implements Initializable{
 			@Override
 			public void handle(MouseEvent mouse) {
 				
-//				System.out.println("getY: " + mouse.getY());
-
-//				double mousePos = overlay2.getHeight() - mouse.getY();
-//				mousePos = mousePos / overlay2.getHeight() * 100;
+				if (help1Flag) {					
+					
+					LinkedList<Integer> activeChannels = returnActiveChannels();
+					double overlay2Height = overlay2.getHeight();
+//					overlay2Height = overlay2Height - (overlay2Height / activeChannels.size());
+					
+					double heigtForChannel = overlay2Height / activeChannels.size();
+//					heigtForChannel = (overlay2.getHeight() + heigtForChannel) / activeChannels.size();
+					
+					double posOnOverlay = mouse.getY();
+					System.out.println("PosOnOverlay: " + posOnOverlay);
+					
+					double activeZoom = 0.0;
+					for (int i = 1; i <= activeChannels.size(); i++) {
+						if (posOnOverlay < (heigtForChannel * i) && posOnOverlay > (heigtForChannel * (i-1))) {
+							activeZoom = getZoomFromChannel(activeChannels.get(i-1));
+							System.out.println("Actice Channel: " + activeChannels.get(i-1));
+							System.out.println("Actice Zoom:  " + activeZoom);
+						}
+					}
+										
+					double space = 20.0/100.0 * activeZoom;
+					System.out.println("Space: " + space);
+					
+					// Now calculate the number of pixels from the microvolt size
+					space = (space/100.0) * overlay2.getHeight();
 				
-				if (help1Flag) {
-					paintSpacing(mouse.getY());
+					paintSpacing(mouse.getY(), space);
 				}
 			}
 			
@@ -236,8 +257,8 @@ public class FXApplicationController implements Initializable{
 				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 				
 				if (help1Flag) {
-					line1.setEndX(overlay2.getWidth());
-					line2.setEndX(overlay2.getWidth());
+					line1.setEndX(lineChart.getWidth());
+					line2.setEndX(lineChart.getWidth());
 				}
 		    	
 		    }
@@ -693,7 +714,6 @@ public class FXApplicationController implements Initializable{
 		
 		overlay.getChildren().clear();
 		double labelHeight = overlay.getHeight() / activeChannels.size();
-		double offset = (overlay.getHeight()-labelHeight) / activeChannels.size();
 		
 		for(int i = 0; i < activeChannels.size(); i++) {
 						
@@ -702,7 +722,7 @@ public class FXApplicationController implements Initializable{
 			label.setStyle("-fx-font-family: sans-serif;");
 			label.setLayoutX(18);
 			
-			double labelPos = ((i+1) * offset);			
+			double labelPos = ((i+1) * labelHeight - (labelHeight/2));			
 			label.setLayoutY(labelPos + 15);
 			 
 			overlay.getChildren().add(label);
@@ -730,25 +750,26 @@ public class FXApplicationController implements Initializable{
 		}
 	}
 	
-	//TODO
-	private void paintSpacing(double yAxis) {
+	private void paintSpacing(double yAxis, double space) {
 		
-		line1.setLayoutY(yAxis + 5);
-		line2.setLayoutY(yAxis - 5);
+		double tmpSpace = space/2;
+		
+		line1.setLayoutY(yAxis + tmpSpace);
+		line2.setLayoutY(yAxis - tmpSpace);
 
 	}
 	
 	private void showEpoch(int numberOfEpoch) {
 		LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 		
-		double offsetSize = 100 / (activeChannelNumbers.size() + 1);
+		double offsetSize = 100 / (activeChannelNumbers.size());
 		int modulo = 3;					// Take every second sample
 				
 		for (int x = 0; x < activeChannelNumbers.size(); x++) {
 
 			double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
 			
-			double realOffset = ((100-offsetSize) - (x * offsetSize));
+			double realOffset = 100 - ((x+1) * offsetSize) + (offsetSize / 2);
 			
 			@SuppressWarnings("rawtypes")
 			XYChart.Series series = new XYChart.Series();
@@ -812,8 +833,8 @@ public class FXApplicationController implements Initializable{
 			line1.setVisible(true);
 			line2.setVisible(true);
 			
-			line1.setEndX(overlay2.getWidth());
-			line2.setEndX(overlay2.getWidth());
+			line1.setEndX(lineChart.getWidth());
+			line2.setEndX(lineChart.getWidth());
 			
 		}
 		
