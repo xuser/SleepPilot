@@ -28,7 +28,7 @@
         <NumberAxis autoRanging="false" forceZeroInRange="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
       </xAxis>
       <yAxis>
-        <NumberAxis autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickUnit="1.0" upperBound="9.0">
+        <NumberAxis animated="false" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickMarkVisible="false" tickUnit="1.0" upperBound="9.0">
           <tickLabelFill>
             <Color blue="0.375" green="0.375" red="0.375" fx:id="x1" />
           </tickLabelFill>

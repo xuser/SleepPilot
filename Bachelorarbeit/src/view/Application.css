@@ -78,6 +78,11 @@
 	-fx-background-color: rgba(121,191,236,0.5);
 }
 
+.separator .line {
+    -fx-background-color: transparent;
+    -fx-border-width: 0.053333em;
+}
+
 
 .choiceBox{
 	-fx-background-color: rgb(76,136,174);
