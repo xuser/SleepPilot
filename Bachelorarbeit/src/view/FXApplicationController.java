@@ -92,6 +92,9 @@ public class FXApplicationController implements Initializable{
 	@FXML private Button help1;
 	private boolean help1Flag = false;
 	
+	@FXML private Button kComplex;
+	private boolean kComplexFlag = false;
+	
 	@FXML private Label statusBarLabel1;
 	@FXML private Label statusBarLabel2;
 	@FXML private TextField toolBarGoto;
@@ -210,7 +213,6 @@ public class FXApplicationController implements Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		//TODO
 		overlay2.setOnMouseMoved(new EventHandler<MouseEvent>() {
 
 			@Override
@@ -357,6 +359,10 @@ public class FXApplicationController implements Initializable{
 				
 				if (ke.getCode() == KeyCode.L) {
 					help1OnAction();
+				}
+				
+				if (ke.getCode() == KeyCode.K) {
+					kComplexOnAction();
 				}
 				
 				if (ke.getCode() == KeyCode.UP) {					
@@ -842,8 +848,27 @@ public class FXApplicationController implements Initializable{
 	}
 	
 	@FXML
+	protected void kComplexOnAction() {
+		if (kComplexFlag) {
+			kComplexFlag = false;
+			
+		} else {
+			kComplexFlag = true;
+			
+		}
+		System.out.println(kComplexFlag);
+		
+		lineChart.requestFocus();
+	}
+	
+	@FXML
 	protected void help1MenuItemOnAction() {
 		help1OnAction();
+	}
+	
+	@FXML
+	protected void kComplexMenuItemOnAction() {
+		kComplexOnAction();
 	}
 	
 	@FXML

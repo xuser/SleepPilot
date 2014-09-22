@@ -68,8 +68,8 @@
         </Pane>
         <Pane fx:id="overlay2" prefHeight="200.0" prefWidth="200.0">
           <children>
-            <Line fx:id="line1" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="106.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
-            <Line fx:id="line2" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="136.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+            <Line fx:id="line1" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="40.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+            <Line fx:id="line2" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="50.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
           </children>
         </Pane>
       </children>
@@ -95,7 +95,9 @@
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Evaluation Window" />
                 <MenuItem mnemonicParsing="false" onAction="#showHypnogrammAction" text="Hypnogram" />
+                <SeparatorMenuItem mnemonicParsing="false" />
                 <MenuItem mnemonicParsing="false" onAction="#help1MenuItemOnAction" text="Auxiliary Ruler" />
+                <MenuItem mnemonicParsing="false" onAction="#kComplexMenuItemOnAction" text="Measure K-Complex" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">
@@ -167,7 +169,8 @@
               </padding>
             </HBox>
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <Button fx:id="help1" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="20µV" />
+            <Button fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="20µV" />
+            <Button fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="K-Complex" />
           </items>
         </ToolBar>
       </children>
