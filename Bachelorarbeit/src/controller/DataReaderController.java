@@ -334,6 +334,13 @@ public class DataReaderController extends Thread {
 			e.printStackTrace();
 		}
 		
+		String[] channelNames = new String[respectiveModel.getNumberOfChannels()];
+		for (int i = 0; i < respectiveModel.getNumberOfChannels(); i++) {
+			channelNames[i] = respectiveModel.getTitel(i);
+		}
+		
+		respectiveModel.setChannelNames(channelNames);
+		
 	}
 	
 	public LinkedList<Double> readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
