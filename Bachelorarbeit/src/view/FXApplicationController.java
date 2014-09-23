@@ -239,7 +239,7 @@ public class FXApplicationController implements Initializable{
 						}
 					}
 										
-					double space = 20.0/100.0 * activeZoom;
+					double space = 75.0/100.0 * activeZoom;
 					System.out.println("Space: " + space);
 					
 					// Now calculate the number of pixels from the microvolt size
