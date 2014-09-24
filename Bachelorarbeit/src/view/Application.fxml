@@ -30,13 +30,19 @@
                 <Insets left="5.0" />
               </padding>
             </HBox>
-            <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+              <children>
+                <Label fx:id="kComplexLabel" styleClass="textLabel" text="K-Complex: 0.0%" />
+              </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
               <children>
                 <Label fx:id="statusBarLabel2" styleClass="textLabel" text="Label" />
               </children>
             </HBox>
           </children>
           <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
           </columnConstraints>

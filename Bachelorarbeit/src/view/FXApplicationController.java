@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -110,6 +111,7 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML private Label statusBarLabel1;
 	@FXML private Label statusBarLabel2;
+	@FXML private Label kComplexLabel;
 	@FXML private TextField toolBarGoto;
 	@FXML private TextField toolBarZoom;
 	
@@ -212,6 +214,7 @@ public class FXApplicationController implements Initializable{
 		
 		line1.setVisible(false);
 		line2.setVisible(false);
+		kComplexLabel.setVisible(false);
 		
 		statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 		statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
@@ -236,7 +239,6 @@ public class FXApplicationController implements Initializable{
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		//TODO
 		overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
 			@Override
@@ -311,7 +313,6 @@ public class FXApplicationController implements Initializable{
 			
 		});
 		
-		//TODO
 		primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
 		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
 
@@ -399,6 +400,10 @@ public class FXApplicationController implements Initializable{
 						overlay3.getChildren().clear();
 						lines.clear();
 						
+						if (kComplexFlag) {
+							calculatePercentageKComplex();
+						}
+						
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -420,9 +425,13 @@ public class FXApplicationController implements Initializable{
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
 						
+						
 						overlay3.getChildren().clear();
 						lines.clear();
 						
+						if (kComplexFlag) {
+							calculatePercentageKComplex();
+						}
 					}
 				}
 				
@@ -545,9 +554,13 @@ public class FXApplicationController implements Initializable{
 						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
-						
+												
 						overlay3.getChildren().clear();
 						lines.clear();
+						
+						if (kComplexFlag) {
+							calculatePercentageKComplex();
+						}
 
 					} else {
 						toolBarGoto.setText((currentEpoch+1) + "");
@@ -710,7 +723,12 @@ public class FXApplicationController implements Initializable{
 		}
 	}
 	
-	
+	private double roundValues(double value) {
+		BigDecimal myDec = new BigDecimal(value);
+		myDec = myDec.setScale(1, BigDecimal.ROUND_HALF_UP);
+		
+		return myDec.doubleValue();
+	}
 	
 	private void updateStage() {
 		// (1: W, 2: N1, 3: N2, 4: N3, 5: REM)
@@ -951,16 +969,18 @@ public class FXApplicationController implements Initializable{
 		lineChart.requestFocus();
 	}
 	
-	//TODO
 	@FXML
 	protected void kComplexOnAction() {
 		if (kComplexFlag) {
 			kComplexFlag = false;
+			kComplexLabel.setVisible(false);
+			
 			overlay3.getChildren().clear();
 			lines.clear();
 			
 		} else {
-			kComplexFlag = true;	        
+			kComplexFlag = true;
+			kComplexLabel.setVisible(true);
 			
 		}
 		System.out.println(kComplexFlag);
@@ -970,7 +990,7 @@ public class FXApplicationController implements Initializable{
 	
 	private void calculatePercentageKComplex() {
 		
-		double percentageSum = 0;
+		double percentageSum = 0.0;
 		
 		for (int i = 0; i < lines.size(); i++) {
 			Line line = lines.get(i);
@@ -987,7 +1007,7 @@ public class FXApplicationController implements Initializable{
 			percentageSum = percentageSum + percentageOneLine;
 		}
 		
-		System.out.println("%: " + percentageSum);
+		kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");		
 	}
 	
 	@FXML
