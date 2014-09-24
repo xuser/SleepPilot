@@ -102,10 +102,10 @@ public class FXApplicationController implements Initializable{
 	@FXML private ToggleButton stimulationButton;
 	@FXML private Button clearButton;
 	
-	@FXML private Button help1;
+	@FXML private ToggleButton help1;
 	private boolean help1Flag = false;
 	
-	@FXML private Button kComplex;
+	@FXML private ToggleButton kComplex;
 	private boolean kComplexFlag = false;
 	
 	@FXML private Label statusBarLabel1;
@@ -396,6 +396,9 @@ public class FXApplicationController implements Initializable{
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
 						
+						overlay3.getChildren().clear();
+						lines.clear();
+						
 					} else {
 						popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
 					}
@@ -416,6 +419,9 @@ public class FXApplicationController implements Initializable{
 						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
+						
+						overlay3.getChildren().clear();
+						lines.clear();
 						
 					}
 				}
@@ -441,10 +447,23 @@ public class FXApplicationController implements Initializable{
 				
 				if (ke.getCode() == KeyCode.L) {
 					help1OnAction();
+					
+					if (help1.isSelected()) {
+						help1.setSelected(false);
+					} else {
+						help1.setSelected(true);
+					}
 				}
 				
 				if (ke.getCode() == KeyCode.K) {
 					kComplexOnAction();
+					
+					if (kComplex.isSelected()) {
+						kComplex.setSelected(false);
+					} else {
+						kComplex.setSelected(true);
+					}
+					
 				}
 				
 				if (ke.getCode() == KeyCode.UP) {					
@@ -526,6 +545,9 @@ public class FXApplicationController implements Initializable{
 						if (viewModel.isHypnogrammActive()) {
 							hypnogramm.changeCurrentEpochMarker(currentEpoch);
 						}
+						
+						overlay3.getChildren().clear();
+						lines.clear();
 
 					} else {
 						toolBarGoto.setText((currentEpoch+1) + "");
@@ -934,7 +956,8 @@ public class FXApplicationController implements Initializable{
 	protected void kComplexOnAction() {
 		if (kComplexFlag) {
 			kComplexFlag = false;
-			
+			overlay3.getChildren().clear();
+			lines.clear();
 			
 		} else {
 			kComplexFlag = true;	        
