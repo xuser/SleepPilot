@@ -8,5 +8,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/libsvm.jar"/>
 	<classpathentry kind="lib" path="lib/EEGFrame_0_98.jar"/>
+	<classpathentry kind="lib" path="lib/tsne.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

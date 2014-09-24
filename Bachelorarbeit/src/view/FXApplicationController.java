@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
+import tsne.TSNE;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -21,10 +22,13 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -47,6 +51,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -70,10 +75,18 @@ public class FXApplicationController implements Initializable{
 	private boolean initStarted = false;
 	private String currentChannelName = null;
 	
+	private double oldWidth;
+	private double growCoefWidth = 1.0;
+	
+	private double oldHeight;
+	private double growCoefHeight = 1.0;
+	
 	private int currentEpoch = 0;
 	private String[] channelNames;
 	
 	private HashMap<String, Double[]> activeChannels = new HashMap<String, Double[]>();
+	
+	private LinkedList<Line> lines = new LinkedList<Line>();
 		
 	private Stage primaryStage;
 	private BorderPane mainGrid;	
@@ -105,6 +118,11 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML private Pane overlay;
 	@FXML private Pane overlay2;
+	@FXML private Pane overlay3;
+	
+//	Canvas canvas = new Canvas();
+//	ResizableCanvas canvas = new ResizableCanvas();
+	
 	@FXML private StackPane stackPane;
 	@FXML private HBox statusBarHBox;
 	
@@ -150,6 +168,9 @@ public class FXApplicationController implements Initializable{
 		primaryStage.setResizable(true);
 		primaryStage.show();
 		primaryStage.setTitle(dataPointsModel.getOrgFile().getName());
+		
+		oldWidth = overlay3.getWidth();
+		oldHeight = overlay3.getHeight();
 		
 		statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + dataPointsModel.getNumberOf30sEpochs());
 		
@@ -210,14 +231,52 @@ public class FXApplicationController implements Initializable{
 		
 	}
 	
+
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
-		overlay2.setOnMouseMoved(new EventHandler<MouseEvent>() {
+		//TODO
+		overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
 			@Override
 			public void handle(MouseEvent mouse) {
-				
+				if (kComplexFlag) {
+					if (mouse.getEventType() == MouseEvent.MOUSE_PRESSED) {
+						Line line = new Line();
+						line.setStyle("-fx-stroke: red;");
+						
+						overlay3.getChildren().add(line);
+						
+						line.setStartX(0);
+						line.setStartY(0);
+						line.setLayoutX(mouse.getX());
+						line.setLayoutY(mouse.getY());
+						
+						lines.add(line);
+						
+					}
+					
+					if (mouse.isPrimaryButtonDown()) {
+						Line line = lines.getLast();
+						double endXPos = mouse.getX() - line.getLayoutX();
+						double endYPos = mouse.getY() - line.getLayoutY();
+							
+						line.setEndX(endXPos);						
+						line.setEndY(endYPos);
+					}
+					
+					calculatePercentageKComplex();
+				}
+			}
+			
+		});
+		
+		overlay3.setOnMouseMoved(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent mouse) {
+								
 				if (help1Flag) {					
 					
 					LinkedList<Integer> activeChannels = returnActiveChannels();
@@ -247,10 +306,12 @@ public class FXApplicationController implements Initializable{
 				
 					paintSpacing(mouse.getY(), space);
 				}
+				
 			}
 			
 		});
 		
+		//TODO
 		primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
 		    @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
 
@@ -262,6 +323,17 @@ public class FXApplicationController implements Initializable{
 					line1.setEndX(lineChart.getWidth());
 					line2.setEndX(lineChart.getWidth());
 				}
+				
+				growCoefWidth = overlay3.getWidth() / oldWidth;
+				oldWidth = overlay3.getWidth();
+				
+				for (int i = 0; i < lines.size(); i++) {
+					Line line = lines.get(i);
+					line.setLayoutX(line.getLayoutX() * growCoefWidth);
+					line.setEndX(line.getEndX() * growCoefWidth);
+					lines.set(i, line);
+				}
+				
 		    	
 		    }
 		});
@@ -272,6 +344,16 @@ public class FXApplicationController implements Initializable{
 				statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
 				statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+				
+				growCoefHeight = overlay3.getHeight() / oldHeight;
+				oldHeight = overlay3.getHeight();
+				
+				for (int i = 0; i < lines.size(); i++) {
+					Line line = lines.get(i);
+					line.setLayoutY(line.getLayoutY() * growCoefHeight);
+					line.setEndY(line.getEndY() * growCoefHeight);
+					lines.set(i, line);
+				}
 				
 				if (initStarted) {
 					LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -847,18 +929,42 @@ public class FXApplicationController implements Initializable{
 		lineChart.requestFocus();
 	}
 	
+	//TODO
 	@FXML
 	protected void kComplexOnAction() {
 		if (kComplexFlag) {
 			kComplexFlag = false;
 			
+			
 		} else {
-			kComplexFlag = true;
+			kComplexFlag = true;	        
 			
 		}
 		System.out.println(kComplexFlag);
 		
 		lineChart.requestFocus();
+	}
+	
+	private void calculatePercentageKComplex() {
+		
+		double percentageSum = 0;
+		
+		for (int i = 0; i < lines.size(); i++) {
+			Line line = lines.get(i);
+			
+			double lengthOfLine;
+			
+			if (line.getEndX() > line.getStartX()) {
+				lengthOfLine = line.getEndX() - line.getStartX();
+			} else {
+				lengthOfLine = line.getStartX() - line.getEndX();
+			}
+			
+			double percentageOneLine = lengthOfLine / overlay3.getWidth() * 100;
+			percentageSum = percentageSum + percentageOneLine;
+		}
+		
+		System.out.println("%: " + percentageSum);
 	}
 	
 	@FXML

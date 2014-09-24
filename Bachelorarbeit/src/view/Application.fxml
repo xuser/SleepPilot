@@ -68,10 +68,11 @@
         </Pane>
         <Pane fx:id="overlay2" prefHeight="200.0" prefWidth="200.0">
           <children>
-            <Line fx:id="line1" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="40.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
-            <Line fx:id="line2" endX="1071.0" endY="0.0" layoutX="115.0" layoutY="50.0" smooth="true" startX="-100.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+            <Line fx:id="line1" endX="1085.0" endY="0.0" layoutX="115.0" layoutY="30.0" smooth="true" startX="-115.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
+            <Line fx:id="line2" endX="1085.0" endY="0.0" layoutX="115.0" layoutY="50.0" smooth="true" startX="-115.0" stroke="GREY" strokeMiterLimit="10.0" strokeWidth="0.5" />
           </children>
         </Pane>
+        <Pane fx:id="overlay3" prefHeight="200.0" prefWidth="200.0" />
       </children>
     </StackPane>
   </center>
