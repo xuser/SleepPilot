@@ -2,6 +2,7 @@
 
 <?import java.lang.*?>
 <?import java.net.*?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -10,6 +11,16 @@
   <bottom>
     <ToolBar minHeight="25.0" prefHeight="25.0" prefWidth="418.0" styleClass="menuAndToolBarBackground" />
   </bottom>
+  <center>
+    <ScatterChart id="ScatterChartNxN" fx:id="scatterChart">
+      <xAxis>
+        <NumberAxis minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" />
+      </xAxis>
+      <yAxis>
+        <NumberAxis forceZeroInRange="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" />
+      </yAxis>
+    </ScatterChart>
+  </center>
   <stylesheets>
     <URL value="@ScatterPlot.css" />
   </stylesheets>

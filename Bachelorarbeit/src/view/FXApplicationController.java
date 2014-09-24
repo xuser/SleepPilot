@@ -365,7 +365,7 @@ public class FXApplicationController implements Initializable{
 		    }
 		});
 		
-		overlay2.setOnMouseClicked(new EventHandler<MouseEvent>() {
+		overlay3.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
 			@Override
 			public void handle(MouseEvent arg0) {

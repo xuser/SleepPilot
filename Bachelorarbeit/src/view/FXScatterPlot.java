@@ -8,9 +8,11 @@ import model.FXViewModel;
 import model.FeatureExtractionModel;
 import model.RawDataModel;
 import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.chart.ScatterChart;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -23,6 +25,8 @@ public class FXScatterPlot implements Initializable {
 	private RawDataModel dataPointsModel;
 	
 	private Stage stage;
+	
+	@FXML private ScatterChart<Number, Number> scatterChart;
 	
 	public FXScatterPlot(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
 		this.featureExtractionModel = featureExtractionModel;
