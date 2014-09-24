@@ -61,6 +61,7 @@ public class FXApplicationController implements Initializable{
 	
 	private FXHypnogrammController hypnogramm;
 	private FXEvaluationWindowController evaluationWindow;
+	private FXScatterPlot scatterPlot;
 	
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
@@ -1047,6 +1048,17 @@ public class FXApplicationController implements Initializable{
 	@FXML
 	protected void closeAction() {
 		System.exit(0);
+	}
+	
+	//TODO
+	@FXML
+	protected void showScatterPlot() {
+		if (viewModel.isScatterPlotActive() == false) {
+			scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
+			viewModel.setScatterPlotActive(true);
+		} else {
+			scatterPlot.bringToFront();
+		}
 	}
 	
 	@FXML

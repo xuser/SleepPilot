@@ -105,6 +105,8 @@
                 <SeparatorMenuItem mnemonicParsing="false" />
                 <MenuItem mnemonicParsing="false" onAction="#help1MenuItemOnAction" text="Auxiliary Ruler" />
                 <MenuItem mnemonicParsing="false" onAction="#kComplexMenuItemOnAction" text="Measure K-Complex" />
+                <SeparatorMenuItem mnemonicParsing="false" />
+                <MenuItem mnemonicParsing="false" onAction="#showScatterPlot" text="Scatter Plot" />
               </items>
             </Menu>
             <Menu mnemonicParsing="false" text="Help">

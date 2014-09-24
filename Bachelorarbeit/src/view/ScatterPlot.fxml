@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane prefHeight="433.0" prefWidth="418.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+  <bottom>
+    <ToolBar minHeight="25.0" prefHeight="25.0" prefWidth="418.0" styleClass="menuAndToolBarBackground" />
+  </bottom>
+  <stylesheets>
+    <URL value="@ScatterPlot.css" />
+  </stylesheets>
+</BorderPane>

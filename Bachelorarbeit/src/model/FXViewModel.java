@@ -8,6 +8,8 @@ public class FXViewModel {
 	
 	private boolean evaluationWindowActive = false;
 	
+	private boolean scatterPlotActive = false;
+	
 	private FXApplicationController appController;
 
 	/**
@@ -50,6 +52,20 @@ public class FXViewModel {
 	 */
 	public void setEvaluationWindowActive(boolean evaluationWindowActive) {
 		this.evaluationWindowActive = evaluationWindowActive;
+	}
+
+	/**
+	 * @return the scatterPlotActive
+	 */
+	public boolean isScatterPlotActive() {
+		return scatterPlotActive;
+	}
+
+	/**
+	 * @param scatterPlotActive the scatterPlotActive to set
+	 */
+	public void setScatterPlotActive(boolean scatterPlotActive) {
+		this.scatterPlotActive = scatterPlotActive;
 	}
 
 }

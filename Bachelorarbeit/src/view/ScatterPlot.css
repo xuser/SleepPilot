@@ -1,0 +1,26 @@
+.menuAndToolBarBackground{
+	-fx-background-color: linear-gradient(rgba(76,136,174,0.9), rgba(76,136,174,1));
+}
+
+.textLabel{
+	-fx-text-fill: white;
+	-fx-font-family: sans-serif;
+}
+
+.textLabelDisabled{
+	-fx-text-fill: rgba(255,255,255,0.5);
+	-fx-font-family: sans-serif;
+}
+
+.axis{
+	-fx-border-color: transparent;
+}
+
+.chart-vertical-zero-line{
+	-fx-stroke: transparent;
+	-fx-background-color: lightgray;
+} 
+.chart-horizontal-zero-line  {
+    -fx-stroke: transparent;
+    -fx-background-color: transparent;
+}
