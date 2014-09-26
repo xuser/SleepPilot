@@ -61,7 +61,7 @@ public class FXApplicationController implements Initializable{
 	
 	private FXHypnogrammController hypnogramm;
 	private FXEvaluationWindowController evaluationWindow;
-	private FXScatterPlot scatterPlot;
+//	private FXScatterPlot scatterPlot;
 	
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
@@ -1004,7 +1004,7 @@ public class FXApplicationController implements Initializable{
 				lengthOfLine = line.getStartX() - line.getEndX();
 			}
 			
-			double percentageOneLine = lengthOfLine / overlay3.getWidth() * 100;
+			double percentageOneLine = (lengthOfLine / (overlay3.getWidth() - 25)) * 100.0;
 			percentageSum = percentageSum + percentageOneLine;
 		}
 		
@@ -1054,11 +1054,12 @@ public class FXApplicationController implements Initializable{
 	@FXML
 	protected void showScatterPlot() {
 		if (viewModel.isScatterPlotActive() == false) {
-			scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
+			FXScatterPlot scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
 			viewModel.setScatterPlotActive(true);
-		} else {
-			scatterPlot.bringToFront();
-		}
+		} 
+//			else {
+//			scatterPlot.bringToFront();
+//		}
 	}
 	
 	@FXML

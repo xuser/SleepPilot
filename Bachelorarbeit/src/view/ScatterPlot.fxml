@@ -12,14 +12,33 @@
     <ToolBar minHeight="25.0" prefHeight="25.0" prefWidth="418.0" styleClass="menuAndToolBarBackground" />
   </bottom>
   <center>
-    <ScatterChart id="ScatterChartNxN" fx:id="scatterChart">
-      <xAxis>
-        <NumberAxis minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" />
-      </xAxis>
-      <yAxis>
-        <NumberAxis forceZeroInRange="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" />
-      </yAxis>
-    </ScatterChart>
+    <StackPane prefHeight="150.0" prefWidth="200.0">
+      <children>
+        <ScatterChart fx:id="scatterChart" animated="false" legendVisible="false">
+          <xAxis>
+            <NumberAxis animated="false" autoRanging="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
+          </xAxis>
+          <yAxis>
+            <NumberAxis autoRanging="true" forceZeroInRange="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
+          </yAxis>
+        </ScatterChart>
+        <GridPane>
+          <children>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+              <children>
+                <ProgressIndicator fx:id="progressIndicator" progress="-1.0" />
+              </children>
+            </HBox>
+          </children>
+          <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          </columnConstraints>
+          <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          </rowConstraints>
+        </GridPane>
+      </children>
+    </StackPane>
   </center>
   <stylesheets>
     <URL value="@ScatterPlot.css" />

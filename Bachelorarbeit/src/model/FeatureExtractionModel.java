@@ -456,6 +456,24 @@ public class FeatureExtractionModel {
 		return features;
 	}
 
+	//TODO
+	/**
+	 * This function only returns the matrix without the class label
+	 * @return the whole feature value matrix
+	 */
+	public double[][] getFeatureValueMatrix() {
+		
+		double[][] matrix = new double[featureValuesPE.length][numberOfChannels];
+		
+		for (int i = 0; i < featureValuesPE.length; i++) {
+			for (int x = 0; x < numberOfChannels; x++) {
+				matrix[i][x] = featureValuesPE[i][x+1];
+			}
+		}
+		
+		return matrix;
+	}
+
 
 	/**
 	 * @return the lengthOfOneEpoch
