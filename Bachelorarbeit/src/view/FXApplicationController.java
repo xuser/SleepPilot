@@ -61,7 +61,7 @@ public class FXApplicationController implements Initializable{
 	
 	private FXHypnogrammController hypnogramm;
 	private FXEvaluationWindowController evaluationWindow;
-//	private FXScatterPlot scatterPlot;
+	private FXScatterPlot scatterPlot;
 	
 	//This epoch is just an puffer
 	private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
@@ -1053,13 +1053,17 @@ public class FXApplicationController implements Initializable{
 	//TODO
 	@FXML
 	protected void showScatterPlot() {
-		if (viewModel.isScatterPlotActive() == false) {
-			FXScatterPlot scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
-			viewModel.setScatterPlotActive(true);
-		} 
-//			else {
-//			scatterPlot.bringToFront();
-//		}
+		
+		if (autoMode) {
+			if (viewModel.isScatterPlotActive() == false) {
+				scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
+				viewModel.setScatterPlotActive(true);
+			} else {
+				scatterPlot.bringToFront();
+			}
+		} else {
+			popUp.showPopupMessage("Scatter plot only available in auto mode!", primaryStage);
+		}
 	}
 	
 	@FXML
