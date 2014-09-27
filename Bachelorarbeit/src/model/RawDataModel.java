@@ -4,6 +4,7 @@ import help.BinaryFormat;
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * 
  * @author Nils Finke
  */
-public class RawDataModel {
+public class RawDataModel implements Serializable {
 	
 	private Double[][] dataPoints;
 	

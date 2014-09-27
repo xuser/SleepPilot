@@ -92,6 +92,8 @@
           <menus>
             <Menu mnemonicParsing="false" text="File">
               <items>
+                <MenuItem mnemonicParsing="false" onAction="#saveAsAction" text="Save As" />
+                <SeparatorMenuItem mnemonicParsing="false" />
                 <MenuItem mnemonicParsing="false" onAction="#importHypnogrammAction" text="Import Hypnogramm" />
                 <MenuItem mnemonicParsing="false" onAction="#exportHypnogrammAction" text="Export Hypnogramm" />
                 <SeparatorMenuItem mnemonicParsing="false" />

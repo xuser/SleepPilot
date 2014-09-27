@@ -18,10 +18,13 @@ import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
+import controller.ModelReaderWriterController;
+import controller.MainController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.fxml.FXML;
@@ -1050,7 +1053,6 @@ public class FXApplicationController implements Initializable{
 		System.exit(0);
 	}
 	
-	//TODO
 	@FXML
 	protected void showScatterPlot() {
 		
@@ -1105,6 +1107,7 @@ public class FXApplicationController implements Initializable{
 		if (file != null) {
 			try {
 				openFile(file);
+				
 				updateStage();
 				
 				if (viewModel.isHypnogrammActive()) {
@@ -1228,6 +1231,26 @@ public class FXApplicationController implements Initializable{
 	        }
 	         
 	    }
+	 
+	@FXML
+	protected void saveAsAction() {
+				
+		FileChooser fileChooser = new FileChooser();
+		  
+        //Set extension filter
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("AS files (*.as)", "*.as");
+        fileChooser.getExtensionFilters().add(extFilter);
+        
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(primaryStage);
+        
+        if(file != null){            
+			ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file);
+			modelReaderWriter.start();
+            
+        }
+
+	}
 	
 	@FXML
 	protected void awakeButtonOnAction(){

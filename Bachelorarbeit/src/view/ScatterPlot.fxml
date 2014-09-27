@@ -14,7 +14,7 @@
   <center>
     <StackPane prefHeight="150.0" prefWidth="200.0">
       <children>
-        <ScatterChart fx:id="scatterChart" animated="false" legendVisible="false">
+        <ScatterChart fx:id="scatterChart" animated="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="true" verticalGridLinesVisible="false" verticalZeroLineVisible="false">
           <xAxis>
             <NumberAxis animated="false" autoRanging="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
           </xAxis>

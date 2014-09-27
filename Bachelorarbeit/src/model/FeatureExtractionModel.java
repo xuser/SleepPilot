@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -12,7 +13,7 @@ import help.ChannelNames;
  * @author Nils Finke
  *
  */
-public class FeatureExtractionModel {
+public class FeatureExtractionModel implements Serializable{
 	
 	/**
 	 * This matrix saves continuously for each epoch their permutation entropies.
@@ -619,6 +620,125 @@ public class FeatureExtractionModel {
 	 */
 	public void setSelectedModel(String selectedModel) {
 		this.selectedModel = selectedModel;
+	}
+
+	/**
+	 * @return the featureValuesPE
+	 */
+	public float[][] getFeatureValuesPE() {
+		return featureValuesPE;
+	}
+
+	/**
+	 * @param featureValuesPE the featureValuesPE to set
+	 */
+	public void setFeatureValuesPE(float[][] featureValuesPE) {
+		this.featureValuesPE = featureValuesPE;
+	}
+
+	/**
+	 * @return the epochProperties
+	 */
+	public HashMap<Integer, Integer[]> getEpochProperties() {
+		return epochProperties;
+	}
+
+	/**
+	 * @param epochProperties the epochProperties to set
+	 */
+	public void setEpochProperties(HashMap<Integer, Integer[]> epochProperties) {
+		this.epochProperties = epochProperties;
+	}
+
+	/**
+	 * @return the predictProbabilities
+	 */
+	public double[][] getPredictProbabilities() {
+		return predictProbabilities;
+	}
+
+	/**
+	 * @param predictProbabilities the predictProbabilities to set
+	 */
+	public void setPredictProbabilities(double[][] predictProbabilities) {
+		this.predictProbabilities = predictProbabilities;
+	}
+
+	/**
+	 * @return the channelNames
+	 */
+	public LinkedList<ChannelNames> getChannelNames() {
+		return channelNames;
+	}
+
+	/**
+	 * @param channelNames the channelNames to set
+	 */
+	public void setChannelNames(LinkedList<ChannelNames> channelNames) {
+		this.channelNames = channelNames;
+	}
+
+	/**
+	 * @param countWake the countWake to set
+	 */
+	public void setCountWake(int countWake) {
+		this.countWake = countWake;
+	}
+
+	/**
+	 * @param countS1 the countS1 to set
+	 */
+	public void setCountS1(int countS1) {
+		this.countS1 = countS1;
+	}
+
+	/**
+	 * @param countS2 the countS2 to set
+	 */
+	public void setCountS2(int countS2) {
+		this.countS2 = countS2;
+	}
+
+	/**
+	 * @param countN the countN to set
+	 */
+	public void setCountN(int countN) {
+		this.countN = countN;
+	}
+
+	/**
+	 * @param countREM the countREM to set
+	 */
+	public void setCountREM(int countREM) {
+		this.countREM = countREM;
+	}
+
+	/**
+	 * @param countA the countA to set
+	 */
+	public void setCountA(int countA) {
+		this.countA = countA;
+	}
+
+	/**
+	 * @param countMA the countMA to set
+	 */
+	public void setCountMA(int countMA) {
+		this.countMA = countMA;
+	}
+
+	/**
+	 * @param countS the countS to set
+	 */
+	public void setCountS(int countS) {
+		this.countS = countS;
+	}
+
+	/**
+	 * @param numberOfChannels the numberOfChannels to set
+	 */
+	public void setNumberOfChannels(int numberOfChannels) {
+		this.numberOfChannels = numberOfChannels;
 	}
 	
 	

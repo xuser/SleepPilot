@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.sun.javafx.css.converters.ShapeConverter;
+
 import controller.MainController;
 import tsne.TSNE;
 import model.FXViewModel;
@@ -20,6 +22,8 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -66,6 +70,8 @@ public class FXScatterPlot implements Initializable {
 		
 		progressIndicator.setVisible(false);
 		paintScatterChart();
+	
+		
 	}
 
 	@Override
@@ -106,10 +112,19 @@ public class FXScatterPlot implements Initializable {
 					public void run() {
 						
 						XYChart.Series seriesRem = new XYChart.Series();
+						seriesRem.setName("REM");
+						
 						XYChart.Series seriesS1 = new XYChart.Series();
+						seriesS1.setName("S1");
+						
 						XYChart.Series seriesS2 = new XYChart.Series();
+						seriesS2.setName("S2");
+						
 						XYChart.Series seriesN = new XYChart.Series();
+						seriesN.setName("N");
+						
 						XYChart.Series seriesWake = new XYChart.Series();
+						seriesWake.setName("Awake");
 						
 						for (int i = 0; i < dataPointsModel.getNumberOf30sEpochs(); i++) {
 							
