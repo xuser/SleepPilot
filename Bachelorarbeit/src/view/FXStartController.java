@@ -20,6 +20,7 @@ import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.MainController;
+import controller.ModelReaderWriterController;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -204,7 +205,8 @@ public class FXStartController implements Initializable {
 				final File file = fileChooser.showOpenDialog(null);
 				
 				if (file != null) {
-
+					ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file, false);
+					modelReaderWriter.start();
 				} 
 				
 			}
@@ -408,7 +410,6 @@ public class FXStartController implements Initializable {
 		
 	}
 	
-
 	private void startAction(final File file) {
 		
 		if (file.getName().toLowerCase().endsWith(".smr")) {
@@ -534,7 +535,6 @@ public class FXStartController implements Initializable {
 
         System.exit(0);
 	}
-
 	
 	public void setProgressBar(double value) {
 		progressBar.setProgress(value);

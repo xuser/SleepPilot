@@ -1245,7 +1245,7 @@ public class FXApplicationController implements Initializable{
         File file = fileChooser.showSaveDialog(primaryStage);
         
         if(file != null){            
-			ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file);
+			ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file, true);
 			modelReaderWriter.start();
             
         }
