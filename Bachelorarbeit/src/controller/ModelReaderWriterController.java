@@ -44,9 +44,12 @@ public class ModelReaderWriterController extends Thread{
 		
 	}
 	
-	
+	/**
+	 * Read or write model to hard disk depending on the readWriteFlag.
+	 */
 	public void run() {
 		
+		//WRITING
 		if (readWriteFlag) {
 			try {
 				fos = new FileOutputStream(file);
@@ -57,7 +60,6 @@ public class ModelReaderWriterController extends Thread{
 				
 			} catch (IOException e) {
 				System.err.println("Error occured during saving models!");
-	//			e.printStackTrace();
 			}
 	
 			finally {
@@ -77,6 +79,8 @@ public class ModelReaderWriterController extends Thread{
 			}
 			
 			System.out.println("Finished writing model on hard disk.");
+		
+		// READING
 		} else {
 			
 			try {
@@ -100,11 +104,13 @@ public class ModelReaderWriterController extends Thread{
 					try {
 						ois.close();
 					} catch (IOException e) {
+						System.err.println("Error occured during closing OIS!");
 					}
 				if (fis != null)
 					try {
 						fis.close();
 					} catch (IOException e) {
+						System.err.println("Error occured during closing FIS!");
 					}
 			}
 			
@@ -115,12 +121,12 @@ public class ModelReaderWriterController extends Thread{
 
 	
 	/**
-	 * This method starts the Data Write Thread.
+	 * This method starts the Data Read/Write Thread.
 	 */
 	public void start() {
-		System.out.println("Starting Data Writer Thread");
+		System.out.println("Starting Data Reader/Writer Thread");
 		if (t == null) {
-			t = new Thread(this, "DataWrite");
+			t = new Thread(this, "DataReadWrite");
 			t.start();
 		}
 	}
