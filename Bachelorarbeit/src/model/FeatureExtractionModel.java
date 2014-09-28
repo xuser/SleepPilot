@@ -1,5 +1,6 @@
 package model;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -57,7 +58,17 @@ public class FeatureExtractionModel implements Serializable{
 	 */
 	private int numberOfcalculatedEpoch = 0;
 	
+	/**
+	 * If automode is true, then the classification automation was used.
+	 */
+	private boolean autoMode = false;
+	
 	private String selectedModel;
+	
+	/**
+	 * The path to the eeg data.
+	 */
+	private File fileLocation;
 	
 	/**
 	 * Keeps the number of feature vectors.
@@ -739,6 +750,34 @@ public class FeatureExtractionModel implements Serializable{
 	 */
 	public void setNumberOfChannels(int numberOfChannels) {
 		this.numberOfChannels = numberOfChannels;
+	}
+
+	/**
+	 * @return the autoMode
+	 */
+	public boolean isAutoMode() {
+		return autoMode;
+	}
+
+	/**
+	 * @param autoMode the autoMode to set
+	 */
+	public void setAutoMode(boolean autoMode) {
+		this.autoMode = autoMode;
+	}
+
+	/**
+	 * @return the fileLocation
+	 */
+	public File getFileLocation() {
+		return fileLocation;
+	}
+
+	/**
+	 * @param fileLocation the fileLocation to set
+	 */
+	public void setFileLocation(File fileLocation) {
+		this.fileLocation = fileLocation;
 	}
 	
 	

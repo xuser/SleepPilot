@@ -204,6 +204,7 @@ public class FXStartController implements Initializable {
 				// Show open file dialog
 				final File file = fileChooser.showOpenDialog(null);
 				
+				//TODO
 				if (file != null) {
 					ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file, false);
 					modelReaderWriter.start();

@@ -77,6 +77,7 @@ public class FXApplicationController implements Initializable{
 	private FeatureExtractionModel featureExtractionModel;
 	
 	private final boolean autoMode;
+	private final boolean recreateModelMode;
 	private boolean initStarted = false;
 	private String currentChannelName = null;
 	
@@ -142,16 +143,20 @@ public class FXApplicationController implements Initializable{
 	@FXML private Line line1;
 	@FXML private Line line2;
 	
-	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode) {
+	public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
 		primaryStage = new Stage();
 		this.dataReaderController = dataReaderController;
 		this.dataPointsModel = dataPointsModel;
 		this.featureExtractionModel = featureExtractionModel;
 		this.viewModel = viewModel;
-		this.autoMode = autoMode;
 		
-		if (!autoMode) {
-			featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
+		featureExtractionModel.setAutoMode(autoMode);
+		
+		this.autoMode = featureExtractionModel.isAutoMode();
+		this.recreateModelMode = recreateModelMode;
+		
+		if (!autoMode && !recreateModelMode) {
+			featureExtractionModel.createDataMatrix(featureExtractionModel.getNumberOfFeatureValues(), 1);
 		}
 		
 		// Creating FXML Loader
@@ -230,7 +235,7 @@ public class FXApplicationController implements Initializable{
 				
 		checkProp();
 		
-		if (autoMode) {
+		if (autoMode || recreateModelMode) {
 			updateStage();			
 		}
 		

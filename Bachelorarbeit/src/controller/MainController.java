@@ -75,6 +75,8 @@ public class MainController extends Application {
 	
 	public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames, final boolean autoMode) {
 		
+		featureExtractionModel.setFileLocation(fileLocation);
+		
 		if (trainMode == false) {
 
 			// Creats a new controller which reads the declared file
@@ -128,7 +130,7 @@ public class MainController extends Application {
 					@Override
 					public void run() {
 						FXViewModel viewModel = new FXViewModel();
-						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, autoMode);
+						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, autoMode, false);
 						viewModel.setAppController(appController);
 						primaryStage.close();
 					}
@@ -162,6 +164,31 @@ public class MainController extends Application {
 				}
 			}
 
+		}
+	}
+	
+	public static void recreateSystemState() {
+		
+		try {
+			
+			final DataReaderController dataReaderController = new DataReaderController(featureExtractionModel.getFileLocation(), dataPointsModel, null, false);
+			dataReaderController.start();
+			
+			//Create application controller
+			System.out.println("AppController starting!");
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					FXViewModel viewModel = new FXViewModel();
+					FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
+					viewModel.setAppController(appController);
+					primaryStage.close();
+				}
+			});
+		
+		} catch (IOException e) {
+			System.err.println("Error occured during recreation of the old system state!");
+			e.printStackTrace();
 		}
 	}
 

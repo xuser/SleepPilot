@@ -89,6 +89,7 @@ public class ModelReaderWriterController extends Thread{
 				Object obj = ois.readObject();
 				
 				if (obj instanceof FeatureExtractionModel) {
+										
 					FeatureExtractionModel fem = (FeatureExtractionModel) obj;
 					
 					featureExtractionModel.setFeatureValuesPE(fem.getFeatureValuesPE());
@@ -100,8 +101,11 @@ public class ModelReaderWriterController extends Thread{
 					featureExtractionModel.setLengthOfOneEpoch(fem.getLengthOfOneEpoch());
 					featureExtractionModel.setNumberOfEpochs(fem.getNumberOfEpochs());
 					featureExtractionModel.setChannelNames(fem.getChannelNames());
+					featureExtractionModel.setAutoMode(fem.isAutoMode());
+					featureExtractionModel.setFileLocation(fem.getFileLocation());
 					
-					//Maybe set autoMode!?
+					MainController.recreateSystemState();
+					
 				}
 				
 			} catch (IOException e) {
