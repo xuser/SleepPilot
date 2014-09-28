@@ -91,8 +91,17 @@ public class ModelReaderWriterController extends Thread{
 				if (obj instanceof FeatureExtractionModel) {
 					FeatureExtractionModel fem = (FeatureExtractionModel) obj;
 					
-					System.out.println("#Epochs: " + fem.getNumberOfFeatureValues()); 
-	
+					featureExtractionModel.setFeatureValuesPE(fem.getFeatureValuesPE());
+					featureExtractionModel.setEpochProperties(fem.getEpochProperties());
+					featureExtractionModel.setPredictProbabilities(fem.getPredictProbabilities());
+					featureExtractionModel.setSelectedModel(fem.getSelectedModel());
+					featureExtractionModel.setNumberOfChannels(fem.getNumberOfChannels());
+					featureExtractionModel.setClassificationDone(fem.getClassificationDone());
+					featureExtractionModel.setLengthOfOneEpoch(fem.getLengthOfOneEpoch());
+					featureExtractionModel.setNumberOfEpochs(fem.getNumberOfEpochs());
+					featureExtractionModel.setChannelNames(fem.getChannelNames());
+					
+					//Maybe set autoMode!?
 				}
 				
 			} catch (IOException e) {
