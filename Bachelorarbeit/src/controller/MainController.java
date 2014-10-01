@@ -167,24 +167,40 @@ public class MainController extends Application {
 		}
 	}
 	
-	public static void recreateSystemState() {
+	public static void recreateSystemState(File file) throws IllegalArgumentException {
 		
 		try {
+			String filePath = file.getParent() + File.separator + featureExtractionModel.getFileLocation().getName();
+			System.out.println(filePath);
+									
+			File relativeFile = new File(filePath);
 			
-			final DataReaderController dataReaderController = new DataReaderController(featureExtractionModel.getFileLocation(), dataPointsModel, null, false);
-			dataReaderController.start();
+			if (relativeFile.canRead()) {
+				
+				final DataReaderController dataReaderController = new DataReaderController(relativeFile, dataPointsModel, null, false);
+				dataReaderController.start();
+				
+				//Create application controller
+				System.out.println("AppController starting!");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						FXViewModel viewModel = new FXViewModel();
+						FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
+						viewModel.setAppController(appController);
+						primaryStage.close();
+					}
+				});
 			
-			//Create application controller
-			System.out.println("AppController starting!");
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
-					FXViewModel viewModel = new FXViewModel();
-					FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
-					viewModel.setAppController(appController);
-					primaryStage.close();
-				}
-			});
+			} else {
+				
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						startController.showPopUp("Can't find EEG Data! Put *.as file in the same directory like the EEG Data.");
+					}
+				});
+			}
 		
 		} catch (IOException e) {
 			System.err.println("Error occured during recreation of the old system state!");

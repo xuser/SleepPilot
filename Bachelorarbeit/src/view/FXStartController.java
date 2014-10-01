@@ -541,6 +541,10 @@ public class FXStartController implements Initializable {
 		progressBar.setProgress(value);
 	}
 	
+	public void showPopUp(String message) {
+		popUp.showPopupMessage(message, primaryStage);
+	}
+	
 	public void startMainApp() {
 
 
