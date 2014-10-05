@@ -104,7 +104,8 @@ public class ModelReaderWriterController extends Thread{
 					featureExtractionModel.setAutoMode(fem.isAutoMode());
 					featureExtractionModel.setFileLocation(fem.getFileLocation());
 					
-					MainController.recreateSystemState();
+					
+					MainController.recreateSystemState(file);
 					
 				}
 				
