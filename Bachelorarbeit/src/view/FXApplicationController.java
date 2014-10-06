@@ -440,9 +440,11 @@ public class FXApplicationController implements Initializable {
                             calculatePercentageKComplex();
                         }
 
-                    } else {
-                        popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
-                    }
+                    } 
+//                    else {
+//                        popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
+//                    }
+                    
                 }
 
                 if (ke.getCode() == KeyCode.LEFT) {
