@@ -1,5 +1,8 @@
 package view;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import help.BinaryFormat;
 
 import java.io.BufferedReader;
@@ -18,6 +21,7 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
+import java.util.Arrays;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -52,6 +56,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import kcdetection.KCdetection.KC;
 import tools.Signal;
 import tools.Util;
 
@@ -434,8 +439,8 @@ public class FXApplicationController implements Initializable {
                             calculatePercentageKComplex();
                         }
 
-                    } 
-                    
+                    }
+
                 }
 
                 if (ke.getCode() == KeyCode.LEFT) {
@@ -564,11 +569,11 @@ public class FXApplicationController implements Initializable {
                     } catch (NumberFormatException e) {
                         toolBarGoto.setText((currentEpoch + 1) + "");
                     }
-                    
+
                     if (valueTextField > dataPointsModel.getNumberOf30sEpochs()) {
                         valueTextField = dataPointsModel.getNumberOf30sEpochs();
                     }
-                    
+
                     if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
                         lineChart.getData().clear();
 
@@ -886,7 +891,7 @@ public class FXApplicationController implements Initializable {
     public void goToEpoch(int epoch) {
 
         lineChart.getData().clear();
-        
+
         currentEpoch = epoch;
         showEpoch(currentEpoch);
 
@@ -946,7 +951,7 @@ public class FXApplicationController implements Initializable {
 
             double[] epoch2 = Util.LinkedList2Double(epoch);
             Signal.highpass(epoch2, 0.01, 0.3, 100);
-            
+
             for (int i = 0; i < epoch.size(); i++) {
                 if (i % modulo == 0) {
                     double tmp = xAxis / epochSize;
@@ -1015,21 +1020,33 @@ public class FXApplicationController implements Initializable {
     private void calculatePercentageKComplex() {
 
         double percentageSum = 0.0;
-
+        RangeSet<Double> rangeset = TreeRangeSet.create();
+        
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
 
             double lengthOfLine;
 
-            if (line.getEndX() > line.getStartX()) {
-                lengthOfLine = line.getEndX() - line.getStartX();
-            } else {
-                lengthOfLine = line.getStartX() - line.getEndX();
-            }
-
-            double percentageOneLine = (lengthOfLine / (overlay3.getWidth() - 25)) * 100.0;
-            percentageSum = percentageSum + percentageOneLine;
+            Range r = Range.closed(
+                            Math.min(
+                                    line.getLayoutX(), line.getEndX() + line.getLayoutX()
+                            )/(overlay3.getWidth()-25)*100. - 1e-9,
+                            Math.max(
+                                    line.getLayoutX(), line.getEndX() + line.getLayoutX()
+                            )/(overlay3.getWidth()-25)*100. + 1e-9
+                    );
+                    
+            rangeset.add(r);
+            
         }
+        
+        percentageSum = rangeset.asRanges()
+                .stream()
+                .mapToDouble(e -> 
+                        (e.upperEndpoint() - e.lowerEndpoint())
+                )
+                .sum();
+                
 
         kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
     }
