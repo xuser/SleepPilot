@@ -13,26 +13,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
-import tsne.TSNE;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
-import controller.MainController;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -55,10 +49,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import tools.Signal;
 import tools.Util;
 
 public class FXApplicationController implements Initializable {
@@ -441,9 +435,6 @@ public class FXApplicationController implements Initializable {
                         }
 
                     } 
-//                    else {
-//                        popUp.showPopupMessage("Only " + dataPointsModel.getNumberOf30sEpochs() + " epochs available!", primaryStage);
-//                    }
                     
                 }
 
@@ -953,18 +944,21 @@ public class FXApplicationController implements Initializable {
             double epochSize = epoch.size() / modulo;
             double xAxis = 1;
 
+            double[] epoch2 = Util.LinkedList2Double(epoch);
+            Signal.highpass(epoch2, 0.01, 0.3, 100);
+            
             for (int i = 0; i < epoch.size(); i++) {
                 if (i % modulo == 0) {
                     double tmp = xAxis / epochSize;
                     tmp = tmp * 100;
 
-                    double value = epoch.get(i);
+                    double value = epoch2[i];
                     value = value / 100;
 
                     value = value * zoom;
                     value = value + realOffset;
 
-                    series.getData().add(new XYChart.Data<Double, Double>(tmp, value));
+                    series.getData().add(new XYChart.Data(tmp, value));
 
                     xAxis++;
                 }
