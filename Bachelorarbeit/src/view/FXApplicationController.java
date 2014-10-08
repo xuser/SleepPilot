@@ -139,6 +139,7 @@ public class FXApplicationController implements Initializable{
 	@FXML private MenuItem showAdtVisualization;
 	@FXML private LineChart<Number, Number> lineChart;
 	@FXML private NumberAxis yAxis;
+	@FXML private NumberAxis xAxis;
 	
 	@FXML private Line line1;
 	@FXML private Line line2;
@@ -155,8 +156,8 @@ public class FXApplicationController implements Initializable{
 		this.autoMode = featureExtractionModel.isAutoMode();
 		this.recreateModelMode = recreateModelMode;
 		
-		if (!autoMode && !recreateModelMode) {
-			featureExtractionModel.createDataMatrix(featureExtractionModel.getNumberOfFeatureValues(), 1);
+		if ((!autoMode) && (!recreateModelMode)) {
+			featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
 		}
 		
 		// Creating FXML Loader
@@ -1012,7 +1013,7 @@ public class FXApplicationController implements Initializable{
 				lengthOfLine = line.getStartX() - line.getEndX();
 			}
 			
-			double percentageOneLine = (lengthOfLine / (overlay3.getWidth() - 25)) * 100.0;
+			double percentageOneLine = (lengthOfLine / xAxis.getWidth()) * 100.0;
 			percentageSum = percentageSum + percentageOneLine;
 		}
 		
