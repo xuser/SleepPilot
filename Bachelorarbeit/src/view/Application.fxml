@@ -58,7 +58,7 @@
       <children>
         <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="true" legendVisible="false" minHeight="-1.0" minWidth="-1.0" verticalGridLinesVisible="true" verticalZeroLineVisible="true" visible="true">
           <xAxis>
-            <NumberAxis id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" upperBound="99.99" visible="false" />
+            <NumberAxis fx:id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" upperBound="99.99" visible="false" />
           </xAxis>
           <yAxis>
             <NumberAxis fx:id="yAxis" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />

@@ -166,6 +166,8 @@ public class FXApplicationController implements Initializable {
     private LineChart<Number, Number> lineChart;
     @FXML
     private NumberAxis yAxis;
+    @FXML
+    private NumberAxis xAxis;
 
     @FXML
     private Line line1;
@@ -184,8 +186,8 @@ public class FXApplicationController implements Initializable {
         this.autoMode = featureExtractionModel.isAutoMode();
         this.recreateModelMode = recreateModelMode;
 
-        if (!autoMode && !recreateModelMode) {
-            featureExtractionModel.createDataMatrix(featureExtractionModel.getNumberOfFeatureValues(), 1);
+        if ((!autoMode) && (!recreateModelMode)) {
+            featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
         }
 
         // Creating FXML Loader
@@ -227,7 +229,7 @@ public class FXApplicationController implements Initializable {
             if (i < 6) {
                 choices.add(channelNames[i]);
 
-                //The first value represents wheater the channel is shown
+				//The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 1.0;
@@ -236,7 +238,7 @@ public class FXApplicationController implements Initializable {
             } else {
                 choices.add(channelNames[i]);
 
-                //The first value represents wheater the channel is shown
+				//The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 0.0;
@@ -318,8 +320,8 @@ public class FXApplicationController implements Initializable {
 
                     LinkedList<Integer> activeChannels = returnActiveChannels();
                     double overlay2Height = overlay2.getHeight();
-//					overlay2Height = overlay2Height - (overlay2Height / activeChannels.size());
 
+//					overlay2Height = overlay2Height - (overlay2Height / activeChannels.size());
                     double heigtForChannel = overlay2Height / activeChannels.size();
 //					heigtForChannel = (overlay2.getHeight() + heigtForChannel) / activeChannels.size();
 
@@ -419,10 +421,10 @@ public class FXApplicationController implements Initializable {
 
                     if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
                         lineChart.getData().clear();
-                        
+
                         overlay3.getChildren().clear();
                         lines.clear();
-                        
+
                         currentEpoch = currentEpoch + 1;
                         showEpoch(currentEpoch);
 
@@ -435,7 +437,6 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-
                         if (kComplexFlag) {
                             calculatePercentageKComplex();
                         }
@@ -447,10 +448,10 @@ public class FXApplicationController implements Initializable {
                 if (ke.getCode() == KeyCode.LEFT) {
                     if (currentEpoch > 0) {
                         lineChart.getData().clear();
-                        
+
                         overlay3.getChildren().clear();
                         lines.clear();
-                        
+
                         currentEpoch = currentEpoch - 1;
                         showEpoch(currentEpoch);
 
@@ -462,7 +463,6 @@ public class FXApplicationController implements Initializable {
                         if (viewModel.isHypnogrammActive()) {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
-
 
                         if (kComplexFlag) {
                             calculatePercentageKComplex();
@@ -479,7 +479,7 @@ public class FXApplicationController implements Initializable {
                         hypnogramm.bringToFront();
                     }
                 }
-                
+
                 if (ke.getCode() == KeyCode.E) {
                     if (viewModel.isEvaluationWindowActive() == false) {
                         evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
@@ -1023,32 +1023,31 @@ public class FXApplicationController implements Initializable {
 
         double percentageSum = 0.0;
         RangeSet<Double> rangeset = TreeRangeSet.create();
-        
+
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
 
             double lengthOfLine;
 
             Range r = Range.closed(
-                            Math.min(
-                                    line.getLayoutX(), line.getEndX() + line.getLayoutX()
-                            )/(overlay3.getWidth()-25)*100. - 1e-9,
-                            Math.max(
-                                    line.getLayoutX(), line.getEndX() + line.getLayoutX()
-                            )/(overlay3.getWidth()-25)*100. + 1e-9
-                    );
-                    
+                    Math.min(
+                            line.getLayoutX(), line.getEndX() + line.getLayoutX()
+                    ) / xAxis.getWidth() * 100. - 1e-9,
+                    Math.max(
+                            line.getLayoutX(), line.getEndX() + line.getLayoutX()
+                    ) / xAxis.getWidth() * 100. + 1e-9
+            );
+
             rangeset.add(r);
-            
+
         }
-        
+
         percentageSum = rangeset.asRanges()
                 .stream()
-                .mapToDouble(e -> 
-                        (e.upperEndpoint() - e.lowerEndpoint())
+                .mapToDouble(e
+                        -> (e.upperEndpoint() - e.lowerEndpoint())
                 )
                 .sum();
-                
 
         kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
     }
@@ -1172,7 +1171,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+	// First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void openFile(File file) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(file));
