@@ -419,7 +419,10 @@ public class FXApplicationController implements Initializable {
 
                     if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
                         lineChart.getData().clear();
-
+                        
+                        overlay3.getChildren().clear();
+                        lines.clear();
+                        
                         currentEpoch = currentEpoch + 1;
                         showEpoch(currentEpoch);
 
@@ -432,8 +435,6 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-                        overlay3.getChildren().clear();
-                        lines.clear();
 
                         if (kComplexFlag) {
                             calculatePercentageKComplex();
@@ -446,7 +447,10 @@ public class FXApplicationController implements Initializable {
                 if (ke.getCode() == KeyCode.LEFT) {
                     if (currentEpoch > 0) {
                         lineChart.getData().clear();
-
+                        
+                        overlay3.getChildren().clear();
+                        lines.clear();
+                        
                         currentEpoch = currentEpoch - 1;
                         showEpoch(currentEpoch);
 
@@ -459,8 +463,6 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-                        overlay3.getChildren().clear();
-                        lines.clear();
 
                         if (kComplexFlag) {
                             calculatePercentageKComplex();
@@ -477,7 +479,7 @@ public class FXApplicationController implements Initializable {
                         hypnogramm.bringToFront();
                     }
                 }
-
+                
                 if (ke.getCode() == KeyCode.E) {
                     if (viewModel.isEvaluationWindowActive() == false) {
                         evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
