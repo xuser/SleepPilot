@@ -21,7 +21,6 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
-import java.util.Arrays;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -56,9 +55,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import kcdetection.KCdetection.KC;
 import tools.Signal;
 import tools.Util;
+
+
 
 public class FXApplicationController implements Initializable {
 
