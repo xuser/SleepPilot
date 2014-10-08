@@ -21,6 +21,7 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
+import java.util.Set;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -55,10 +56,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import kcdetection.KCdetection;
+import static kcdetection.KCdetection.filterKCs;
+import static kcdetection.KCdetection.getKCs;
+import static kcdetection.KCdetection.mergeKCs;
 import tools.Signal;
 import tools.Util;
-
-
 
 public class FXApplicationController implements Initializable {
 
@@ -229,7 +232,7 @@ public class FXApplicationController implements Initializable {
             if (i < 6) {
                 choices.add(channelNames[i]);
 
-				//The first value represents wheater the channel is shown
+                //The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 1.0;
@@ -238,7 +241,7 @@ public class FXApplicationController implements Initializable {
             } else {
                 choices.add(channelNames[i]);
 
-				//The first value represents wheater the channel is shown
+                //The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 0.0;
@@ -294,6 +297,7 @@ public class FXApplicationController implements Initializable {
 
                         lines.add(line);
 
+                        System.out.println("pressed");
                     }
 
                     if (mouse.isPrimaryButtonDown()) {
@@ -303,9 +307,10 @@ public class FXApplicationController implements Initializable {
 
                         line.setEndX(endXPos);
                         line.setEndY(endYPos);
+
+                        calculatePercentageKComplex();
                     }
 
-                    calculatePercentageKComplex();
                 }
             }
 
@@ -437,10 +442,9 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-                        if (kComplexFlag) {
-                            calculatePercentageKComplex();
-                        }
-
+//                        if (kComplexFlag) {
+//                            calculatePercentageKComplex();
+//                        }
                     }
 
                 }
@@ -464,9 +468,9 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-                        if (kComplexFlag) {
-                            calculatePercentageKComplex();
-                        }
+//                        if (kComplexFlag) {
+//                            calculatePercentageKComplex();
+//                        }
                     }
                 }
 
@@ -972,6 +976,23 @@ public class FXApplicationController implements Initializable {
             }
 
             lineChart.getData().add(series);
+
+            kComplexLabel.setVisible(true);
+
+            Signal.lowpass(epoch2, 4., 7., 100);
+            KCdetection.KC[] kcs = getKCs(epoch2);
+            kcs = filterKCs(kcs, 20, 100, 0, 65);
+            Set<Range<Integer>> kcPlotRanges = mergeKCs(kcs);
+
+            double percentageSum = kcPlotRanges
+                    .stream()
+                    .mapToDouble(e
+                            -> ((e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length)
+                    )
+                    .sum() * 100.;
+
+            kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
+
         }
 
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
@@ -1171,7 +1192,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-	// First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void openFile(File file) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(file));

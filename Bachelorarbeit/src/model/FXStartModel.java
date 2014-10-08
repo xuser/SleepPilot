@@ -2,7 +2,7 @@ package model;
 
 public class FXStartModel {
 	
-	private boolean autoModeFlag = true;
+	private boolean autoModeFlag = false;
 	
 	private String selectedModel = null;
 		
