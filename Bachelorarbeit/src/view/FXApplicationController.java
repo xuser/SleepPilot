@@ -900,7 +900,12 @@ public class FXApplicationController implements Initializable{
 	private void showEpoch(int numberOfEpoch) {
 		LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 		
-		double offsetSize = 100 / (activeChannelNumbers.size());
+		double offsetSize = 0;
+		
+		if (activeChannelNumbers.size() != 0) {
+			offsetSize = 100 / (activeChannelNumbers.size());
+		}
+		
 		int modulo = 3;					// Take every second sample
 				
 		for (int x = 0; x < activeChannelNumbers.size(); x++) {
