@@ -1350,6 +1350,7 @@ public class FXApplicationController implements Initializable{
 	
 	@FXML
 	protected void artefactButtonOnAction() {
+		
 		featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
 		updateStage();
 		
