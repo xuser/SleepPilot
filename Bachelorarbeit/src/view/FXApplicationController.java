@@ -21,7 +21,13 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.NumberBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -54,6 +60,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import kcdetection.KCdetection;
@@ -150,6 +157,8 @@ public class FXApplicationController implements Initializable {
     private Pane overlay2;
     @FXML
     private Pane overlay3;
+    @FXML
+    private Pane overlay4;
 
 //	Canvas canvas = new Canvas();
 //	ResizableCanvas canvas = new ResizableCanvas();
@@ -928,6 +937,10 @@ public class FXApplicationController implements Initializable {
         double offsetSize = 100 / (activeChannelNumbers.size());
         int modulo = 3;					// Take every second sample
 
+        Set<Range<Integer>> kcPlotRanges = null;
+        ArrayList<KCdetection.KC> kcList = new ArrayList();
+        double[] epoch2 = null;
+
         for (int x = 0; x < activeChannelNumbers.size(); x++) {
 
             double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
@@ -955,8 +968,8 @@ public class FXApplicationController implements Initializable {
             double epochSize = epoch.size() / modulo;
             double xAxis = 1;
 
-            double[] epoch2 = Util.LinkedList2Double(epoch);
-            Signal.highpass(epoch2, 0.01, 0.3, 100);
+            epoch2 = Util.LinkedList2Double(epoch);
+            Signal.highpass(epoch2, 0.1, 0.5, 100);
 
             for (int i = 0; i < epoch.size(); i++) {
                 if (i % modulo == 0) {
@@ -977,22 +990,52 @@ public class FXApplicationController implements Initializable {
 
             lineChart.getData().add(series);
 
-            kComplexLabel.setVisible(true);
-
             Signal.lowpass(epoch2, 4., 7., 100);
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 20, 100, 0, 65);
-            Set<Range<Integer>> kcPlotRanges = mergeKCs(kcs);
 
-            double percentageSum = kcPlotRanges
-                    .stream()
-                    .mapToDouble(e
-                            -> ((e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length)
-                    )
-                    .sum() * 100.;
+            kcList.addAll(Arrays.asList(kcs));
 
-            kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
+        }
 
+        kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
+
+        double percentageSum = 0;
+        for (Range<Integer> e : kcPlotRanges) {
+            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
+        }
+        percentageSum *= 100;
+
+        kComplexLabel.setVisible(true);
+        kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
+
+        //draw yellow rectangles for every pair of coordinates in kcPlotRanges
+        overlay4.getChildren().clear();
+//        NumberBinding rectWidth = Bindings.
+        
+        double start;
+        double stop;
+        
+        for (Iterator<Range<Integer>> iterator = kcPlotRanges.iterator(); iterator.hasNext();) {
+            Range<Integer> next = iterator.next();
+            start = next.lowerEndpoint();
+            stop = next.upperEndpoint();
+            if ((stop - start) > 0) {
+                Rectangle r = new Rectangle();
+                r.layoutXProperty()
+                        .bind(xAxis.widthProperty()
+                                .multiply(start / (double) epoch2.length));
+                r.setLayoutY(0);
+                r.widthProperty()
+                        .bind(xAxis.widthProperty()
+                        .multiply((stop - start) / (double) epoch2.length));
+                r.heightProperty()
+                        .bind(overlay4.heightProperty());
+                r.fillProperty().setValue(Color.LIGHTYELLOW);
+                r.opacityProperty().set(1);
+
+                overlay4.getChildren().add(r);
+            }
         }
 
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
