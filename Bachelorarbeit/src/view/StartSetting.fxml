@@ -24,7 +24,7 @@
         </ChoiceBox>
         <Label fx:id="label2" layoutX="48.0" layoutY="77.0" styleClass="textLabel" text="Select Model:" />
         <Button layoutX="142.0" layoutY="124.0" mnemonicParsing="false" onAction="#applyAction" styleClass="toolBarButtons" text="Apply" />
-        <Button fx:id="classificationFlag" layoutX="215.0" layoutY="29.0" mnemonicParsing="false" onAction="#classificationFlagAction" styleClass="toolBarButtons" text="ON" />
+        <Button fx:id="classificationFlag" layoutX="215.0" layoutY="29.0" mnemonicParsing="false" onAction="#classificationFlagAction" styleClass="toolBarButtons" text="OFF" />
       </children>
     </Pane>
   </children>
