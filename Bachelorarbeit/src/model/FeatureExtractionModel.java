@@ -134,6 +134,8 @@ public class FeatureExtractionModel implements Serializable{
 	
 	public void addArtefactToEpochProperty(int epoch) {
 		if (epochProperties.containsKey(epoch)) {
+			int tmpMAFlag = 0;
+			
 			Integer[] tempProp = epochProperties.get(epoch);
 			epochProperties.remove(epoch);
 			
@@ -143,14 +145,20 @@ public class FeatureExtractionModel implements Serializable{
 			
 			if (tempProp[1] == 1) {
 				countMA--;
+				tmpMAFlag = 1;
 			}
 			
 			if (tempProp[2] == 1) {
 				countS--;
 			}
 			
-			Integer[] prop = {1,0,0};
+			Integer[] prop = {1,tmpMAFlag,0};
 			countA++;
+			
+			if (tmpMAFlag == 1) {
+				countMA++;
+			}
+			
 			epochProperties.put(epoch, prop);
 			
 		} else {
@@ -162,11 +170,14 @@ public class FeatureExtractionModel implements Serializable{
 	
 	public void addArrousalToEpochProperty(int epoch) {
 		if (epochProperties.containsKey(epoch)) {
+			int tmpAFlag = 0;
+			
 			Integer[] tempProp = epochProperties.get(epoch);
 			epochProperties.remove(epoch);
 			
 			if (tempProp[0] == 1) {
 				countA--;
+				tmpAFlag = 1;
 			}
 			
 			if (tempProp[1] == 1) {
@@ -177,14 +188,17 @@ public class FeatureExtractionModel implements Serializable{
 				countS--;
 			}
 			
-			Integer[] prop = {1,1,0};
-			countA++;
+			Integer[] prop = {tmpAFlag,1,0};
 			countMA++;
+			
+			if (tmpAFlag == 1) {
+				countA++;
+			}
+			
 			epochProperties.put(epoch, prop);
 			
 		} else {
-			Integer[] prop = {1,1,0};
-			countA++;
+			Integer[] prop = {0,1,0};
 			countMA++;
 			epochProperties.put(epoch, prop);
 		}
@@ -209,11 +223,45 @@ public class FeatureExtractionModel implements Serializable{
 			
 			Integer[] prop = {0,0,1};
 			countS++;
+			
+			int label = getFeatureClassLabel(epoch);
+			switch (label) {
+			case 1: countWake--;
+				break;
+			case 2: countS1--;
+				break;
+			case 3: countS2--;
+				break;
+			case 4: countN--;
+				break;
+			case 5: countREM--;
+				break;
+			default: System.out.println("No class label set!");
+				break;
+			}
+			
 			epochProperties.put(epoch, prop);
 			
 		} else {
 			Integer[] prop = {0,0,1};
 			countS++;
+			
+			int label = getFeatureClassLabel(epoch);
+			switch (label) {
+			case 1: countWake--;
+				break;
+			case 2: countS1--;
+				break;
+			case 3: countS2--;
+				break;
+			case 4: countN--;
+				break;
+			case 5: countREM--;
+				break;
+			default: System.out.println("No class label set!");
+				break;
+			}
+			
 			epochProperties.put(epoch, prop);
 		}
 	}
@@ -246,7 +294,7 @@ public class FeatureExtractionModel implements Serializable{
 					break;
 				case 5: countREM++;
 					break;
-				default: System.err.println("Error during setting stats!");
+				default: System.out.println("No class label set!");
 					break;
 				}
 			}

@@ -934,7 +934,12 @@ public class FXApplicationController implements Initializable {
     private void showEpoch(int numberOfEpoch) {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
-        double offsetSize = 100 / (activeChannelNumbers.size());
+        double offsetSize = 0;
+		
+		if (activeChannelNumbers.size() != 0) {
+			offsetSize = 100 / (activeChannelNumbers.size());
+		}
+		
         int modulo = 3;					// Take every second sample
 
         Set<Range<Integer>> kcPlotRanges = null;
@@ -1515,22 +1520,23 @@ public class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
-    @FXML
-    protected void artefactButtonOnAction() {
-        featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
-    }
+	@FXML
+	protected void artefactButtonOnAction() {
+		
+		featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
+		updateStage();
+		
+		if (viewModel.isEvaluationWindowActive()) {
+			evaluationWindow.reloadEvaluationWindow();			
+		}
+		
+		if (viewModel.isHypnogrammActive()) {
+			hypnogramm.reloadHypnogramm();
+			hypnogramm.changeCurrentEpochMarker(currentEpoch);
+		}
+		
+		lineChart.requestFocus();
+	}
 
     @FXML
     protected void arrousalButtonOnAction() {
