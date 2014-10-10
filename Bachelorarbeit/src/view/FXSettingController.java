@@ -23,7 +23,7 @@ public class FXSettingController implements Initializable {
 
 	private Stage stage;
 	private FXStartModel startModel = null;
-	private boolean autoModeFlag = true;
+	private boolean autoModeFlag = false;
 	
 	@FXML private Button classificationFlag;
 	@FXML private ChoiceBox<String> choiceBox;
@@ -66,6 +66,9 @@ public class FXSettingController implements Initializable {
 		
 		choiceBox.setItems(choices);
 		
+		choiceBox.setDisable(true);
+		label2.getStyleClass().add("textLabelDisabled");
+		
 	}
 	
 	@Override
@@ -86,19 +89,19 @@ public class FXSettingController implements Initializable {
 	
 	@FXML
 	protected void classificationFlagAction() {
-		if (classificationFlag.getText().equals("ON")) {
-			classificationFlag.setText("OFF");
-			autoModeFlag = false;
-			choiceBox.setDisable(true);
-			label2.getStyleClass().removeAll("textLabel");
-			label2.getStyleClass().add("textLabelDisabled");
-			
-		} else {
+		if (classificationFlag.getText().equals("OFF")) {
 			classificationFlag.setText("ON");
 			autoModeFlag = true;
 			choiceBox.setDisable(false);
 			label2.getStyleClass().removeAll("textLabelDisabled");
 			label2.getStyleClass().add("textLabel");
+			
+		} else {
+			classificationFlag.setText("OFF");
+			autoModeFlag = false;
+			choiceBox.setDisable(true);
+			label2.getStyleClass().removeAll("textLabel");
+			label2.getStyleClass().add("textLabelDisabled");
 		}
 	}
 	
