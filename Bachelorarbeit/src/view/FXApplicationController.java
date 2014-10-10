@@ -3,6 +3,7 @@ package view;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
+import com.google.common.primitives.Doubles;
 import help.BinaryFormat;
 
 import java.io.BufferedReader;
@@ -306,7 +307,6 @@ public class FXApplicationController implements Initializable {
 
                         lines.add(line);
 
-                        System.out.println("pressed");
                     }
 
                     if (mouse.isPrimaryButtonDown()) {
@@ -970,6 +970,7 @@ public class FXApplicationController implements Initializable {
 
             epoch2 = Util.LinkedList2Double(epoch);
             Signal.highpass(epoch2, 0.1, 0.5, 100);
+            Signal.lowpass(epoch2, 4., 7., 100);
 
             for (int i = 0; i < epoch.size(); i++) {
                 if (i % modulo == 0) {
@@ -990,14 +991,29 @@ public class FXApplicationController implements Initializable {
 
             lineChart.getData().add(series);
 
-            Signal.lowpass(epoch2, 4., 7., 100);
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 20, 100, 0, 65);
-
             kcList.addAll(Arrays.asList(kcs));
 
-        }
+            for (int i = 0; i < kcs.length; i++) {
+                Line line = new Line();
+                line.setStyle("-fx-stroke: black;");
 
+                line.layoutXProperty()
+                        .bind(this.xAxis.widthProperty()
+                                .multiply(kcs[i].indexNeg / (double) epoch2.length)
+                                .add(this.xAxis.getLocalToParentTransform().getTx())
+                        );
+                
+                line.setLayoutY(0);
+                line.endYProperty()
+                        .bind(overlay3.heightProperty());
+
+                overlay3.getChildren().add(line);
+            }
+        }
+        
+        
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
         double percentageSum = 0;
@@ -1011,31 +1027,29 @@ public class FXApplicationController implements Initializable {
 
         //draw yellow rectangles for every pair of coordinates in kcPlotRanges
         overlay4.getChildren().clear();
-//        NumberBinding rectWidth = Bindings.
-        
+
         double start;
         double stop;
-        
+
         for (Iterator<Range<Integer>> iterator = kcPlotRanges.iterator(); iterator.hasNext();) {
             Range<Integer> next = iterator.next();
             start = next.lowerEndpoint();
             stop = next.upperEndpoint();
-            if ((stop - start) > 0) {
-                Rectangle r = new Rectangle();
-                r.layoutXProperty()
-                        .bind(xAxis.widthProperty()
-                                .multiply(start / (double) epoch2.length));
-                r.setLayoutY(0);
-                r.widthProperty()
-                        .bind(xAxis.widthProperty()
-                        .multiply((stop - start) / (double) epoch2.length));
-                r.heightProperty()
-                        .bind(overlay4.heightProperty());
-                r.fillProperty().setValue(Color.LIGHTYELLOW);
-                r.opacityProperty().set(1);
 
-                overlay4.getChildren().add(r);
-            }
+            Rectangle r = new Rectangle();
+            r.layoutXProperty()
+                    .bind(xAxis.widthProperty()
+                            .multiply(start / (double) epoch2.length));
+            r.setLayoutY(0);
+            r.widthProperty()
+                    .bind(xAxis.widthProperty()
+                            .multiply((stop - start) / (double) epoch2.length));
+            r.heightProperty()
+                    .bind(overlay4.heightProperty());
+            r.fillProperty().setValue(Color.LIGHTYELLOW);
+            r.opacityProperty().set(1);
+
+            overlay4.getChildren().add(r);
         }
 
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
