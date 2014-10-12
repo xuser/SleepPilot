@@ -8,6 +8,7 @@ package view;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -29,6 +30,7 @@ import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import model.FXViewModel;
 import model.RawDataModel;
 import view.FXElectrodeConfiguratorController.Channel;
 
@@ -57,19 +59,22 @@ public class FXElectrodeConfiguratorController implements Initializable {
     private Button btnDeselectAll;
     @FXML
     private Button btnInvertSelection;
+    @FXML
+    private Button btnApply;
 
     @FXML
-    private TableView table;
+    public TableView table;
 
     String[] channelNames;
 
     Stage stage;
     ObservableList<Channel> observableChannels;
+    HashMap<String, Double[]> activeChannels;
+    FXViewModel view;
 
     @FXML
     void invertSelectionAction() {
         for (int i = 0; i < observableChannels.size(); i++) {
-            System.out.println(observableChannels.get(i).visibility.get());
             observableChannels.get(i).setVisibility(!observableChannels.get(i).visibilityProperty().get());
         }
     }
@@ -83,12 +88,36 @@ public class FXElectrodeConfiguratorController implements Initializable {
 
     @FXML
     void selectAllAction() {
-
         for (int i = 0; i < observableChannels.size(); i++) {
-            System.out.println(observableChannels.get(i).visibility.get());
             observableChannels.get(i).setVisibility(true);
-
         }
+    }
+
+    @FXML
+    void applyAction() {
+
+        //Set properties of channels
+        for (int i = 0; i < channelNames.length; i++) {
+
+//            //The first value represents wheater the channel is shown
+//            //The second value represents the current zoom level
+            activeChannels.put(
+                    observableChannels.get(i).nameProperty().get(),
+                    new Double[]{
+                        observableChannels.get(i).visibilityProperty().get() ? 1. : 0.,
+                        observableChannels.get(i).zoomProperty().get()
+                    }
+            );
+        }
+        
+        //refresh (everything: labels, traces )
+        view.getAppController().clearLineChart();
+        view.getAppController().showEpoch(view.getAppController().getCurrentEpoch());
+        LinkedList<Integer> activeChannelNumbers = view.getAppController().returnActiveChannels();
+        view.getAppController().showLabelsForEpoch(activeChannelNumbers);
+        
+        
+        
     }
 
     @Override
@@ -96,7 +125,9 @@ public class FXElectrodeConfiguratorController implements Initializable {
         // TODO
     }
 
-    public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> activeChannels) {
+    public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> activeChannels, FXViewModel view) {
+        this.activeChannels = activeChannels;
+        this.view = view;
 
         stage = new Stage();
 
@@ -122,17 +153,16 @@ public class FXElectrodeConfiguratorController implements Initializable {
         stage.setTitle("Select electrodes to display...");
         stage.toFront();
 
-        // Set Choice Box for the channels
         channelNames = dataPointsModel.getChannelNames();
         observableChannels = FXCollections.observableArrayList();
 
-        //Set properties for the channels
+        //Get properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
             Channel channel = new Channel();
             channel.setName(channelNames[i]);
             channel.setType("EEG");
-            channel.setVisibility(false);
-            channel.setZoom(1.);
+            channel.setVisibility(activeChannels.get(channelNames[i])[0] == 1. ? true : false);
+            channel.setZoom(activeChannels.get(channelNames[i])[1]);
             observableChannels.add(channel);
 
 //            //The first value represents wheater the channel is shown
@@ -160,7 +190,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
         zoomCol.setCellFactory(
                 ChoiceBoxTableCell
                 .forTableColumn(
-                        new Double[]{0.01,0.05,0.1,0.5,1.,5.,10.,50.,100.}
+                        new Double[]{0.01, 0.05, 0.1, 0.5, 1., 5., 10., 50., 100.}
                 )
         );
 
@@ -178,8 +208,8 @@ public class FXElectrodeConfiguratorController implements Initializable {
         public Channel() {
         }
 
-        public String getName() {
-            return name.get();
+        public StringProperty nameProperty() {
+            return name;
         }
 
         public StringProperty typeProperty() {

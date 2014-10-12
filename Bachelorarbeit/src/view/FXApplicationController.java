@@ -86,6 +86,7 @@ public class FXApplicationController implements Initializable {
     private DataReaderController dataReaderController;
     private RawDataModel dataPointsModel;
     private FeatureExtractionModel featureExtractionModel;
+    private FXElectrodeConfiguratorController config;
 
     private final boolean autoMode;
     private final boolean recreateModelMode;
@@ -284,9 +285,8 @@ public class FXApplicationController implements Initializable {
 
         updateProbabilities();
 
-        FXElectrodeConfiguratorController config
-                = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels);
-
+        config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels, this.viewModel);
+        
     }
 
     @Override
@@ -853,7 +853,7 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-    private LinkedList<Integer> returnActiveChannels() {
+    public LinkedList<Integer> returnActiveChannels() {
 
         LinkedList<Integer> channels = new LinkedList<Integer>();
 
@@ -885,7 +885,7 @@ public class FXApplicationController implements Initializable {
         return channel;
     }
 
-    private void showLabelsForEpoch(LinkedList<Integer> activeChannels) {
+    public void showLabelsForEpoch(LinkedList<Integer> activeChannels) {
 
         overlay.getChildren().clear();
         double labelHeight = overlay.getHeight() / activeChannels.size();
@@ -934,15 +934,15 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    private void showEpoch(int numberOfEpoch) {
+    public void showEpoch(int numberOfEpoch) {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
         double offsetSize = 0;
-		
-		if (activeChannelNumbers.size() != 0) {
-			offsetSize = 100 / (activeChannelNumbers.size());
-		}
-		
+
+        if (activeChannelNumbers.size() != 0) {
+            offsetSize = 100 / (activeChannelNumbers.size());
+        }
+
         int modulo = 3;					// Take every second sample
 
         Set<Range<Integer>> kcPlotRanges = null;
@@ -1522,23 +1522,23 @@ public class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
-	@FXML
-	protected void artefactButtonOnAction() {
-		
-		featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
-		updateStage();
-		
-		if (viewModel.isEvaluationWindowActive()) {
-			evaluationWindow.reloadEvaluationWindow();			
-		}
-		
-		if (viewModel.isHypnogrammActive()) {
-			hypnogramm.reloadHypnogramm();
-			hypnogramm.changeCurrentEpochMarker(currentEpoch);
-		}
-		
-		lineChart.requestFocus();
-	}
+    @FXML
+    protected void artefactButtonOnAction() {
+
+        featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
+        updateStage();
+
+        if (viewModel.isEvaluationWindowActive()) {
+            evaluationWindow.reloadEvaluationWindow();
+        }
+
+        if (viewModel.isHypnogrammActive()) {
+            hypnogramm.reloadHypnogramm();
+            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+        }
+
+        lineChart.requestFocus();
+    }
 
     @FXML
     protected void arrousalButtonOnAction() {
@@ -1600,4 +1600,17 @@ public class FXApplicationController implements Initializable {
         System.out.println("----------------------------");
     }
 
+    private void electrodeControllerUpdate() {
+
+    }
+    
+    public int getCurrentEpoch(){
+        return currentEpoch;
+    }
+    
+    public void clearLineChart(){
+        lineChart.getData().clear();
+        lineChart.requestFocus();
+    }
+            
 }

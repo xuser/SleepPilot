@@ -6,7 +6,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -35,6 +34,7 @@
                         <Button fx:id="btnSelectAll" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectAllAction" text="select all" />
                         <Button fx:id="btnDeselectAll" mnemonicParsing="false" onAction="#deselectAllAction" text="deselect all" />
                         <Button fx:id="btnInvertSelection" mnemonicParsing="false" onAction="#invertSelectionAction" text="invert selection" />
+                        <Button fx:id="btnApply" mnemonicParsing="false" onAction="#applyAction" text="apply" />
                      </children>
                   </TilePane>
                </children>
