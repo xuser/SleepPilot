@@ -284,6 +284,9 @@ public class FXApplicationController implements Initializable {
 
         updateProbabilities();
 
+        FXElectrodeConfiguratorController config
+                = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels);
+
     }
 
     @Override
@@ -1009,7 +1012,7 @@ public class FXApplicationController implements Initializable {
                                 .multiply(kcs[i].indexNeg / (double) epoch2.length)
                                 .add(this.xAxis.getLocalToParentTransform().getTx())
                         );
-                
+
                 line.setLayoutY(0);
                 line.endYProperty()
                         .bind(overlay3.heightProperty());
@@ -1017,8 +1020,7 @@ public class FXApplicationController implements Initializable {
                 overlay3.getChildren().add(line);
             }
         }
-        
-        
+
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
         double percentageSum = 0;
