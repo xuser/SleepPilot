@@ -22,8 +22,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -111,24 +113,24 @@ public class FXElectrodeConfiguratorController implements Initializable {
                     }
             );
         }
-        
+
         //refresh (everything: labels, traces )
         view.getAppController().clearLineChart();
         view.getAppController().showEpoch(view.getAppController().getCurrentEpoch());
         LinkedList<Integer> activeChannelNumbers = view.getAppController().returnActiveChannels();
-        view.getAppController().showLabelsForEpoch(activeChannelNumbers);       
+        view.getAppController().showLabelsForEpoch(activeChannelNumbers);
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override
-			public void handle(WindowEvent we) {
-				view.setElectrodeConfiguratorActive(false);
-			}			
-		
-		});
+            @Override
+            public void handle(WindowEvent we) {
+                view.setElectrodeConfiguratorActive(false);
+            }
+
+        });
     }
 
     public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> activeChannels, FXViewModel view) {
@@ -181,12 +183,13 @@ public class FXElectrodeConfiguratorController implements Initializable {
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setItems(observableChannels);
+        table.setEditable(true);
 
         visibilityCol.setCellValueFactory(new PropertyValueFactory("visibility"));
         visibilityCol.setCellFactory(CheckBoxTableCell.forTableColumn(visibilityCol));
-
         visibilityCol.setEditable(true);
-        table.setEditable(true);
+
+        
 
         nameCol.setCellValueFactory(new PropertyValueFactory("name"));
 
