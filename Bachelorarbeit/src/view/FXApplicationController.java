@@ -109,7 +109,9 @@ public class FXApplicationController implements Initializable {
     private Scene scene;
 
     private DoubleProperty scale;
-
+    private DoubleProperty mouseX = new SimpleDoubleProperty(0);
+    private DoubleProperty mouseY = new SimpleDoubleProperty(0);
+    
     @FXML
     private ToggleButton awakeButton;
     @FXML
@@ -299,6 +301,9 @@ public class FXApplicationController implements Initializable {
 
             @Override
             public void handle(MouseEvent mouse) {
+                mouseX.set(mouse.getX());
+                mouseY.set(mouse.getY());
+
                 if (kComplexFlag) {
                     if (mouse.getEventType() == MouseEvent.MOUSE_PRESSED) {
                         Line line = new Line();
@@ -308,8 +313,8 @@ public class FXApplicationController implements Initializable {
 
                         line.setStartX(0);
                         line.setStartY(0);
-                        line.setLayoutX(mouse.getX());
-                        line.setLayoutY(mouse.getY());
+                        line.setLayoutX(mouseX.get());
+                        line.setLayoutY(mouseY.get());
 
                         lines.add(line);
 
@@ -317,8 +322,8 @@ public class FXApplicationController implements Initializable {
 
                     if (mouse.isPrimaryButtonDown()) {
                         Line line = lines.getLast();
-                        double endXPos = mouse.getX() - line.getLayoutX();
-                        double endYPos = mouse.getY() - line.getLayoutY();
+                        double endXPos = mouseX.get() - line.getLayoutX();
+                        double endYPos = mouseY.get() - line.getLayoutY();
 
                         line.setEndX(endXPos);
                         line.setEndY(endYPos);
@@ -335,6 +340,8 @@ public class FXApplicationController implements Initializable {
 
             @Override
             public void handle(MouseEvent mouse) {
+                mouseX.set(mouse.getX());
+                mouseY.set(mouse.getY());
 
                 if (help1Flag) {
 
@@ -380,7 +387,7 @@ public class FXApplicationController implements Initializable {
                     // Now calculate the number of pixels from the microvolt size
                     space = (space / yAxis.getUpperBound()) * yAxis.getHeight();
 
-                    paintSpacing(mouse.getY(), space);
+                    paintSpacing(space);
                 }
 
             }
@@ -850,13 +857,13 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-    private void paintSpacing(double yAxis, double space) {
+    private void paintSpacing(double space) {
 
         double tmpSpace = space / 2;
 
-        line1.layoutYProperty().bind(scale.multiply(+tmpSpace).add(yAxis) );
+        line1.layoutYProperty().bind(scale.multiply(+tmpSpace).add(mouseY));
         line1.endXProperty().bind(overlay3.widthProperty());
-        line2.layoutYProperty().bind(scale.multiply(-tmpSpace).add(yAxis) );
+        line2.layoutYProperty().bind(scale.multiply(-tmpSpace).add(mouseY));
         line2.endXProperty().bind(overlay3.widthProperty());
 
     }
