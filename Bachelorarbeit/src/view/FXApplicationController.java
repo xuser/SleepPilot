@@ -339,29 +339,46 @@ public class FXApplicationController implements Initializable {
                 if (help1Flag) {
 
                     LinkedList<Integer> activeChannels = returnActiveChannels();
-                    double overlay2Height = overlay2.getHeight();
 
-//					overlay2Height = overlay2Height - (overlay2Height / activeChannels.size());
-                    double heigtForChannel = overlay2Height / activeChannels.size();
-//					heigtForChannel = (overlay2.getHeight() + heigtForChannel) / activeChannels.size();
+                    double offsetSize = 1. / (activeChannels.size() + 1.);
 
                     double posOnOverlay = mouse.getY();
                     System.out.println("PosOnOverlay: " + posOnOverlay);
 
-                    double activeZoom = 0.0;
-                    for (int i = 1; i <= activeChannels.size(); i++) {
-                        if (posOnOverlay < (heigtForChannel * i) && posOnOverlay > (heigtForChannel * (i - 1))) {
-                            activeZoom = getZoomFromChannel(activeChannels.get(i - 1));
-                            System.out.println("Actice Channel: " + activeChannels.get(i - 1));
-                            System.out.println("Actice Zoom:  " + activeZoom);
+                    double zoom = 1.0;
+                    for (int i = 0; i < activeChannels.size(); i++) {
+
+                        double realOffset
+                                = (1 - (i + 1.) * offsetSize);
+
+                        double upperBound = yAxis.getDisplayPosition(
+                                (realOffset - offsetSize / 2.) * yAxis.getUpperBound()
+                        ) + yAxis.getLayoutY();
+
+                        double lowerBound = yAxis.getDisplayPosition(
+                                (realOffset + offsetSize / 2.) * yAxis.getUpperBound()
+                        ) + yAxis.getLayoutY();
+
+                        if ((posOnOverlay <= upperBound)
+                                && (posOnOverlay > lowerBound)) {
+
+                            System.out.println("realoffset" + yAxis.getDisplayPosition(
+                                    realOffset * yAxis.getUpperBound())
+                            );
+                            System.out.println("upper" + upperBound);
+                            System.out.println("lower" + lowerBound);
+
+                            zoom = getZoomFromChannel(activeChannels.get(i));
+                            System.out.println("Actice Channel: " + activeChannels.get(i));
+                            System.out.println("Actice Zoom:  " + zoom);
                         }
                     }
 
-                    double space = 75.0 / 100.0 * activeZoom * scale.get();
+                    double space = 75.0 / yAxis.getUpperBound() * zoom * scale.get();
                     System.out.println("Space: " + space);
 
                     // Now calculate the number of pixels from the microvolt size
-                    space = (space / 100.0) * overlay2.getHeight();
+                    space = (space / yAxis.getUpperBound()) * yAxis.getHeight();
 
                     paintSpacing(mouse.getY(), space);
                 }
@@ -803,10 +820,10 @@ public class FXApplicationController implements Initializable {
             Label label = new Label(getNameFromChannel(activeChannels.get(i)));
             label.setTextFill(Color.GRAY);
             label.setStyle("-fx-font-family: sans-serif;");
-            label.setLayoutX(18);
+            label.setLayoutX(1);
 
-            double labelPos = yAxis.getDisplayPosition(realOffset);
-            label.setLayoutY(labelPos + 10);
+            double labelPos = yAxis.getDisplayPosition(realOffset) + yAxis.getLayoutY();
+            label.setLayoutY(labelPos);
 
             overlay.getChildren().add(label);
 
@@ -861,6 +878,7 @@ public class FXApplicationController implements Initializable {
 
             double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
 
+            // in local yAxis-coordinates
             double realOffset = (1 - (x + 1.) * offsetSize) * yAxis.getUpperBound();
 
             @SuppressWarnings("rawtypes")
@@ -893,15 +911,15 @@ public class FXApplicationController implements Initializable {
                     double tmp = xAxis / epochSize;
                     tmp = tmp * 100;
 
-                    double value = epoch2[i];
-                    value = value / 100;
+//                    double value = epoch2[i];
+                    double value = Math.sin(2*Math.PI*i/100.)*75/2.;
+                    value = value / yAxis.getUpperBound();
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
 
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
                     series.getData().add(dataItem);
-//                    series.dataProperty().;
 
                     xAxis++;
                 }
