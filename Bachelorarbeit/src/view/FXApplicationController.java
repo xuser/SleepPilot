@@ -108,7 +108,7 @@ public class FXApplicationController implements Initializable {
     private BorderPane mainGrid;
     private Scene scene;
 
-    private DoubleProperty scale = new SimpleDoubleProperty(1.);
+    private DoubleProperty scale = new SimpleDoubleProperty(1e-1);
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
 
@@ -151,8 +151,6 @@ public class FXApplicationController implements Initializable {
     private Label kComplexLabel;
     @FXML
     private TextField toolBarGoto;
-//    @FXML
-//    private TextField toolBarZoom;
 
     @FXML
     private GridPane statusBarGrid;
@@ -175,10 +173,6 @@ public class FXApplicationController implements Initializable {
     @FXML
     private HBox statusBarHBox;
 
-//    @FXML
-//    private ChoiceBox<String> toolBarChoiceBox;
-//    @FXML
-//    private CheckBox toolBarCheckBox;
     @FXML
     private MenuItem showAdtVisualization;
     @FXML
@@ -253,7 +247,7 @@ public class FXApplicationController implements Initializable {
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 1.0;
-                channelProp[1] = 5.0;
+                channelProp[1] = 1.0;
                 activeChannels.put(channelNames[i], channelProp);
             } else {
                 choices.add(channelNames[i]);
@@ -262,20 +256,15 @@ public class FXApplicationController implements Initializable {
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 0.0;
-                channelProp[1] = 5.0;
+                channelProp[1] = 1.0;
                 activeChannels.put(channelNames[i], channelProp);
             }
 
         }
 
-
         line1.setVisible(false);
         line2.setVisible(false);
         kComplexLabel.setVisible(false);
-
-//        statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-//        statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-//        statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
         showEpoch(currentEpoch);
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -366,23 +355,15 @@ public class FXApplicationController implements Initializable {
                         if ((posOnOverlay <= upperBound)
                                 && (posOnOverlay > lowerBound)) {
 
-                            System.out.println("realoffset" + yAxis.getDisplayPosition(
-                                    realOffset * yAxis.getUpperBound())
-                            );
-                            System.out.println("upper" + upperBound);
-                            System.out.println("lower" + lowerBound);
-
                             zoom = getZoomFromChannel(activeChannels.get(i));
                             System.out.println("Actice Channel: " + activeChannels.get(i));
                             System.out.println("Actice Zoom:  " + zoom);
                         }
                     }
 
-                    double space = 75.0 / yAxis.getUpperBound() * zoom;
+                    
+                    double space = 75.0 * zoom / yAxis.getUpperBound() * yAxis.getHeight();
                     System.out.println("Space: " + space);
-
-                    // Now calculate the number of pixels from the microvolt size
-                    space = (space / yAxis.getUpperBound()) * yAxis.getHeight();
 
                     paintSpacing(space);
                 }
@@ -394,15 +375,6 @@ public class FXApplicationController implements Initializable {
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
-//                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-//                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-//                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
-
-//                if (help1Flag) {
-//                    line1.setEndX(lineChart.getWidth());
-//                    line2.setEndX(lineChart.getWidth());
-//                }
 
                 growCoefWidth = overlay3.getWidth() / oldWidth;
                 oldWidth = overlay3.getWidth();
@@ -420,10 +392,6 @@ public class FXApplicationController implements Initializable {
         primaryStage.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
-//                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-//                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-//                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
                 growCoefHeight = overlay3.getHeight() / oldHeight;
                 oldHeight = overlay3.getHeight();
@@ -919,7 +887,6 @@ public class FXApplicationController implements Initializable {
 
                     double value = epoch2[i];
 //                    double value = Math.sin(2*Math.PI*i/100.)*75/2.; //test signal
-                    value = value / yAxis.getUpperBound();
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
@@ -1016,7 +983,6 @@ public class FXApplicationController implements Initializable {
 
 //            line1.setEndX(lineChart.getWidth());
 //            line2.setEndX(lineChart.getWidth());
-
         }
 
         lineChart.requestFocus();
