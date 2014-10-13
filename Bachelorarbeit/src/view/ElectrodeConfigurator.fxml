@@ -27,14 +27,14 @@
             </AnchorPane>
          </center>
          <bottom>
-            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="0.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="23.0" prefWidth="600.0" BorderPane.alignment="CENTER">
                <children>
-                  <TilePane prefColumns="3" prefHeight="200.0" prefRows="1" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TilePane prefColumns="3" prefRows="1" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <Button fx:id="btnSelectAll" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#selectAllAction" text="select all" />
+                        <Button fx:id="btnSelectAll" mnemonicParsing="false" onAction="#selectAllAction" text="select all" />
                         <Button fx:id="btnDeselectAll" mnemonicParsing="false" onAction="#deselectAllAction" text="deselect all" />
                         <Button fx:id="btnInvertSelection" mnemonicParsing="false" onAction="#invertSelectionAction" text="invert selection" />
-                        <Button fx:id="btnApply" mnemonicParsing="false" onAction="#applyAction" text="apply" />
+                        <Button fx:id="btnApply" minWidth="-Infinity" mnemonicParsing="false" onAction="#applyAction" text="apply" />
                      </children>
                   </TilePane>
                </children>

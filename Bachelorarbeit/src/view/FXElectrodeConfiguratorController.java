@@ -18,6 +18,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -30,6 +31,7 @@ import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import model.FXViewModel;
 import model.RawDataModel;
 import view.FXElectrodeConfiguratorController.Channel;
@@ -123,6 +125,13 @@ public class FXElectrodeConfiguratorController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent we) {
+				view.setElectrodeConfiguratorActive(false);
+			}			
+		
+		});
     }
 
     public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> activeChannels, FXViewModel view) {

@@ -9,6 +9,8 @@ public class FXViewModel {
 	private boolean evaluationWindowActive = false;
 	
 	private boolean scatterPlotActive = false;
+        
+        private boolean electrodeConfigurator = false;
 	
 	private FXApplicationController appController;
 
@@ -67,5 +69,13 @@ public class FXViewModel {
 	public void setScatterPlotActive(boolean scatterPlotActive) {
 		this.scatterPlotActive = scatterPlotActive;
 	}
+        
+        public boolean isElectrodeConfiguratorActive(){
+            return electrodeConfigurator;
+        }
+        
+        public void setElectrodeConfiguratorActive(boolean electrodeConfiguratorActive){
+            this.electrodeConfigurator=electrodeConfiguratorActive;
+        }
 
 }

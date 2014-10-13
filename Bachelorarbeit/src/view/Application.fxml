@@ -150,38 +150,22 @@
             </HBox>
             <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="1" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="62.0">
-              <children>
-                <Label prefWidth="54.0" styleClass="textLabel" text="Channel:" />
-              </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <ChoiceBox fx:id="toolBarChoiceBox" focusTraversable="false" styleClass="choiceBox">
-              <items>
-                <FXCollections fx:factory="observableArrayList">
-                  <String fx:value="Item 1" />
-                  <String fx:value="Item 2" />
-                  <String fx:value="Item 3" />
-                </FXCollections>
-              </items>
-            </ChoiceBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
-              <children>
-                <Label styleClass="textLabel" text="Zoom:" />
-              </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <TextField id="toolBarGoto" fx:id="toolBarZoom" focusTraversable="false" prefWidth="38.0" text="5.0" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
-              <children>
-                <CheckBox fx:id="toolBarCheckBox" contentDisplay="LEFT" focusTraversable="false" mnemonicParsing="false" selected="true" styleClass="toolBarCheckBox" text="Show" textAlignment="LEFT" />
-              </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
+                     <children>
+                        <Button fx:id="electrodeConfiguratorButton" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
+                     </children>
             </HBox>
           </items>
         </ToolBar>
