@@ -108,10 +108,10 @@ public class FXApplicationController implements Initializable {
     private BorderPane mainGrid;
     private Scene scene;
 
-    private DoubleProperty scale;
-    private DoubleProperty mouseX = new SimpleDoubleProperty(0);
-    private DoubleProperty mouseY = new SimpleDoubleProperty(0);
-    
+    private DoubleProperty scale = new SimpleDoubleProperty(1.);
+    private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
+    private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
+
     @FXML
     private ToggleButton awakeButton;
     @FXML
@@ -194,7 +194,6 @@ public class FXApplicationController implements Initializable {
     private Line line2;
 
     public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
-        scale = new SimpleDoubleProperty(1.);
 
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
@@ -268,17 +267,15 @@ public class FXApplicationController implements Initializable {
             }
 
         }
-//        toolBarChoiceBox.setItems(choices);
-//        toolBarChoiceBox.getSelectionModel().selectFirst();
-//        currentChannelName = toolBarChoiceBox.getItems().get(0);
+
 
         line1.setVisible(false);
         line2.setVisible(false);
         kComplexLabel.setVisible(false);
 
-        statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-        statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-        statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+//        statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+//        statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+//        statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
         showEpoch(currentEpoch);
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -398,14 +395,14 @@ public class FXApplicationController implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
 
-                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
-                if (help1Flag) {
-                    line1.setEndX(lineChart.getWidth());
-                    line2.setEndX(lineChart.getWidth());
-                }
+//                if (help1Flag) {
+//                    line1.setEndX(lineChart.getWidth());
+//                    line2.setEndX(lineChart.getWidth());
+//                }
 
                 growCoefWidth = overlay3.getWidth() / oldWidth;
                 oldWidth = overlay3.getWidth();
@@ -424,9 +421,9 @@ public class FXApplicationController implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
 
-                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
-                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
-                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setMinWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setMaxWidth(statusBar.getWidth() - 20);
+//                statusBarGrid.setPrefWidth(statusBar.getWidth() - 20);
 
                 growCoefHeight = overlay3.getHeight() / oldHeight;
                 oldHeight = overlay3.getHeight();
@@ -1017,8 +1014,8 @@ public class FXApplicationController implements Initializable {
             line1.setVisible(true);
             line2.setVisible(true);
 
-            line1.setEndX(lineChart.getWidth());
-            line2.setEndX(lineChart.getWidth());
+//            line1.setEndX(lineChart.getWidth());
+//            line2.setEndX(lineChart.getWidth());
 
         }
 
