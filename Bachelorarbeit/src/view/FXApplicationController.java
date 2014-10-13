@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
+import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -38,8 +41,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
@@ -60,6 +61,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import kcdetection.KCdetection;
 import static kcdetection.KCdetection.filterKCs;
 import static kcdetection.KCdetection.getKCs;
@@ -105,6 +107,8 @@ public class FXApplicationController implements Initializable {
     private Stage primaryStage;
     private BorderPane mainGrid;
     private Scene scene;
+
+    private DoubleProperty scale;
 
     @FXML
     private ToggleButton awakeButton;
@@ -173,7 +177,6 @@ public class FXApplicationController implements Initializable {
 //    private ChoiceBox<String> toolBarChoiceBox;
 //    @FXML
 //    private CheckBox toolBarCheckBox;
-
     @FXML
     private MenuItem showAdtVisualization;
     @FXML
@@ -189,6 +192,8 @@ public class FXApplicationController implements Initializable {
     private Line line2;
 
     public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
+        scale= new SimpleDoubleProperty(1.);
+        
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataPointsModel;
@@ -352,7 +357,7 @@ public class FXApplicationController implements Initializable {
                         }
                     }
 
-                    double space = 75.0 / 100.0 * activeZoom;
+                    double space = 75.0 / 100.0 * activeZoom * scale.get();
                     System.out.println("Space: " + space);
 
                     // Now calculate the number of pixels from the microvolt size
@@ -622,125 +627,28 @@ public class FXApplicationController implements Initializable {
             }
         });
 
-//        toolBarZoom.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-//
-//            @Override
-//            public void handle(KeyEvent ke) {
-//                if (ke.getCode() == KeyCode.ENTER) {
-//
-//                    double zoom = Double.parseDouble(toolBarZoom.getText());
-//                    String currentChannel = currentChannelName;
-//
-//                    Double[] tempProp = activeChannels.get(currentChannel);
-//                    tempProp[1] = zoom;
-//
-//                    activeChannels.remove(currentChannel);
-//                    activeChannels.put(currentChannel, tempProp);
-//
-//                    lineChart.getData().clear();
-//
-//                    showEpoch(currentEpoch);
-//
-//                    toolBarZoom.setText(zoom + "");
-//
-//                    lineChart.requestFocus();
-//
-//                    checkProp();
-//
-//                }
-//            }
-//
-//        });
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
-//        toolBarChoiceBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Number> arg0,
-//                    Number oldValue, Number newValue) {
-//
-//                if (initStarted) {
-//                    String tempChannel = toolBarChoiceBox.getItems().get(newValue.intValue());
-//                    currentChannelName = tempChannel;
-//                    System.out.println("Current Channel: " + tempChannel);
-//                    Double[] tempProp = activeChannels.get(tempChannel);
-//
-//                    if (tempProp[0] == 1.0) {
-//                        toolBarCheckBox.setSelected(true);
-//                    } else {
-//                        toolBarCheckBox.setSelected(false);
-//                    }
-//                    toolBarZoom.setText(tempProp[1] + "");
-//
-//                    checkProp();				// This is just for testing
-//                } else {
-//                    initStarted = true;
-//                }
-//
-//            }
-//
-//        });
-
-//        toolBarCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
-//
-//            @Override
-//            public void changed(ObservableValue<? extends Boolean> arg0,
-//                    Boolean arg1, Boolean arg2) {
-//
-//                String currentChannel = currentChannelName;
-//                Double[] tempProp = activeChannels.get(currentChannel);
-//
-//                double show;
-//                if (toolBarCheckBox.isSelected()) {
-//                    show = 1.0;
-//                } else {
-//                    show = 0.0;
-//                }
-//                tempProp[0] = show;
-//
-//                activeChannels.remove(currentChannel);
-//                activeChannels.put(currentChannel, tempProp);
-//
-//                lineChart.getData().clear();
-//
-//                showEpoch(currentEpoch);
-//
-//                lineChart.requestFocus();
-//
-//                LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-//                showLabelsForEpoch(activeChannelNumbers);
-//
-//                checkProp();			// This is just for testing
-//
-//            }
-//
-//        });
-
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+            }
+        });
     }
 
     private void refreshZoom(double zoom) {
         lineChart.getData().clear();
 
-        for (int i = 0; i < channelNames.length; i++) {
-
-            Double[] tempProp = activeChannels.get(channelNames[i]);
-
-            if (zoom < 0) {
-                if (tempProp[1] > 1.0) {
-                    activeChannels.remove(channelNames[i]);
-                    tempProp[1] = tempProp[1] + zoom;
-                    activeChannels.put(channelNames[i], tempProp);
-                }
-            } else {
-                activeChannels.remove(channelNames[i]);
-                tempProp[1] = tempProp[1] + zoom;
-                activeChannels.put(channelNames[i], tempProp);
-            }
+        if (zoom == 1.) {
+            scale.set(scale.get() * 1.1);
         }
 
-        Double[] tempProp = activeChannels.get(currentChannelName);
-//        toolBarZoom.setText(tempProp[1] + "");
+        if (zoom == -1.) {
+            scale.set(scale.get() / 1.1);
+        }
 
         showEpoch(currentEpoch);
+
         lineChart.requestFocus();
     }
 
@@ -986,11 +894,13 @@ public class FXApplicationController implements Initializable {
                     double value = epoch2[i];
                     value = value / 100;
 
-                    value = value * zoom;
+                    value = value * zoom * scale.get();
                     value = value + realOffset;
 
-                    series.getData().add(new XYChart.Data(tmp, value));
-
+                    XYChart.Data dataItem = new XYChart.Data(tmp, value);
+                    series.getData().add(dataItem);
+//                    series.dataProperty().;
+                    
                     xAxis++;
                 }
             }
@@ -1056,6 +966,10 @@ public class FXApplicationController implements Initializable {
 
             overlay4.getChildren().add(r);
         }
+        
+        
+        showLabelsForEpoch(returnActiveChannels());       
+        lineChart.requestFocus();
 
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
 //			
@@ -1591,13 +1505,15 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void electrodeConfiguratorButtonAction() {
-        if (viewModel.isElectrodeConfiguratorActive()==false) {
+        if (viewModel.isElectrodeConfiguratorActive() == false) {
             config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels, this.viewModel);
             viewModel.setElectrodeConfiguratorActive(true);
         } else {
             config.stage.close();
             viewModel.setElectrodeConfiguratorActive(false);
         }
+
+        lineChart.requestFocus();
     }
 
     private void checkProp() {
@@ -1607,6 +1523,7 @@ public class FXApplicationController implements Initializable {
             System.out.println(channelNames[i] + " " + prop[0] + " " + prop[1]);
         }
         System.out.println("----------------------------");
+        lineChart.requestFocus();
     }
 
     public int getCurrentEpoch() {
