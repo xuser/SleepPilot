@@ -192,8 +192,8 @@ public class FXApplicationController implements Initializable {
     private Line line2;
 
     public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
-        scale= new SimpleDoubleProperty(1.);
-        
+        scale = new SimpleDoubleProperty(1.);
+
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataPointsModel;
@@ -794,17 +794,19 @@ public class FXApplicationController implements Initializable {
     public void showLabelsForEpoch(LinkedList<Integer> activeChannels) {
 
         overlay.getChildren().clear();
-        double labelHeight = overlay.getHeight() / activeChannels.size();
+        double offsetSize = 1. / (activeChannels.size() + 1);
 
         for (int i = 0; i < activeChannels.size(); i++) {
+
+            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
 
             Label label = new Label(getNameFromChannel(activeChannels.get(i)));
             label.setTextFill(Color.GRAY);
             label.setStyle("-fx-font-family: sans-serif;");
             label.setLayoutX(18);
 
-            double labelPos = ((i + 1) * labelHeight - (labelHeight / 2));
-            label.setLayoutY(labelPos + 15);
+            double labelPos = yAxis.getDisplayPosition(realOffset);
+            label.setLayoutY(labelPos + 10);
 
             overlay.getChildren().add(label);
 
@@ -846,7 +848,7 @@ public class FXApplicationController implements Initializable {
         double offsetSize = 0;
 
         if (activeChannelNumbers.size() != 0) {
-            offsetSize = 100 / (activeChannelNumbers.size());
+            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
         }
 
         int modulo = 3;					// Take every second sample
@@ -859,7 +861,7 @@ public class FXApplicationController implements Initializable {
 
             double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
 
-            double realOffset = 100 - ((x + 1) * offsetSize) + (offsetSize / 2);
+            double realOffset = (1 - (x + 1.) * offsetSize) * yAxis.getUpperBound();
 
             @SuppressWarnings("rawtypes")
             XYChart.Series series = new XYChart.Series();
@@ -900,7 +902,7 @@ public class FXApplicationController implements Initializable {
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
                     series.getData().add(dataItem);
 //                    series.dataProperty().;
-                    
+
                     xAxis++;
                 }
             }
@@ -966,9 +968,8 @@ public class FXApplicationController implements Initializable {
 
             overlay4.getChildren().add(r);
         }
-        
-        
-        showLabelsForEpoch(returnActiveChannels());       
+
+        showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
 
 //		for (int y = 0; y < activeChannelNumbers.size(); y++) {
