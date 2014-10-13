@@ -164,7 +164,7 @@
                 <Insets left="6.0" />
               </padding>
                      <children>
-                        <Button fx:id="electrodeConfiguratorButton" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
+                        <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
                      </children>
             </HBox>
           </items>
