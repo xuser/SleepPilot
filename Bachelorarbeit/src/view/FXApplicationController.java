@@ -374,7 +374,7 @@ public class FXApplicationController implements Initializable {
                         }
                     }
 
-                    double space = 75.0 / yAxis.getUpperBound() * zoom * scale.get();
+                    double space = 75.0 / yAxis.getUpperBound() * zoom;
                     System.out.println("Space: " + space);
 
                     // Now calculate the number of pixels from the microvolt size
@@ -854,8 +854,10 @@ public class FXApplicationController implements Initializable {
 
         double tmpSpace = space / 2;
 
-        line1.setLayoutY(yAxis + tmpSpace);
-        line2.setLayoutY(yAxis - tmpSpace);
+        line1.layoutYProperty().bind(scale.multiply(+tmpSpace).add(yAxis) );
+        line1.endXProperty().bind(overlay3.widthProperty());
+        line2.layoutYProperty().bind(scale.multiply(-tmpSpace).add(yAxis) );
+        line2.endXProperty().bind(overlay3.widthProperty());
 
     }
 
@@ -911,8 +913,8 @@ public class FXApplicationController implements Initializable {
                     double tmp = xAxis / epochSize;
                     tmp = tmp * 100;
 
-//                    double value = epoch2[i];
-                    double value = Math.sin(2*Math.PI*i/100.)*75/2.;
+                    double value = epoch2[i];
+//                    double value = Math.sin(2*Math.PI*i/100.)*75/2.; //test signal
                     value = value / yAxis.getUpperBound();
 
                     value = value * zoom * scale.get();
@@ -981,7 +983,7 @@ public class FXApplicationController implements Initializable {
                             .multiply((stop - start) / (double) epoch2.length));
             r.heightProperty()
                     .bind(overlay4.heightProperty());
-            r.fillProperty().setValue(Color.LIGHTYELLOW);
+            r.fillProperty().setValue(Color.YELLOW);
             r.opacityProperty().set(1);
 
             overlay4.getChildren().add(r);
