@@ -278,6 +278,7 @@ public class FXApplicationController implements Initializable {
 
         updateProbabilities();
 
+        initStarted = true;
     }
 
     @Override
@@ -402,11 +403,6 @@ public class FXApplicationController implements Initializable {
                     lines.set(i, line);
                 }
 
-                if (initStarted) {
-                    LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-                    showLabelsForEpoch(activeChannelNumbers);
-                }
-
             }
         });
 
@@ -445,9 +441,6 @@ public class FXApplicationController implements Initializable {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
 
-//                        if (kComplexFlag) {
-//                            calculatePercentageKComplex();
-//                        }
                     }
 
                 }
@@ -470,10 +463,6 @@ public class FXApplicationController implements Initializable {
                         if (viewModel.isHypnogrammActive()) {
                             hypnogramm.changeCurrentEpochMarker(currentEpoch);
                         }
-
-//                        if (kComplexFlag) {
-//                            calculatePercentageKComplex();
-//                        }
                     }
                 }
 
@@ -786,15 +775,19 @@ public class FXApplicationController implements Initializable {
 
         for (int i = 0; i < activeChannels.size(); i++) {
 
-            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+            double realOffset = 1 - (i + 1.) * offsetSize;
 
             Label label = new Label(getNameFromChannel(activeChannels.get(i)));
             label.setTextFill(Color.GRAY);
             label.setStyle("-fx-font-family: sans-serif;");
             label.setLayoutX(1);
 
-            double labelPos = yAxis.getDisplayPosition(realOffset) + yAxis.getLayoutY();
-            label.setLayoutY(labelPos);
+            label.layoutYProperty()
+                    .bind(
+                            yAxis.heightProperty()
+                            .multiply(realOffset)
+                            .add(yAxis.layoutYProperty())
+                    );
 
             overlay.getChildren().add(label);
 
@@ -884,7 +877,7 @@ public class FXApplicationController implements Initializable {
                     tmp = tmp * this.xAxis.getUpperBound();
 
 //                    double value = epoch2[i];
-                    double value = Math.sin(2*Math.PI*i/100.)*75/2.; //test signal
+                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
@@ -904,7 +897,7 @@ public class FXApplicationController implements Initializable {
             kcList.addAll(Arrays.asList(kcs));
 
         }
-        
+
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
         //            //test KC detection
@@ -924,18 +917,15 @@ public class FXApplicationController implements Initializable {
 //
 //                overlay3.getChildren().add(line);
 //            }
-
 //        for (KCdetection.KC kc : kcList) {
 //            System.out.println(kc.indexPrePos);
 //            System.out.println(kc.indexNeg);
 //            System.out.println(kc.indexPostPos);
 //        }
-        
 //        for (Range range : kcPlotRanges) {
 //            System.out.println(range.toString());
 //        }
 //        System.out.println("======================");
-        
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
             percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
@@ -955,20 +945,19 @@ public class FXApplicationController implements Initializable {
             Range<Integer> next = iterator.next();
             start = next.lowerEndpoint();
             stop = next.upperEndpoint();
-            
+
             Rectangle r = new Rectangle();
             r.layoutXProperty()
-                        .bind(this.xAxis.widthProperty()
-                                .multiply((start +  1.)/ (double) epoch2.length)
-                                .add(this.xAxis.layoutXProperty())
-                        );
-            
-            
+                    .bind(this.xAxis.widthProperty()
+                            .multiply((start + 1.) / (double) epoch2.length)
+                            .add(this.xAxis.layoutXProperty())
+                    );
+
             r.setLayoutY(0);
             r.widthProperty()
                     .bind(xAxis.widthProperty()
                             .multiply((stop - start) / (double) epoch2.length));
-            
+
             r.heightProperty()
                     .bind(overlay4.heightProperty());
             r.fillProperty().setValue(Color.LIGHTBLUE);
