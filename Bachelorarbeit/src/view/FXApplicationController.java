@@ -267,6 +267,7 @@ public class FXApplicationController implements Initializable {
         kComplexLabel.setVisible(false);
 
         showEpoch(currentEpoch);
+        
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
         showLabelsForEpoch(activeChannelNumbers);
 
@@ -863,7 +864,8 @@ public class FXApplicationController implements Initializable {
             } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
                 epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
             }
-
+            
+            
             epoch.removeFirst(); 							//First element is just the number of the current epoch
             double epochSize = epoch.size() / modulo;
             double xAxis = 0;
@@ -876,21 +878,23 @@ public class FXApplicationController implements Initializable {
                     double tmp = xAxis / epochSize;
                     tmp = tmp * this.xAxis.getUpperBound();
 
-//                    double value = epoch2[i];
-                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
+//                    double value = epoch.get(i);
+                    double value = epoch2[i];
+//                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
 
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
+                                        
                     series.getData().add(dataItem);
-
+                    
                     xAxis++;
                 }
             }
 
             lineChart.getData().add(series);
-
+            
             Signal.lowpass(epoch2, 4., 7., 100);
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 10, 100, 0, 65);
@@ -926,6 +930,8 @@ public class FXApplicationController implements Initializable {
 //            System.out.println(range.toString());
 //        }
 //        System.out.println("======================");
+        
+        
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
             percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
@@ -975,6 +981,10 @@ public class FXApplicationController implements Initializable {
 //		
 //		}
     }
+    
+    private void computeKCfeatures(){
+        
+    }
 
     @FXML
     protected void help1OnAction() {
@@ -1005,8 +1015,7 @@ public class FXApplicationController implements Initializable {
             kComplexLabel.setVisible(true);
 
         }
-        System.out.println(kComplexFlag);
-
+        
         lineChart.requestFocus();
     }
 
