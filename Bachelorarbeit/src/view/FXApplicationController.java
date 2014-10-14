@@ -361,7 +361,6 @@ public class FXApplicationController implements Initializable {
                         }
                     }
 
-                    
                     double space = 75.0 * zoom / yAxis.getUpperBound() * yAxis.getHeight();
                     System.out.println("Space: " + space);
 
@@ -874,19 +873,18 @@ public class FXApplicationController implements Initializable {
 
             epoch.removeFirst(); 							//First element is just the number of the current epoch
             double epochSize = epoch.size() / modulo;
-            double xAxis = 1;
+            double xAxis = 0;
 
             epoch2 = Util.LinkedList2Double(epoch);
             Signal.highpass(epoch2, 0.1, 0.5, 100);
-            Signal.lowpass(epoch2, 4., 7., 100);
 
             for (int i = 0; i < epoch.size(); i++) {
                 if (i % modulo == 0) {
                     double tmp = xAxis / epochSize;
-                    tmp = tmp * 100;
+                    tmp = tmp * this.xAxis.getUpperBound();
 
-                    double value = epoch2[i];
-//                    double value = Math.sin(2*Math.PI*i/100.)*75/2.; //test signal
+//                    double value = epoch2[i];
+                    double value = Math.sin(2*Math.PI*i/100.)*75/2.; //test signal
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
@@ -900,30 +898,44 @@ public class FXApplicationController implements Initializable {
 
             lineChart.getData().add(series);
 
+            Signal.lowpass(epoch2, 4., 7., 100);
             KCdetection.KC[] kcs = getKCs(epoch2);
-            kcs = filterKCs(kcs, 20, 100, 0, 65);
+            kcs = filterKCs(kcs, 10, 100, 0, 65);
             kcList.addAll(Arrays.asList(kcs));
 
-            for (int i = 0; i < kcs.length; i++) {
-                Line line = new Line();
-                line.setStyle("-fx-stroke: black;");
-
-                line.layoutXProperty()
-                        .bind(this.xAxis.widthProperty()
-                                .multiply(kcs[i].indexNeg / (double) epoch2.length)
-                                .add(this.xAxis.getLocalToParentTransform().getTx())
-                        );
-
-                line.setLayoutY(0);
-                line.endYProperty()
-                        .bind(overlay3.heightProperty());
-
-                overlay3.getChildren().add(line);
-            }
         }
-
+        
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
+        //            //test KC detection
+//            for (int i = 0; i < kcs.length; i++) {
+//                Line line = new Line();
+//                line.setStyle("-fx-stroke: black;");
+//
+//                line.layoutXProperty()
+//                        .bind(this.xAxis.widthProperty()
+//                                .multiply((kcs[i].indexNeg + 1)/ (double) epoch2.length)
+//                                .add(this.xAxis.layoutXProperty())
+//                        );
+//
+//                line.setLayoutY(0);
+//                line.endYProperty()
+//                        .bind(overlay3.heightProperty());
+//
+//                overlay3.getChildren().add(line);
+//            }
+
+//        for (KCdetection.KC kc : kcList) {
+//            System.out.println(kc.indexPrePos);
+//            System.out.println(kc.indexNeg);
+//            System.out.println(kc.indexPostPos);
+//        }
+        
+//        for (Range range : kcPlotRanges) {
+//            System.out.println(range.toString());
+//        }
+//        System.out.println("======================");
+        
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
             percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
@@ -943,19 +955,24 @@ public class FXApplicationController implements Initializable {
             Range<Integer> next = iterator.next();
             start = next.lowerEndpoint();
             stop = next.upperEndpoint();
-
+            
             Rectangle r = new Rectangle();
             r.layoutXProperty()
-                    .bind(xAxis.widthProperty()
-                            .multiply(start / (double) epoch2.length));
+                        .bind(this.xAxis.widthProperty()
+                                .multiply((start +  1.)/ (double) epoch2.length)
+                                .add(this.xAxis.layoutXProperty())
+                        );
+            
+            
             r.setLayoutY(0);
             r.widthProperty()
                     .bind(xAxis.widthProperty()
                             .multiply((stop - start) / (double) epoch2.length));
+            
             r.heightProperty()
                     .bind(overlay4.heightProperty());
-            r.fillProperty().setValue(Color.YELLOW);
-            r.opacityProperty().set(1);
+            r.fillProperty().setValue(Color.LIGHTBLUE);
+            r.opacityProperty().set(0.5);
 
             overlay4.getChildren().add(r);
         }
@@ -980,9 +997,6 @@ public class FXApplicationController implements Initializable {
             help1Flag = true;
             line1.setVisible(true);
             line2.setVisible(true);
-
-//            line1.setEndX(lineChart.getWidth());
-//            line2.setEndX(lineChart.getWidth());
         }
 
         lineChart.requestFocus();
