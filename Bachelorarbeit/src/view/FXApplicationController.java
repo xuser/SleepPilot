@@ -111,6 +111,8 @@ public class FXApplicationController implements Initializable {
     private DoubleProperty scale = new SimpleDoubleProperty(1e-1);
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
+    
+    int modulo = 1;					
 
     @FXML
     private ToggleButton awakeButton;
@@ -188,7 +190,8 @@ public class FXApplicationController implements Initializable {
     private Line line2;
 
     public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
-
+        modulo = 2; //take every value for display
+        
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataPointsModel;
@@ -267,7 +270,7 @@ public class FXApplicationController implements Initializable {
         kComplexLabel.setVisible(false);
 
         showEpoch(currentEpoch);
-        
+
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
         showLabelsForEpoch(activeChannelNumbers);
 
@@ -425,13 +428,13 @@ public class FXApplicationController implements Initializable {
                 if (ke.getCode() == KeyCode.RIGHT) {
 
                     if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
-                        lineChart.getData().clear();
+//                        lineChart.getData().clear();
 
                         overlay3.getChildren().clear();
                         lines.clear();
 
                         currentEpoch = currentEpoch + 1;
-                        showEpoch(currentEpoch);
+                        updateTraces(currentEpoch);
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -448,13 +451,13 @@ public class FXApplicationController implements Initializable {
 
                 if (ke.getCode() == KeyCode.LEFT) {
                     if (currentEpoch > 0) {
-                        lineChart.getData().clear();
+//                        lineChart.getData().clear();
 
                         overlay3.getChildren().clear();
                         lines.clear();
 
                         currentEpoch = currentEpoch - 1;
-                        showEpoch(currentEpoch);
+                        updateTraces(currentEpoch);
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -574,10 +577,10 @@ public class FXApplicationController implements Initializable {
                     }
 
                     if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
-                        lineChart.getData().clear();
+//                        lineChart.getData().clear();
 
                         currentEpoch = valueTextField - 1;
-                        showEpoch(currentEpoch);
+                        updateTraces(currentEpoch);
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -615,7 +618,7 @@ public class FXApplicationController implements Initializable {
     }
 
     private void refreshZoom(double zoom) {
-        lineChart.getData().clear();
+//        lineChart.getData().clear();
 
         if (zoom == 1.) {
             scale.set(scale.get() * 1.1);
@@ -625,7 +628,7 @@ public class FXApplicationController implements Initializable {
             scale.set(scale.get() / 1.1);
         }
 
-        showEpoch(currentEpoch);
+        updateTraces(currentEpoch);
 
         lineChart.requestFocus();
     }
@@ -798,10 +801,9 @@ public class FXApplicationController implements Initializable {
 
     public void goToEpoch(int epoch) {
 
-        lineChart.getData().clear();
-
+//        lineChart.getData().clear();
         currentEpoch = epoch;
-        showEpoch(currentEpoch);
+        updateTraces(currentEpoch);
 
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -835,10 +837,7 @@ public class FXApplicationController implements Initializable {
             offsetSize = 1. / (activeChannelNumbers.size() + 1.);
         }
 
-        int modulo = 3;					// Take every second sample
-
-        Set<Range<Integer>> kcPlotRanges = null;
-        ArrayList<KCdetection.KC> kcList = new ArrayList();
+        
         double[] epoch2 = null;
 
         for (int x = 0; x < activeChannelNumbers.size(); x++) {
@@ -864,12 +863,12 @@ public class FXApplicationController implements Initializable {
             } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
                 epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
             }
-            
-            
+
             epoch.removeFirst(); 							//First element is just the number of the current epoch
             double epochSize = epoch.size() / modulo;
             double xAxis = 0;
 
+            //filter
             epoch2 = Util.LinkedList2Double(epoch);
             Signal.highpass(epoch2, 0.1, 0.5, 100);
 
@@ -886,16 +885,106 @@ public class FXApplicationController implements Initializable {
                     value = value + realOffset;
 
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
-                                        
+
                     series.getData().add(dataItem);
-                    
+
                     xAxis++;
                 }
             }
 
             lineChart.getData().add(series);
-            
+
+        }
+
+        showLabelsForEpoch(returnActiveChannels());
+        lineChart.requestFocus();
+
+//		for (int y = 0; y < activeChannelNumbers.size(); y++) {
+//			
+//			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	
+//		
+//		}
+    }
+
+    public void updateTraces(int numberOfEpoch) {
+
+        // works on list of XYChart.series
+        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+
+        double offsetSize = 0;
+
+        if (activeChannelNumbers.size() != 0) {
+            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
+        }
+
+        double[] epoch2 = null;
+
+        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+
+            double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
+
+            // in local yAxis-coordinates
+            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+
+            LinkedList<Double> epoch = null;
+
+            if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
+
+                if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {
+                    epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
+                } else {
+                    epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
+                }
+
+            } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
+                epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
+            }
+
+            epoch.removeFirst(); 							//First element is just the number of the current epoch
+            double epochSize = epoch.size() / modulo;
+            double xAxis = 0;
+
+            //filter
+            epoch2 = Util.LinkedList2Double(epoch);
+            Signal.highpass(epoch2, 0.1, 0.5, 100);
+
+            int k = 0;
+            for (int j = 0; j < epoch.size(); j++) {
+                if (j % modulo == 0) {
+
+//                    double value = epoch.get(i);
+                    double value = epoch2[j];
+//                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
+
+                    value = value * zoom * scale.get();
+                    value = value + realOffset;
+
+                    lineChart.getData().get(i).getData().get(k).setYValue(value);
+                    k++;
+                }
+            }
+
+        }
+    }
+
+    private void computeKCfeatures() {
+
+        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+
+        Set<Range<Integer>> kcPlotRanges = null;
+        ArrayList<KCdetection.KC> kcList = new ArrayList();
+        double[] epoch2 = null;
+
+        for (int x = 0; x < activeChannelNumbers.size(); x++) {
+
+            double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
+
+            LinkedList<Double> epoch = null;
+
+            epoch2 = Util.LinkedList2Double(epoch);
+            Signal.highpass(epoch2, 0.1, 0.5, 100);
             Signal.lowpass(epoch2, 4., 7., 100);
+
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 10, 100, 0, 65);
             kcList.addAll(Arrays.asList(kcs));
@@ -904,34 +993,6 @@ public class FXApplicationController implements Initializable {
 
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
-        //            //test KC detection
-//            for (int i = 0; i < kcs.length; i++) {
-//                Line line = new Line();
-//                line.setStyle("-fx-stroke: black;");
-//
-//                line.layoutXProperty()
-//                        .bind(this.xAxis.widthProperty()
-//                                .multiply((kcs[i].indexNeg + 1)/ (double) epoch2.length)
-//                                .add(this.xAxis.layoutXProperty())
-//                        );
-//
-//                line.setLayoutY(0);
-//                line.endYProperty()
-//                        .bind(overlay3.heightProperty());
-//
-//                overlay3.getChildren().add(line);
-//            }
-//        for (KCdetection.KC kc : kcList) {
-//            System.out.println(kc.indexPrePos);
-//            System.out.println(kc.indexNeg);
-//            System.out.println(kc.indexPostPos);
-//        }
-//        for (Range range : kcPlotRanges) {
-//            System.out.println(range.toString());
-//        }
-//        System.out.println("======================");
-        
-        
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
             percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
@@ -975,15 +1036,32 @@ public class FXApplicationController implements Initializable {
         showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
 
-//		for (int y = 0; y < activeChannelNumbers.size(); y++) {
-//			
-//			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	
-//		
-//		}
-    }
-    
-    private void computeKCfeatures(){
-        
+        //            //test KC detection
+//            for (int i = 0; i < kcs.length; i++) {
+//                Line line = new Line();
+//                line.setStyle("-fx-stroke: black;");
+//
+//                line.layoutXProperty()
+//                        .bind(this.xAxis.widthProperty()
+//                                .multiply((kcs[i].indexNeg + 1)/ (double) epoch2.length)
+//                                .add(this.xAxis.layoutXProperty())
+//                        );
+//
+//                line.setLayoutY(0);
+//                line.endYProperty()
+//                        .bind(overlay3.heightProperty());
+//
+//                overlay3.getChildren().add(line);
+//            }
+//        for (KCdetection.KC kc : kcList) {
+//            System.out.println(kc.indexPrePos);
+//            System.out.println(kc.indexNeg);
+//            System.out.println(kc.indexPostPos);
+//        }
+//        for (Range range : kcPlotRanges) {
+//            System.out.println(range.toString());
+//        }
+//        System.out.println("======================");
     }
 
     @FXML
@@ -1015,7 +1093,7 @@ public class FXApplicationController implements Initializable {
             kComplexLabel.setVisible(true);
 
         }
-        
+
         lineChart.requestFocus();
     }
 
