@@ -77,6 +77,7 @@ public class FXApplicationController implements Initializable {
 
     //This epoch is just an puffer
     private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
+    private ArrayList<double[]> thisEpoch = new ArrayList();
 
     private FXPopUp popUp = new FXPopUp();
     private FXViewModel viewModel;
@@ -268,11 +269,11 @@ public class FXApplicationController implements Initializable {
         line1.setVisible(false);
         line2.setVisible(false);
         kComplexLabel.setVisible(false);
+        
+        loadEpoch(currentEpoch);
+        showEpoch();
 
-        showEpoch(currentEpoch);
-
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-        showLabelsForEpoch(activeChannelNumbers);
+        showLabelsForEpoch(returnActiveChannels());
 
         checkProp();
 
@@ -434,7 +435,9 @@ public class FXApplicationController implements Initializable {
                         lines.clear();
 
                         currentEpoch = currentEpoch + 1;
-                        updateTraces(currentEpoch);
+                        
+                        loadEpoch(currentEpoch);
+                        updateEpoch();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -457,7 +460,9 @@ public class FXApplicationController implements Initializable {
                         lines.clear();
 
                         currentEpoch = currentEpoch - 1;
-                        updateTraces(currentEpoch);
+                        
+                        loadEpoch(currentEpoch);
+                        updateEpoch();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -600,7 +605,9 @@ public class FXApplicationController implements Initializable {
                     if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
 
                         currentEpoch = valueTextField - 1;
-                        updateTraces(currentEpoch);
+                        
+                        loadEpoch(currentEpoch);
+                        updateEpoch();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -648,7 +655,7 @@ public class FXApplicationController implements Initializable {
             scale.set(scale.get() / 1.1);
         }
 
-        updateTraces(currentEpoch);
+        updateEpoch();
 
         lineChart.requestFocus();
     }
@@ -830,7 +837,9 @@ public class FXApplicationController implements Initializable {
         }
 
         currentEpoch = epoch;
-        updateTraces(currentEpoch);
+        
+        loadEpoch(currentEpoch);
+        updateEpoch();
 
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -855,56 +864,73 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    public void showEpoch(int numberOfEpoch) {
+    public void loadEpoch(int numberOfEpoch) {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
-        double offsetSize = 0;
-
-        if (activeChannelNumbers.size() != 0) {
-            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
-        }
-
-        double[] epoch2 = null;
-
-        for (int x = 0; x < activeChannelNumbers.size(); x++) {
-
-            double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
-
-            // in local yAxis-coordinates
-            double realOffset = (1 - (x + 1.) * offsetSize) * yAxis.getUpperBound();
-
-            @SuppressWarnings("rawtypes")
-            XYChart.Series series = new XYChart.Series();
+        for (int i = 0; i < activeChannelNumbers.size(); i++) {
 
             LinkedList<Double> epoch = null;
 
             if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
 
                 if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {
-                    epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+                    epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
                 } else {
-                    epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+                    epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
                 }
 
             } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
-                epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(x), numberOfEpoch);
+                epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
             }
 
-            epoch.removeFirst(); 							//First element is just the number of the current epoch
-            double epochSize = epoch.size() / modulo;
+            //First element is just the number of the current epoch
+            epoch.removeFirst();
+
+            thisEpoch.add(i, Util.LinkedList2Double(epoch));
+        }
+
+        filterEpoch();
+    }
+
+    public void filterEpoch() {
+        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+            Signal.highpass(thisEpoch.get(i), 0.1, 0.5, 100);
+        }
+    }
+
+    public void showEpoch() {
+        
+        double[] epoch = null;
+
+        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+
+        double offsetSize = 0;
+        if (activeChannelNumbers.size() != 0) {
+            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
+        }
+
+        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+
+            epoch = thisEpoch.get(i);
+
+            double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
+
+            // in local yAxis-coordinates
+            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+
+            @SuppressWarnings("rawtypes")
+            XYChart.Series series = new XYChart.Series();
+
+            double epochSize = epoch.length / modulo;
             double xAxis = 0;
 
-            //filter
-            epoch2 = Util.LinkedList2Double(epoch);
-            Signal.highpass(epoch2, 0.1, 0.5, 100);
-
-            for (int i = 0; i < epoch.size(); i++) {
-                if (i % modulo == 0) {
+            for (int j = 0; j < epoch.length; j++) {
+                if (j % modulo == 0) {
                     double tmp = xAxis / epochSize;
                     tmp = tmp * this.xAxis.getUpperBound();
 
-//                    double value = epoch.get(i);
-                    double value = epoch2[i];
+                    double value = epoch[j];
 //                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
 
                     value = value * zoom * scale.get();
@@ -932,7 +958,7 @@ public class FXApplicationController implements Initializable {
 //		}
     }
 
-    public void updateTraces(int numberOfEpoch) {
+    public void updateEpoch() {
 
         // works on list of XYChart.series
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
@@ -943,44 +969,22 @@ public class FXApplicationController implements Initializable {
             offsetSize = 1. / (activeChannelNumbers.size() + 1.);
         }
 
-        double[] epoch2 = null;
+        double[] epoch = null;
 
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
-
+            
+            epoch = thisEpoch.get(i);
+            
             double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
 
             // in local yAxis-coordinates
             double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
 
-            LinkedList<Double> epoch = null;
-
-            if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
-
-                if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {
-                    epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-                } else {
-                    epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-                }
-
-            } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
-                epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-            }
-
-            epoch.removeFirst(); 							//First element is just the number of the current epoch
-            double epochSize = epoch.size() / modulo;
-            double xAxis = 0;
-
-            //filter
-            epoch2 = Util.LinkedList2Double(epoch);
-            Signal.highpass(epoch2, 0.1, 0.5, 100);
-
             int k = 0;
-            for (int j = 0; j < epoch.size(); j++) {
+            for (int j = 0; j < epoch.length; j++) {
                 if (j % modulo == 0) {
 
-//                    double value = epoch.get(i);
-                    double value = epoch2[j];
-//                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
+                    double value = epoch[j];
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
@@ -1001,20 +1005,15 @@ public class FXApplicationController implements Initializable {
         ArrayList<KCdetection.KC> kcList = new ArrayList();
         double[] epoch2 = null;
 
-        for (int x = 0; x < activeChannelNumbers.size(); x++) {
-
-            double zoom = getZoomFromChannel(activeChannelNumbers.get(x));
-
+        for (Integer activeChannelNumber : activeChannelNumbers) {
+            double zoom = getZoomFromChannel(activeChannelNumber);
             LinkedList<Double> epoch = null;
-
             epoch2 = Util.LinkedList2Double(epoch);
             Signal.highpass(epoch2, 0.1, 0.5, 100);
             Signal.lowpass(epoch2, 4., 7., 100);
-
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 10, 100, 0, 65);
             kcList.addAll(Arrays.asList(kcs));
-
         }
 
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
