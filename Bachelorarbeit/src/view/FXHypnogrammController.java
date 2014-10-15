@@ -139,22 +139,13 @@ public class FXHypnogrammController implements Initializable{
         	double tmp = xAxis / numberOfEpochs;
         	tmp = tmp * 100;	
         	
-        	double label;
-        	switch ((int) featureExtractionModel.getFeatureClassLabel(i)) {
-			case 1: label = 9.0;
-				break;
-			case 2: label = 7.0;
-			break;
-			case 3: label = 6.0;
-			break;
-			case 4: label = 5.0;
-			break;
-			case 5: label = 8.0;
-			break;
-			default: label = 4.0;
-				break;
-			}
-			
+        	double label = getYValueForPlotting(featureExtractionModel.getFeatureClassLabel(i));
+			       	
+        	if ((i>0) && (featureExtractionModel.getFeatureClassLabel(i-1) != featureExtractionModel.getFeatureClassLabel(i))) {
+        		double tmpLabel = getYValueForPlotting(featureExtractionModel.getFeatureClassLabel(i-1));
+        		series.getData().add(new XYChart.Data<Double, Double>(tmp,tmpLabel));
+        	}
+        	
 			series.getData().add(new XYChart.Data<Double, Double>(tmp,label));			//tmp is xaxis
 			
 			if (featureExtractionModel.getEpochProperty(i) != null) {
@@ -191,6 +182,33 @@ public class FXHypnogrammController implements Initializable{
 		lineChart.getData().add(seriesArtefact);
 		lineChart.getData().add(seriesArrousal);
 		lineChart.getData().add(seriesStimulation);
+	}
+	
+	/**
+	 * This method returns the adapted yAxis value for plotting the hypnogramm.
+	 * It is necessary to add an offset to the orginal class label, because we want to
+	 * plot additional epoch properties directly below the hypnogram in the same chart.
+	 * @return the yAxis value for plotting.
+	 */
+	private double getYValueForPlotting(double classLabel) {
+    	
+		double label = classLabel;
+    	switch ((int) label) {
+		case 1: label = 9.0;
+			break;
+		case 2: label = 7.0;
+		break;
+		case 3: label = 6.0;
+		break;
+		case 4: label = 5.0;
+		break;
+		case 5: label = 8.0;
+		break;
+		default: label = 4.0;
+			break;
+		}
+    	
+    	return label;
 	}
 	
 	@SuppressWarnings("unchecked")
