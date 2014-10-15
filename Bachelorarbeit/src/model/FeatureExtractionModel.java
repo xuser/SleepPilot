@@ -29,11 +29,11 @@ public class FeatureExtractionModel implements Serializable{
 	 * This HashMap keeps additional information for some epochs. The key keeps the respective epoch number
 	 * and the value holds an array with the information.
 	 * 
-	 * IMPORTANT: Only add values to the hashmap if any additional information have to be set
+	 * IMPORTANT: Only add values to the hashmap if any additional information has to be set
 	 * 
 	 * 1st in array: 1 if artefact, else 0
 	 * 2nd in array: 1 if arrousal, else 0
-	 * 3hd in array: 1 if stimulation, else 0
+	 * 3rd in array: 1 if stimulation, else 0
 	 */
 	private HashMap<Integer, Integer[]> epochProperties = new HashMap<Integer, Integer[]>();
 	

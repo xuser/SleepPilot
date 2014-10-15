@@ -3,23 +3,14 @@ package controller;
 import help.ChannelNames;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Date;
 import java.util.LinkedList;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import view.FXApplicationController;
-import view.FXHypnogrammController;
-import view.FXPopUp;
 import view.FXStartController;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-import model.FXStartModel;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
@@ -121,7 +112,6 @@ public class MainController extends Application {
 							supportVectorMaschineThreadStartedFlag = true;
 						}
 					}
-					
 				}
 				
 				//Create application controller

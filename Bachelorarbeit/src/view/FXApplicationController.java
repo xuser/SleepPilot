@@ -23,15 +23,12 @@ import controller.DataReaderController;
 import controller.ModelReaderWriterController;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -76,7 +73,7 @@ public class FXApplicationController implements Initializable {
     private FXScatterPlot scatterPlot;
 
     //This epoch is just an puffer
-    private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
+//    private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
     private ArrayList<double[]> thisEpoch = new ArrayList();
 
     private FXPopUp popUp = new FXPopUp();
@@ -101,13 +98,13 @@ public class FXApplicationController implements Initializable {
     private int currentEpoch = 0;
     private String[] channelNames;
 
-    private HashMap<String, Double[]> activeChannels = new HashMap<String, Double[]>();
+    private HashMap<String, Double[]> activeChannels = new HashMap();
 
-    private LinkedList<Line> lines = new LinkedList<Line>();
+    private LinkedList<Line> lines = new LinkedList();
 
     private Stage primaryStage;
     private BorderPane mainGrid;
-    private Scene scene;
+    final private Scene scene;
 
     private DoubleProperty scale = new SimpleDoubleProperty(1e-1);
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
@@ -240,13 +237,10 @@ public class FXApplicationController implements Initializable {
 
         // Set Choice Box for the channels
         channelNames = dataPointsModel.getChannelNames();
-        ObservableList<String> choices = FXCollections.observableArrayList();
 
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
             if (i < 6) {
-                choices.add(channelNames[i]);
-
                 //The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
@@ -254,8 +248,6 @@ public class FXApplicationController implements Initializable {
                 channelProp[1] = 1.0;
                 activeChannels.put(channelNames[i], channelProp);
             } else {
-                choices.add(channelNames[i]);
-
                 //The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
@@ -268,11 +260,13 @@ public class FXApplicationController implements Initializable {
 
         line1.setVisible(false);
         line2.setVisible(false);
-        kComplexLabel.setVisible(false);
-        
+        kComplexLabel.setVisible(true);
+
         loadEpoch(currentEpoch);
         showEpoch();
-
+        computeKCfeatures();
+        
+        
         showLabelsForEpoch(returnActiveChannels());
 
         checkProp();
@@ -435,9 +429,10 @@ public class FXApplicationController implements Initializable {
                         lines.clear();
 
                         currentEpoch = currentEpoch + 1;
-                        
+
                         loadEpoch(currentEpoch);
                         updateEpoch();
+                        computeKCfeatures();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -460,9 +455,10 @@ public class FXApplicationController implements Initializable {
                         lines.clear();
 
                         currentEpoch = currentEpoch - 1;
-                        
+
                         loadEpoch(currentEpoch);
                         updateEpoch();
+                        computeKCfeatures();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -605,9 +601,10 @@ public class FXApplicationController implements Initializable {
                     if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
 
                         currentEpoch = valueTextField - 1;
-                        
+
                         loadEpoch(currentEpoch);
                         updateEpoch();
+                        computeKCfeatures();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -837,9 +834,10 @@ public class FXApplicationController implements Initializable {
         }
 
         currentEpoch = epoch;
-        
+
         loadEpoch(currentEpoch);
         updateEpoch();
+        computeKCfeatures();
 
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -864,7 +862,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    public void loadEpoch(int numberOfEpoch) {
+    final public void loadEpoch(int numberOfEpoch) {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
@@ -892,16 +890,16 @@ public class FXApplicationController implements Initializable {
         filterEpoch();
     }
 
-    public void filterEpoch() {
+    final public void filterEpoch() {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
             Signal.highpass(thisEpoch.get(i), 0.1, 0.5, 100);
         }
     }
 
-    public void showEpoch() {
-        
-        double[] epoch = null;
+    final public void showEpoch() {
+
+        double[] epoch;
 
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
@@ -945,9 +943,10 @@ public class FXApplicationController implements Initializable {
             }
 
             lineChart.getData().add(series);
-
         }
-
+        
+        computeKCfeatures();
+        
         showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
 
@@ -972,9 +971,9 @@ public class FXApplicationController implements Initializable {
         double[] epoch = null;
 
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
-            
+
             epoch = thisEpoch.get(i);
-            
+
             double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
 
             // in local yAxis-coordinates
@@ -997,7 +996,7 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-    private void computeKCfeatures() {
+    final public void computeKCfeatures() {
 
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
 
@@ -1006,13 +1005,11 @@ public class FXApplicationController implements Initializable {
         double[] epoch2 = null;
 
         for (Integer activeChannelNumber : activeChannelNumbers) {
-            double zoom = getZoomFromChannel(activeChannelNumber);
-            LinkedList<Double> epoch = null;
-            epoch2 = Util.LinkedList2Double(epoch);
-            Signal.highpass(epoch2, 0.1, 0.5, 100);
+            epoch2 = thisEpoch.get(activeChannelNumber).clone();
+
             Signal.lowpass(epoch2, 4., 7., 100);
             KCdetection.KC[] kcs = getKCs(epoch2);
-            kcs = filterKCs(kcs, 10, 100, 0, 65);
+            kcs = filterKCs(kcs, 20, 100, 0, 65);
             kcList.addAll(Arrays.asList(kcs));
         }
 
@@ -1033,8 +1030,7 @@ public class FXApplicationController implements Initializable {
         double start;
         double stop;
 
-        for (Iterator<Range<Integer>> iterator = kcPlotRanges.iterator(); iterator.hasNext();) {
-            Range<Integer> next = iterator.next();
+        for (Range<Integer> next : kcPlotRanges) {
             start = next.lowerEndpoint();
             stop = next.upperEndpoint();
 
@@ -1108,7 +1104,7 @@ public class FXApplicationController implements Initializable {
     protected void kComplexOnAction() {
         if (kComplexFlag) {
             kComplexFlag = false;
-            kComplexLabel.setVisible(false);
+//            kComplexLabel.setVisible(false);
 
             overlay3.getChildren().clear();
             lines.clear();
