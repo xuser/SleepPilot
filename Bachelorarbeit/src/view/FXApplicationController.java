@@ -111,8 +111,8 @@ public class FXApplicationController implements Initializable {
     private DoubleProperty scale = new SimpleDoubleProperty(1e-1);
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
-    
-    int modulo = 1;					
+
+    int modulo = 1;
 
     @FXML
     private ToggleButton awakeButton;
@@ -191,7 +191,7 @@ public class FXApplicationController implements Initializable {
 
     public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
         modulo = 2; //take every value for display
-        
+
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataPointsModel;
@@ -553,6 +553,22 @@ public class FXApplicationController implements Initializable {
                 if (ke.getCode() == KeyCode.C) {
                     clearButtonOnAction();
                 }
+
+                if (ke.getCode() == KeyCode.PAGE_DOWN) {
+                    goToEpoch(currentEpoch - 10);
+                }
+
+                if (ke.getCode() == KeyCode.PAGE_UP) {
+                    goToEpoch(currentEpoch + 10);
+                }
+
+                if (ke.getCode() == KeyCode.END) {
+                    goToEpoch(dataPointsModel.getNumberOf30sEpochs() - 1);
+                }
+
+                if (ke.getCode() == KeyCode.HOME) {
+                    goToEpoch(0);
+                }
             }
 
         });
@@ -570,14 +586,18 @@ public class FXApplicationController implements Initializable {
 
                     } catch (NumberFormatException e) {
                         toolBarGoto.setText((currentEpoch + 1) + "");
+                        valueTextField = currentEpoch + 1;
                     }
 
                     if (valueTextField > dataPointsModel.getNumberOf30sEpochs()) {
                         valueTextField = dataPointsModel.getNumberOf30sEpochs();
                     }
 
+                    if (valueTextField < 1) {
+                        valueTextField = 1;
+                    }
+
                     if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
-//                        lineChart.getData().clear();
 
                         currentEpoch = valueTextField - 1;
                         updateTraces(currentEpoch);
@@ -801,7 +821,14 @@ public class FXApplicationController implements Initializable {
 
     public void goToEpoch(int epoch) {
 
-//        lineChart.getData().clear();
+        if (epoch < 0) {
+            epoch = 0;
+        }
+
+        if (epoch > (dataPointsModel.getNumberOf30sEpochs() - 1)) {
+            epoch = dataPointsModel.getNumberOf30sEpochs() - 1;
+        }
+
         currentEpoch = epoch;
         updateTraces(currentEpoch);
 
@@ -837,7 +864,6 @@ public class FXApplicationController implements Initializable {
             offsetSize = 1. / (activeChannelNumbers.size() + 1.);
         }
 
-        
         double[] epoch2 = null;
 
         for (int x = 0; x < activeChannelNumbers.size(); x++) {
