@@ -21,6 +21,7 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.ModelReaderWriterController;
+import gnu.trove.list.array.TDoubleArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -867,7 +868,7 @@ public class FXApplicationController implements Initializable {
 
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
 
-            LinkedList<Double> epoch = null;
+            TDoubleArrayList epoch = null;
 
             if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
 
@@ -882,9 +883,9 @@ public class FXApplicationController implements Initializable {
             }
 
             //First element is just the number of the current epoch
-            epoch.removeFirst();
+//            epoch.removeFirst();
 
-            thisEpoch.add(i, Util.LinkedList2Double(epoch));
+            thisEpoch.add(i, epoch.toArray());
         }
 
         filterEpoch();

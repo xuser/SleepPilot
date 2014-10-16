@@ -92,7 +92,7 @@ public class ModelReaderWriterController extends Thread{
 										
 					FeatureExtractionModel fem = (FeatureExtractionModel) obj;
 					
-					featureExtractionModel.setFeatureValuesPE(fem.getFeatureValuesPE());
+					featureExtractionModel.setFeatures(fem.getFeatures());
 					featureExtractionModel.setEpochProperties(fem.getEpochProperties());
 					featureExtractionModel.setPredictProbabilities(fem.getPredictProbabilities());
 					featureExtractionModel.setSelectedModel(fem.getSelectedModel());
