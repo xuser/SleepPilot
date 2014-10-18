@@ -15,7 +15,6 @@ import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import model.TrainDataModel;
-import tools.NeuralNetworks;
 
 /**
  * Starts the application and creates necessary initial controllers.
@@ -68,55 +67,7 @@ public class MainController extends Application {
         featureExtractionModel.setFileLocation(fileLocation);
 
         if (trainMode == false) {
-
-            // Creats a new controller which reads the declared file
-            try {
-
-                for (int i = 0; i < channelNumbersToRead.size(); i++) {
-                    String channel = channelNames[(channelNumbersToRead.get(i))];
-
-                    switch (channel) {
-                        case "Fz":
-                            featureExtractionModel.setChannelName(ChannelNames.Fz);
-                            break;
-                        default:
-                            featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
-                            break;
-                    }
-                }
-
-                long start = System.nanoTime();
-                // ChannelNumbersToRead contains all channel numbers, which have to be calculated
-                DataReaderController dataReaderController = new DataReaderController(fileLocation, dataPointsModel, channelNumbersToRead, autoMode);
-                dataReaderController.start();
-
-                System.out.println((System.nanoTime() - start) / 1e6);
-                
-                FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, trainMode);
-                featureExtractionController.start();
-                
-                
-
-                
-//                SupportVectorMaschineController svmController = new SupportVectorMaschineController(featureExtractionModel, trainMode);
-//                svmController.start();
-
-                //Create application controller
-                System.out.println("AppController starting!");
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        FXViewModel viewModel = new FXViewModel();
-                        FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, autoMode, false);
-                        viewModel.setAppController(appController);
-                        primaryStage.close();
-                    }
-                });
-
-            } catch (Exception e) {
-                System.err.println("Unexpected error occured during reading the file.");
-                e.printStackTrace();
-            }
+            //removed
         } else {
 
             FeatureExtractionModel featureExtractionModel = new FeatureExtractionModel();
@@ -154,8 +105,7 @@ public class MainController extends Application {
 
             if (relativeFile.canRead()) {
 
-                final DataReaderController dataReaderController = new DataReaderController(relativeFile, dataPointsModel, null, false);
-                dataReaderController.start();
+                final DataReaderController dataReaderController = new DataReaderController(relativeFile);
 
                 //Create application controller
                 System.out.println("AppController starting!");
@@ -163,7 +113,7 @@ public class MainController extends Application {
                     @Override
                     public void run() {
                         FXViewModel viewModel = new FXViewModel();
-                        FXApplicationController appController = new FXApplicationController(dataReaderController, dataPointsModel, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
+                        FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
                         viewModel.setAppController(appController);
                         primaryStage.close();
                     }

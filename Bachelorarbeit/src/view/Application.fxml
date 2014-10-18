@@ -135,6 +135,9 @@
               <padding>
                 <Insets left="6.0" />
               </padding>
+                     <children>
+                        <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" text="classify" />
+                     </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <padding>

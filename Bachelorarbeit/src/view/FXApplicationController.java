@@ -20,8 +20,11 @@ import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
+import controller.FeatureExtractionController;
+import controller.MainController;
 import controller.ModelReaderWriterController;
 import gnu.trove.list.array.TDoubleArrayList;
+import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -30,6 +33,9 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,6 +47,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
@@ -141,6 +148,8 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private Button electrodeConfiguratorButton;
+    @FXML
+    private Button classifyButton;
 
     private boolean kComplexFlag = false;
 
@@ -187,13 +196,16 @@ public class FXApplicationController implements Initializable {
     private Line line1;
     @FXML
     private Line line2;
+    
+    @FXML
+    ProgressBar progressBar;
 
-    public FXApplicationController(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
+    public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
         modulo = 2; //take every value for display
 
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
-        this.dataPointsModel = dataPointsModel;
+        this.dataPointsModel = dataReaderController.getDataModel();
         this.featureExtractionModel = featureExtractionModel;
         this.viewModel = viewModel;
 
@@ -202,7 +214,7 @@ public class FXApplicationController implements Initializable {
         this.autoMode = featureExtractionModel.isAutoMode();
         this.recreateModelMode = recreateModelMode;
 
-        if ((!autoMode) && (!recreateModelMode)) {
+        if (!recreateModelMode) {
             featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
         }
 
@@ -266,8 +278,7 @@ public class FXApplicationController implements Initializable {
         loadEpoch(currentEpoch);
         showEpoch();
         computeKCfeatures();
-        
-        
+
         showLabelsForEpoch(returnActiveChannels());
 
         checkProp();
@@ -868,23 +879,7 @@ public class FXApplicationController implements Initializable {
 
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
 
-            TDoubleArrayList epoch = null;
-
-            if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".vhdr")) {
-
-                if (dataPointsModel.getBinaryFormat() == BinaryFormat.INT_16) {
-                    epoch = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-                } else {
-                    epoch = dataReaderController.readDataFileFloat(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-                }
-
-            } else if (dataPointsModel.getOrgFile().getName().toLowerCase().endsWith(".smr")) {
-                epoch = dataReaderController.readSMRChannel(dataPointsModel.getDataFile(), activeChannelNumbers.get(i), numberOfEpoch);
-            }
-
-            //First element is just the number of the current epoch
-//            epoch.removeFirst();
-
+            TDoubleArrayList epoch = dataReaderController.read(activeChannelNumbers.get(i), numberOfEpoch);
             thisEpoch.add(i, epoch.toArray());
         }
 
@@ -945,9 +940,9 @@ public class FXApplicationController implements Initializable {
 
             lineChart.getData().add(series);
         }
-        
+
         computeKCfeatures();
-        
+
         showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
 
@@ -1193,8 +1188,14 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showScatterPlot() {
-
-        if (autoMode) {
+// if (viewModel.isElectrodeConfiguratorActive() == false) {
+//            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels, this.viewModel);
+//            viewModel.setElectrodeConfiguratorActive(true);
+//        } else {
+//            config.stage.close();
+//            viewModel.setElectrodeConfiguratorActive(false);
+//        }
+        if (true) {
             if (viewModel.isScatterPlotActive() == false) {
                 scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
                 viewModel.setScatterPlotActive(true);
@@ -1617,6 +1618,66 @@ public class FXApplicationController implements Initializable {
         }
 
         lineChart.requestFocus();
+    }
+
+    @FXML
+    protected void classifyButtonAction() {
+
+        ObservableList<String> choices = FXCollections.observableArrayList();
+
+        File folder = new File(".").getAbsoluteFile();
+        for (File file : folder.listFiles()) {
+            if (file.getName().contains("model")) {
+                choices.add(file.getName());
+            }
+        }
+
+//        progressBar.setVisible(true);
+        classify();
+//        progressBar.setVisible(false);
+    }
+
+    public void classify() {
+
+//          if ((startModel.getSelectedModel() != null) || (startModel.isAutoModeFlag() == false)) {
+//            featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
+//            startAction(file);
+//        } else {
+//            popUp.showPopupMessage("Please first go to settings and select a model!", primaryStage);
+//        }
+        // Creats a new controller which reads the declared file
+//        featureExtractionModel.setFileLocation(fileLocation);
+        for (int i = 0; i < channelNames.length; i++) {
+            String channel = channelNames[i];
+
+            switch (channel) {
+                case "Fz":
+                    featureExtractionModel.setChannelName(ChannelNames.Fz);
+                    break;
+                default:
+                    featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
+                    break;
+            }
+        }
+
+//        // Check whether the the SVM Model is trained for one of the given channels
+//        File folder = new File(".").getAbsoluteFile();
+//        for (File file : folder.listFiles()) {
+//            for (int i = 0; i < channelNames.length; i++) {
+//                if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
+//                    flag = true;
+//                    channelNumbersToRead.add(i);
+//                }
+//            }
+//        }
+        long start = System.nanoTime();
+
+        dataReaderController.readAll(5);
+        
+        FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, false);
+        featureExtractionController.start();
+
+        System.out.println((System.nanoTime() - start) / 1e6);
     }
 
     private void checkProp() {

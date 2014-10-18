@@ -20,15 +20,12 @@ import java.util.LinkedList;
 
 import model.RawDataModel;
 
-public class DataReaderController extends Thread {
+public class DataReaderController {
 
     private String fileLocationPath;
     private RawDataModel respectiveModel;
-    private Thread t;
     private LinkedList<Integer> channelsToRead;
     private int numberOfSamplesForOneEpoch;
-
-    private boolean autoMode;
 
     // These two variables are necessary for setting the value into the right dataPoint position.
     int column = 0;
@@ -60,8 +57,9 @@ public class DataReaderController extends Thread {
     String[] channelNames;
     int countChannels = 0;
 
-    // Temp Epoch. Will be cleared after reading one epoch
+    // Temp Epoch. Will be overridden by each reading operation
     TDoubleArrayList tmpEpoch;
+    Reader reader;
 
     /**
      * Constructor which initialize this reader class.
@@ -69,57 +67,62 @@ public class DataReaderController extends Thread {
      * @param autoMode
      * @throws IOException
      */
-    public DataReaderController(File fileLocation, RawDataModel dataPointsModel, LinkedList<Integer> channelsToRead, boolean autoMode) throws IOException {
+    public DataReaderController(File fileLocation) throws IOException {
         file = fileLocation;
-        respectiveModel = dataPointsModel;
-        this.channelsToRead = channelsToRead;
-        this.autoMode = autoMode;
-
+        respectiveModel = new RawDataModel();
         respectiveModel.setOrgFile(file);
 
+        init();
     }
 
     // TODO: DataFile have to be closed at the end!
-    public void run() {
+    public void readAll(int channel) {
+        for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
+            tmpEpoch = read(channel, i);
+            respectiveModel.addRawEpoch(tmpEpoch);
+        }
+        respectiveModel.setReadingComplete(true);
+        
+    }
+
+    public TDoubleArrayList read(int channel, int epoch) {
+        return reader.read(channel, epoch);
+    }
+
+    public void init() {
 //		headerFile = new File(fileLocationPath);
 
         if (file.getName().toLowerCase().endsWith(".smr")) {
 
             readHeaderFromSMR();
-            int tmp = (int) (respectiveModel.getlChanDvd(channelsToRead.get(0)) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
-            respectiveModel.setSamplingIntervall(tmp);
 
-            int numberOfDataPoints = ((respectiveModel.getBlocks(channelsToRead.get(0)) - 1) * respectiveModel.getMaxData(channelsToRead.get(0)) + respectiveModel.getSizeOfLastBlock(channelsToRead.get(0)));
-            respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+            reader = new Reader() {
+                @Override
+                public TDoubleArrayList read(int channel, int epoch) {
+                    int tmp = (int) (respectiveModel.getlChanDvd(channel) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
+                    respectiveModel.setSamplingIntervall(tmp);
 
-            respectiveModel.setReadingHeaderComplete(true);
+                    int numberOfDataPoints = ((respectiveModel.getBlocks(channel) - 1) * respectiveModel.getMaxData(channel) + respectiveModel.getSizeOfLastBlock(channel));
+                    respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
 
-            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+                    respectiveModel.setReadingHeaderComplete(true);
 
-            if (autoMode) {
-                if (respectiveModel.getKind(channelsToRead.get(0)) == 1) {
-                    for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-                        for (int i = 0; i < channelsToRead.size(); i++) {
-
-							// x is the epoch, which have to be calculated
-                            // i is the channel, which have to be calculated
-                            tmpEpoch = readSMRChannel(dataFile, channelsToRead.get(i), x);
-                            respectiveModel.addRawEpoch(tmpEpoch);
-
-                        }
-                    }
-                    respectiveModel.setReadingComplete(true);
-                } else {
-                    System.err.println("Channel #" + channelsToRead.get(0) + ": No waveform data found!");
+                    numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+                    return readSMRChannel(dataFile, channel, epoch);
                 }
-            }
+            };
 
-            System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
-            System.out.println("MaxData for one block: " + respectiveModel.getMaxData(16));
-            System.out.println("#30s Epochs: " + respectiveModel.getNumberOf30sEpochs());
+            System.out.println(
+                    "numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
+            System.out.println(
+                    "MaxData for one block: " + respectiveModel.getMaxData(16));
+            System.out.println(
+                    "#30s Epochs: " + respectiveModel.getNumberOf30sEpochs());
 
             printPropertiesSMR();
-            printChannelInformationSMR(16);
+
+            printChannelInformationSMR(
+                    16);
 
         } else if (file.getName().toLowerCase().endsWith(".vhdr")) {
 
@@ -128,47 +131,41 @@ public class DataReaderController extends Thread {
 
             printPropertiesVHDR();
 
-            if (autoMode) {
-                if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
+            if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 
-                    if (dataFormat.equals(DataFormat.BINARY)) {
-                        switch (binaryFormat) {
-                            case INT_16:
-                                for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-                                    for (int i = 0; i < channelsToRead.size(); i++) {
-
-									// x is the epoch, which have to be calculated
-                                        // i is the channel, which have to be calculated
-                                        TDoubleArrayList epoch = readDataFileInt(dataFile, channelsToRead.get(i), x);
-                                        respectiveModel.addRawEpoch(epoch);
-                                    }
+                if (dataFormat.equals(DataFormat.BINARY)) {
+                    switch (binaryFormat) {
+                        case INT_16:
+                            reader = new Reader() {
+                                @Override
+                                public TDoubleArrayList read(int channel, int epoch) {
+                                    return readDataFileInt(dataFile, channel, epoch);
                                 }
-                                respectiveModel.setReadingComplete(true);
-                                break;
-                            case IEEE_FLOAT_32:
-                                for (int x = 0; x < respectiveModel.getNumberOf30sEpochs(); x++) {
-                                    for (int i = 0; i < channelsToRead.size(); i++) {
-                                        TDoubleArrayList epoch = readDataFileFloat(dataFile, channelsToRead.get(i), x);
-                                        respectiveModel.addRawEpoch(epoch);
-                                    }
+                            };
+
+                            break;
+                        case IEEE_FLOAT_32:
+                            reader = new Reader() {
+                                @Override
+                                public TDoubleArrayList read(int channel, int epoch) {
+                                    return readDataFileFloat(dataFile, channel, epoch);
                                 }
-                                respectiveModel.setReadingComplete(true);
-                                break;
-                            default:
-                                System.err.println("No compatible binary format!");
-                                break;
-                        }
-					//} else if (dataFormat.equals(DataFormat.ASCII)) {
-                        //	readDataFileAscii(dataFileForAscii);
-
-                    } else {
-                        System.err.println("No compatible data format!");
-
+                            };
+                            break;
+                        default:
+                            System.err.println("No compatible binary format!");
+                            break;
                     }
+                    //} else if (dataFormat.equals(DataFormat.ASCII)) {
+                    //	readDataFileAscii(dataFileForAscii);
 
                 } else {
-                    System.err.println("No supported data orientation, data type or count of skip columns! ");
+                    System.err.println("No compatible data format!");
+
                 }
+
+            } else {
+                System.err.println("No supported data orientation, data type or count of skip columns! ");
             }
 
         }
@@ -208,7 +205,7 @@ public class DataReaderController extends Thread {
             //Make buffer ready for read
             buf.flip();
 
-			// ************** Get File Header Information **************
+            // ************** Get File Header Information **************
             respectiveModel.setSystemId(buf.getShort());
 
             // We skip copyright and creator information
@@ -230,7 +227,7 @@ public class DataReaderController extends Thread {
                 respectiveModel.setdTimeBase(1e-6);
             }
 
-			// ************** Get Channel Header Information **************
+            // ************** Get Channel Header Information **************
             for (int i = 0; i < respectiveModel.getChannels(); i++) {
 
                 // Offset due to file header and preceding channel headers
@@ -340,10 +337,9 @@ public class DataReaderController extends Thread {
     }
 
     public TDoubleArrayList readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
-        tmpEpoch = new TDoubleArrayList(numberOfSamplesForOneEpoch);
+        TDoubleArrayList tmpEpoch = new TDoubleArrayList(numberOfSamplesForOneEpoch);
 
 //        tmpEpoch.add((double) epoch);
-
         int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channelsToRead.get(0));
 
         int sampleNumberInBlock = 0;
@@ -443,7 +439,7 @@ public class DataReaderController extends Thread {
             nextBlock = -1;
         }
 
-		// Header information for this block
+        // Header information for this block
 //		System.out.println("LastBlock: " + lastBlock);
 //		System.out.println("NextBlock: " + nextBlock);
 //
@@ -481,7 +477,7 @@ public class DataReaderController extends Thread {
                         case "BINARY":
                             dataFormat = DataFormat.BINARY;
                             break;
-					//case "ASCII": dataFormat = DataFormat.ASCII;
+                        //case "ASCII": dataFormat = DataFormat.ASCII;
                         //			dataFileForAscii = new File(dataFileLocation);
                         //	break;
                         default:
@@ -575,7 +571,7 @@ public class DataReaderController extends Thread {
                     skipColumns = Integer.parseInt(zeile.substring(12));
                 }
 
-				// Read channel resolution
+                // Read channel resolution
                 // TODO: IMPORTANT: It could be possible, that each channel has a different resolution!
                 if (zeile.startsWith("Ch")) {
                     String[] tmp = zeile.split(",");
@@ -626,9 +622,7 @@ public class DataReaderController extends Thread {
 
 //			long start = new Date().getTime();
 //			long time;
-            
 //            tmpEpochInt.add((double) epochToRead);
-
             FileChannel inChannel = dataFile.getChannel();
             inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2) * respectiveModel.getNumberOfChannels()) + (channelToRead * 2));
 
@@ -639,13 +633,13 @@ public class DataReaderController extends Thread {
 
             int bytesRead = inChannel.read(buf);
 
-			// This function has to be called here, because you now know how big the matrix have to be
+            // This function has to be called here, because you now know how big the matrix have to be
             //respectiveModel.createDataMatrix();
-			//while (bytesRead != -1) {
+            //while (bytesRead != -1) {
             // Make buffer ready for read
             buf.flip();
 
-				// Set the start position in the file
+            // Set the start position in the file
             //buf.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
             while (buf.hasRemaining()) {
                 Double value = (buf.getShort() * channelResolution);
@@ -730,7 +724,6 @@ public class DataReaderController extends Thread {
 			/* ---- End just for testing ---- */
 
 //            tmpEpochFloat.add((double) epochToRead);
-
             FileChannel inChannel = dataFile.getChannel();
             inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels()) + (channelToRead * 4));
 
@@ -931,20 +924,18 @@ public class DataReaderController extends Thread {
 
         System.out.println("NumberOfChannels: " + respectiveModel.getNumberOfChannels());
 
-		// To avoid errors we do not print divide- and interleave-information
+        // To avoid errors we do not print divide- and interleave-information
         //System.out.println("Divide: " + divide.get(channel));
     }
 
-    /**
-     * This method starts the Data Reader Thread.
-     */
-    public void start() {
-//		System.out.println("Starting Data Reader Thread");
-//		if (t == null) {
-//			t = new Thread(this, "DataReader");
-//			t.start();
-//		}
-        run();
+    public static class Reader {
+
+        public TDoubleArrayList read(int channel, int epoch) {
+            return null;
+        }
     }
 
+    public RawDataModel getDataModel() {
+        return respectiveModel;
+    }
 }

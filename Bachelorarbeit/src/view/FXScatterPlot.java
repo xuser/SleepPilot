@@ -26,6 +26,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import tools.Util;
 
 public class FXScatterPlot implements Initializable {
 	
@@ -103,7 +104,7 @@ public class FXScatterPlot implements Initializable {
 					}
 				});
 									
-				TSNE tsne = new TSNE(featureExtractionModel.getFeatureValueMatrix());
+				TSNE tsne = new TSNE(Util.floatToDouble(featureExtractionModel.getFeatures()));
 				final double[][] output = tsne.tsne();		
 				
 				Platform.runLater(new Runnable() {

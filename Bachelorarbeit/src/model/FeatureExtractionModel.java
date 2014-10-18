@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import help.ChannelNames;
+import java.util.concurrent.atomic.AtomicInteger;
+import javafx.scene.control.ProgressBar;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -25,7 +27,7 @@ public class FeatureExtractionModel implements Serializable {
      * classified sleep stage.
      */
     private float[][] features;
-    private int[] labels;
+    private int[] labels = null;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -59,7 +61,7 @@ public class FeatureExtractionModel implements Serializable {
      * This variable keeps the number of the epoch to which the calculation of
      * the PE has been done.
      */
-    private int numberOfcalculatedEpoch = 0;
+    private int numberOfcalculatedEpoch;
 
     /**
      * If automode is true, then the classification automation was used.
@@ -114,6 +116,8 @@ public class FeatureExtractionModel implements Serializable {
      */
     private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
 
+    public ProgressBar progressBar;
+
     /**
      * Creates the feature value matrix with the needed size. The first column
      * holds the classified sleep stage. Test mode: The first column has the
@@ -124,10 +128,8 @@ public class FeatureExtractionModel implements Serializable {
      * sleep stage 99	Unscored
      */
     public void createDataMatrix(int rows, int columns) {
-
         numberOfFeatures = rows;
-        numberOfChannels = columns;
-        features = new float[rows][columns + 1];
+        labels = new int[rows];
         predictProbabilities = new double[rows][];
     }
 
@@ -429,23 +431,13 @@ public class FeatureExtractionModel implements Serializable {
     public void setFeature(int row, int column, float feature) {
         this.features[row][column] = feature;
     }
-    
+
     /**
      * @param features the features to set
      */
     public void setFeatures(float[][] features) {
         this.features = features;
-        
-        int rows = this.features.length;
-        int cols = this.features[0].length;
-        
-        predictProbabilities = new double[rows][];
-        labels = new int[rows];
-        
-        numberOfFeatures = rows;
-        numberOfChannels = cols;
     }
-    
 
     /**
      * @param row the row position of the value.
@@ -498,7 +490,7 @@ public class FeatureExtractionModel implements Serializable {
                     break;
             }
         }
-        
+
         int intLabel = (int) label;
         switch (intLabel) {
             case 1:
@@ -543,22 +535,22 @@ public class FeatureExtractionModel implements Serializable {
         rowPosition = 0;
     }
 
+    
+
     /**
      * Set the number of the epoch from which the PE has been calculated.
      *
      * @param value number of the epoch
      */
-    public void setNumberOfcalculatedEpoch(int value) {
-        numberOfcalculatedEpoch = value;
-    }
-
+//    public void setNumberOfcalculatedEpoch(int value) {
+//        numberOfcalculatedEpoch.;
+//    }
     /**
      * @return	the number of the epoch from which the PE has been calculated.
      */
-    public int getNumberOfcalculatedEpoch() {
-        return numberOfcalculatedEpoch;
-    }
-
+//    public int getNumberOfcalculatedEpoch() {
+//        return numberOfcalculatedEpoch;
+//    }
     /**
      * @return	the number of feature vectors in the matrix.
      */

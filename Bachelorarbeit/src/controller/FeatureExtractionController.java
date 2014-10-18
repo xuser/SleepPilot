@@ -2,6 +2,7 @@ package controller;
 
 import com.google.common.primitives.Doubles;
 import gnu.trove.list.array.TDoubleArrayList;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +47,6 @@ public class FeatureExtractionController {
 
     public void start() {
 
-        
         // design filter
         FilterCoefficients coefficients = null;
         try {
@@ -84,49 +84,45 @@ public class FeatureExtractionController {
                 )
                 .map(e -> Util.doubleToFloat(computeFeatures(Doubles.toArray(e))))
                 .collect(Collectors.toList());
-        
-        
-        
+
         float[][] features = new float[featureList.size()][];
         for (int i = 0; i < featureList.size(); i++) {
-            features[i] = featureList.get(i);    
+            features[i] = featureList.get(i);
         }
-                
-                
+
         featureExtractionModel.setFeatures(features);
-        
-        
+        Util.save(features, new File("ouput2.jo"));
+
         NeuralNetworks nn = new NeuralNetworks("D:\\Dropbox\\Dokumente\\MATLAB\\AutoScore\\annDefinition");
-        
-        
+
         double[] output;
         for (int i = 0; i < features.length; i++) {
             output = nn.net(Util.floatToDouble(features[i]));
-            
+
             for (int j = 0; j < output.length; j++) {
-                output[j]*=100;
+                output[j] *= 100;
             }
-            
+
             int classLabel = Doubles.indexOf(output, Doubles.max(output)) + 1;
             featureExtractionModel.setPredictProbabilities(i, output.clone());
             featureExtractionModel.setFeatureClassLabel(i, classLabel);
         }
         featureExtractionModel.setClassificationDone(true);
-        
+
     }
-    
-    public static double[] computeFeatures(double[] x){
+
+    public static double[] computeFeatures(double[] x) {
         TDoubleArrayList features = new TDoubleArrayList();
-        
+
         features.add(Signal.lineSpectralPairs(x, 10));
         features.add(tools.Entropies.wpentropy(x, 6, 1));
         features.add(tools.Entropies.wavewpentropy(x, 6, 1));
         features.add(tools.Entropies.pentropy(x, 6, 1));
-        
+
         return features.toArray();
     }
-}
 
+}
 
 //        while (supportVectorMaschineThreadStartedFlag == false) {
 //
