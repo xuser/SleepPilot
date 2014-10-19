@@ -152,6 +152,11 @@ public class FXHypnogrammController implements Initializable{
 				Integer[] prob = featureExtractionModel.getEpochProperty(i);
 				
 				if (prob[0] == 1) {
+					
+//					if (i > 0 && (featureExtractionModel.getEpochProperty(i-1) != null)) {
+//						
+//					}
+//					
 					seriesArtefact.getData().add(new XYChart.Data<Double, Double>(tmp,3.0));			//tmp is xaxis
 					seriesArtefact.getData().add(new XYChart.Data<Double, Double>(tmp,3.8));			//tmp is xaxis
 				}
