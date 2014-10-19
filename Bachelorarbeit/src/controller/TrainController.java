@@ -168,7 +168,7 @@ public class TrainController extends Thread {
 						
 						// Set the PE value into the 1. column and not into the 0. column.
 						// For more information see the FeatureExtractionValues.java
-						respectiveFeatureExtraxtionModel.setFeatureValuesPE(currentEpoch, 1, tmp);
+						respectiveFeatureExtraxtionModel.setFeature(currentEpoch, 1, tmp);
 						
 						double[] coefficients = calculateLSP(epoch);
 						
@@ -179,7 +179,7 @@ public class TrainController extends Thread {
 							lpc = lpc.setScale(4, BigDecimal.ROUND_HALF_UP);
 							
 							// Insert in column y+2 because first column if for the class label and second column for the PE
-							respectiveFeatureExtraxtionModel.setFeatureValuesPE(currentEpoch, y+2, lpc.floatValue());
+							respectiveFeatureExtraxtionModel.setFeature(currentEpoch, y+2, lpc.floatValue());
 							
 						}
 						

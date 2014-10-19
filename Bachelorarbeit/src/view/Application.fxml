@@ -14,40 +14,22 @@
 
 <BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <bottom>
-    <ToolBar fx:id="statusBar" focusTraversable="false" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
+    <ToolBar fx:id="statusBar" focusTraversable="false" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
       <items>
-        <GridPane fx:id="statusBarGrid" prefHeight="13.0" prefWidth="-1.0">
+        <GridPane fx:id="statusBarGrid" layoutY="1.0" maxWidth="1.7976931348623157E308" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <children>
-            <HBox fx:id="statusBarHBox" alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-              <children>
-                <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="Epoch 1">
-                  <font>
-                    <Font size="12.0" />
-                  </font>
-                </Label>
-              </children>
-              <padding>
-                <Insets left="5.0" />
-              </padding>
-            </HBox>
-            <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-              <children>
-                <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-Complex: 0.0%" />
-              </children>
-            </HBox>
-            <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
-              <children>
-                <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" />
-              </children>
-            </HBox>
+          <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="Epoch 1" GridPane.rowIndex="1" />
+          <Label fx:id="kComplexLabel" focusTraversable="false" prefWidth="150.0" styleClass="textLabel" text="K-complex: 0.0%" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+          <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" GridPane.columnIndex="2" GridPane.rowIndex="1" />
           </children>
           <columnConstraints>
-            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="-Infinity" minWidth="10.0" prefWidth="200.0" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="-Infinity" minWidth="10.0" prefWidth="200.0" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="-Infinity" minWidth="10.0" prefWidth="200.0" />
           </columnConstraints>
           <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           </rowConstraints>
         </GridPane>
       </items>
@@ -127,9 +109,9 @@
               </padding>
             </HBox>
             <ToggleButton id="awakeButton1" fx:id="awakeButton" focusTraversable="false" mnemonicParsing="false" onAction="#awakeButtonOnAction" styleClass="toolBarButtons" text="W" />
-            <ToggleButton fx:id="s1Button" focusTraversable="false" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="1" />
-            <ToggleButton fx:id="s2Button" focusTraversable="false" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="2" />
-            <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="N" />
+            <ToggleButton fx:id="s1Button" focusTraversable="false" mnemonicParsing="false" onAction="#s1ButtonOnAction" styleClass="toolBarButtons" text="N1" />
+            <ToggleButton fx:id="s2Button" focusTraversable="false" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="N2" />
+            <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="N3" />
             <ToggleButton id="remButton1" fx:id="remButton" focusTraversable="false" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
             <ToggleButton id="arrousalButton" fx:id="artefactButton" focusTraversable="false" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
@@ -138,8 +120,8 @@
             <Separator orientation="VERTICAL" prefHeight="200.0" />
             <Button fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <ToggleButton fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="75µV-Ruler" />
-            <ToggleButton fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="K-Complex" />
+            <ToggleButton fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="75µV bars" />
+            <ToggleButton fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="K-complex ruler" />
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <children>
                 <Label styleClass="textLabel" text="Goto:" />
@@ -153,6 +135,9 @@
               <padding>
                 <Insets left="6.0" />
               </padding>
+                     <children>
+                        <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" text="classify" />
+                     </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
               <padding>

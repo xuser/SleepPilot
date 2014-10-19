@@ -1,11 +1,12 @@
 package model;
 
+import gnu.trove.list.array.TDoubleArrayList;
 import help.BinaryFormat;
 
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class RawDataModel implements Serializable {
 	 * This list keeps lists with the epochs (raw data).
 	 * IMPORTANT: The head of the inter list keeps the assosiated epoch.
 	 */
-	private LinkedList<LinkedList<Double>> rawEpochs = new LinkedList<LinkedList<Double>>();
+	public ArrayList<TDoubleArrayList> rawEpochs = new ArrayList();
 	
 	/**
 	 * This list keeps lists with the epochs (filtered data).
@@ -312,7 +313,7 @@ public class RawDataModel implements Serializable {
 		return rowFilteredValues;
 	}
 	
-	public void addRawEpoch(LinkedList<Double> rawEpoch) {
+	public void addRawEpoch(TDoubleArrayList rawEpoch) {
 		rawEpochs.add(rawEpoch);
 	}
 	
@@ -321,8 +322,9 @@ public class RawDataModel implements Serializable {
 	 * @return
 	 * 		LinkedList with the epochs.
 	 */
-	public LinkedList<Double> getRawEpoch() {
-		return rawEpochs.poll();
+	public TDoubleArrayList getRawEpoch() {
+//		return rawEpochs.poll();
+            return null;
 	}
 	
 	public int getSizeOfRawEpochList() {

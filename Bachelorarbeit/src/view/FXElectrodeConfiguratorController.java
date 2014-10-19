@@ -118,8 +118,8 @@ public class FXElectrodeConfiguratorController implements Initializable {
         view.getAppController().clearLineChart();
         view.getAppController().loadEpoch(view.getAppController().getCurrentEpoch());
         view.getAppController().showEpoch();
-        LinkedList<Integer> activeChannelNumbers = view.getAppController().returnActiveChannels();
-        view.getAppController().showLabelsForEpoch(activeChannelNumbers);
+        view.getAppController().computeKCfeatures();
+        view.getAppController().showLabelsForEpoch(view.getAppController().returnActiveChannels());
     }
 
     @Override

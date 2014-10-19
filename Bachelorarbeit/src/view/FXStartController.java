@@ -1,5 +1,6 @@
 package view;
 
+import controller.DataReaderController;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,7 @@ import controller.ModelReaderWriterController;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -210,12 +212,31 @@ public class FXStartController implements Initializable {
                 );
 
                 if (file != null) {
-                    if ((startModel.getSelectedModel() != null) || (startModel.isAutoModeFlag() == false)) {
-                        featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
-                        startAction(file);
-                    } else {
-                        popUp.showPopupMessage("Please first go to settings and select a model!", primaryStage);
+
+                    try {
+                        DataReaderController dataReaderController = new DataReaderController(file);
+
+                        //Create application controller
+                        System.out.println("AppController starting!");
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                FXViewModel viewModel = new FXViewModel();
+                                FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, false, false);
+                                viewModel.setAppController(appController);
+                                primaryStage.close();
+                            }
+                        });
+                    } catch (IOException ex) {
+                        Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
                     }
+
+//                    if ((startModel.getSelectedModel() != null) || (startModel.isAutoModeFlag() == false)) {
+//                        featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
+//                        startAction(file);
+//                    } else {
+//                        popUp.showPopupMessage("Please first go to settings and select a model!", primaryStage);
+//                    }
                 }
 
             }
@@ -512,94 +533,55 @@ public class FXStartController implements Initializable {
 
     private void startAction(final File file) {
 
+        boolean checkPassed = false;
+
         if (file.getName().toLowerCase().endsWith(".smr")) {
-
-            if (checkChannelsSMR(file)) {
-
-                // In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
-                if (channelNumbersToRead.size() == 1) {
-
-                    Task<Void> task = new Task<Void>() {
-
-                        @Override
-                        protected Void call() throws Exception {
-                            MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
-
-                            return null;
-                        }
-
-                    };
-
-                    progressBar.setVisible(true);
-                    cancelButton.setVisible(true);
-                    newProject.setDisable(true);
-                    openProject.setDisable(true);
-                    createModel.setDisable(true);
-                    setting.setDisable(true);
-
-                    text1.getStyleClass().removeAll("textLabel");
-                    text1.getStyleClass().add("textLabelDisabled");
-
-                    text2.getStyleClass().removeAll("textLabel");
-                    text2.getStyleClass().add("textLabelDisabled");
-
-                    text3.getStyleClass().removeAll("textLabel");
-                    text3.getStyleClass().add("textLabelDisabled");
-
-                    new Thread(task).start();
-
-                } else {
-                    popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
-                }
-
-            } else {
-                popUp.showPopupMessage("SMR: No trained channel for the selected dataset found!", primaryStage);
-            }
-
+            checkPassed = checkChannelsSMR(file);
         } else if (file.getName().toLowerCase().endsWith(".vhdr")) {
-
-            if (checkChannelsVHDR(file)) {
-
-                // In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
-                if (channelNumbersToRead.size() == 1) {
-
-                    Task<Void> task = new Task<Void>() {
-
-                        @Override
-                        protected Void call() throws Exception {
-                            MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
-                            return null;
-                        }
-
-                    };
-
-                    progressBar.setVisible(true);
-                    cancelButton.setVisible(true);
-                    newProject.setDisable(true);
-                    openProject.setDisable(true);
-                    createModel.setDisable(true);
-                    setting.setDisable(true);
-
-                    text1.getStyleClass().removeAll("textLabel");
-                    text1.getStyleClass().add("textLabelDisabled");
-
-                    text2.getStyleClass().removeAll("textLabel");
-                    text2.getStyleClass().add("textLabelDisabled");
-
-                    text3.getStyleClass().removeAll("textLabel");
-                    text3.getStyleClass().add("textLabelDisabled");
-
-                    new Thread(task).start();
-
-                } else {
-                    popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
-                }
-
-            } else {
-                popUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
-            }
+            checkPassed = checkChannelsVHDR(file);
+        } else {
+            checkPassed = false;
         }
 
+        // In this version we only allow to classify one channel. Not all features are implemented to use more than one channel.
+        if (checkPassed) {
+            if (channelNumbersToRead.size() == 1) {
+
+                progressBar.setVisible(true);
+                cancelButton.setVisible(true);
+                newProject.setDisable(true);
+                openProject.setDisable(true);
+                createModel.setDisable(true);
+                setting.setDisable(true);
+
+                text1.getStyleClass().removeAll("textLabel");
+                text1.getStyleClass().add("textLabelDisabled");
+
+                text2.getStyleClass().removeAll("textLabel");
+                text2.getStyleClass().add("textLabelDisabled");
+
+                text3.getStyleClass().removeAll("textLabel");
+                text3.getStyleClass().add("textLabelDisabled");
+
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
+
+                        return null;
+                    }
+
+                };
+
+                new Thread(task).start();
+
+            } else {
+                popUp.showPopupMessage("Only one channel classification is supported yet!", primaryStage);
+            }
+
+        } else {
+            popUp.showPopupMessage("No trained channel for the selected dataset found!", primaryStage);
+        }
     }
 
     @FXML
@@ -617,7 +599,9 @@ public class FXStartController implements Initializable {
         }
 
         cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
-        cmd.append(MainController.class.getName()).append(" ");
+        cmd
+                .append(MainController.class
+                        .getName()).append(" ");
 
         try {
             Runtime.getRuntime().exec(cmd.toString());
@@ -625,10 +609,11 @@ public class FXStartController implements Initializable {
             e.printStackTrace();
         }
 
-        System.exit(0);
+        System.exit(
+                0);
 
     }
-    
+
     public void setProgressBar(double value) {
         progressBar.setProgress(value);
     }
@@ -641,5 +626,4 @@ public class FXStartController implements Initializable {
 
     }
 
-    
 }
