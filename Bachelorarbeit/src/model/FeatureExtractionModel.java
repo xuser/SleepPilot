@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import help.ChannelNames;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.scene.control.ProgressBar;
+import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -28,6 +29,7 @@ public class FeatureExtractionModel implements Serializable {
      */
     private float[][] features;
     private int[] labels = null;
+    private double[][] tsneFeatures;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -102,6 +104,21 @@ public class FeatureExtractionModel implements Serializable {
     private boolean classificationDone = false;
 
     /**
+     * Tells whether channel data has been read
+     */
+    private boolean readinDone = false;
+    
+    /**
+     * Tells whether features have been computed
+     */
+    private boolean featuresComputed = false;
+    
+    /**
+     * Tells whether dimension reduction of features has been computed
+     */
+    private boolean tsneComputed = false;
+    
+    /**
      * The number of samples for one epoch.
      */
     private int lengthOfOneEpoch;
@@ -116,8 +133,12 @@ public class FeatureExtractionModel implements Serializable {
      */
     private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
 
-    public ProgressBar progressBar;
+    private int featureChannel;
 
+    private FilterCoefficients highpassCoefficients;
+    
+    private FilterCoefficients lowpassCoefficients;
+   
     /**
      * Creates the feature value matrix with the needed size. The first column
      * holds the classified sleep stage. Test mode: The first column has the
@@ -127,8 +148,11 @@ public class FeatureExtractionModel implements Serializable {
      * NOTATION: 1	Wake 2	Sleep stage 1 3	Sleep stage 2 4	Sleep stage 3 5	REM
      * sleep stage 99	Unscored
      */
-    public void createDataMatrix(int rows, int columns) {
-        numberOfFeatures = rows;
+    
+    
+    
+    public void init(int rows) {
+        numberOfEpochs = rows;
         labels = new int[rows];
         predictProbabilities = new double[rows][];
     }
@@ -437,6 +461,7 @@ public class FeatureExtractionModel implements Serializable {
      */
     public void setFeatures(float[][] features) {
         this.features = features;
+        numberOfFeatures = features[0].length;
     }
 
     /**
@@ -595,7 +620,7 @@ public class FeatureExtractionModel implements Serializable {
      * @return	the status flag, if the SVM Controller has finished
      * classification.
      */
-    public boolean getClassificationDone() {
+    public boolean isClassificationDone() {
         return classificationDone;
     }
 
@@ -603,15 +628,8 @@ public class FeatureExtractionModel implements Serializable {
      * @param row the needed epoch (row) from the matrix.
      * @return	the feature vector from needed epoch (row).
      */
-    public double[] getFeatureVector(int row) {
-
-        double[] features = new double[numberOfChannels + 1];
-
-        for (int i = 0; i < (numberOfChannels + 1); i++) {
-            features[i] = this.features[row][i];
-        }
-
-        return features;
+    public float[] getFeatureVector(int row) {
+        return features[row];
     }
 
     //TODO
@@ -897,5 +915,55 @@ public class FeatureExtractionModel implements Serializable {
     public void setFileLocation(File fileLocation) {
         this.fileLocation = fileLocation;
     }
+
+    public boolean isFeaturesComputed() {
+        return featuresComputed;
+    }
+
+    public boolean isReadinDone() {
+        return readinDone;
+    }
+
+    public boolean isTsneComputed() {
+        return tsneComputed;
+    }
+
+    public void setReadinDone(boolean readinDone) {
+        this.readinDone = readinDone;
+    }
+
+    public void setFeaturesComputed(boolean featuresComputed) {
+        this.featuresComputed = featuresComputed;
+    }
+
+    public void setTsneComputed(boolean tsneComputed) {
+        this.tsneComputed = tsneComputed;
+    }
+
+    public double[][] getTsneFeatures() {
+        return tsneFeatures;
+    }
+
+    public void setTsneFeatures(double[][] tsneFeatures) {
+        this.tsneFeatures = tsneFeatures;
+    }
+
+    public int getFeatureChannel() {
+        return featureChannel;
+    }
+
+    public void setFeatureChannel(int featureChannel) {
+        this.featureChannel = featureChannel;
+    }
+
+    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
+        this.highpassCoefficients = highpassCoefficients;
+    }
+
+    public FilterCoefficients getHighpassCoefficients() {
+        return highpassCoefficients;
+    }
+    
+    
 
 }

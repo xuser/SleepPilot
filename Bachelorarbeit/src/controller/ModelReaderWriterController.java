@@ -97,7 +97,7 @@ public class ModelReaderWriterController extends Thread{
 					featureExtractionModel.setPredictProbabilities(fem.getPredictProbabilities());
 					featureExtractionModel.setSelectedModel(fem.getSelectedModel());
 					featureExtractionModel.setNumberOfChannels(fem.getNumberOfChannels());
-					featureExtractionModel.setClassificationDone(fem.getClassificationDone());
+					featureExtractionModel.setClassificationDone(fem.isClassificationDone());
 					featureExtractionModel.setLengthOfOneEpoch(fem.getLengthOfOneEpoch());
 					featureExtractionModel.setNumberOfEpochs(fem.getNumberOfEpochs());
 					featureExtractionModel.setChannelNames(fem.getChannelNames());

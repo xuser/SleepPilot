@@ -586,7 +586,7 @@ public class FXStartController implements Initializable {
 
     @FXML
     protected void settingOnAction() {
-        settings = new FXSettingController(startModel);
+//        settings = new FXSettingController(startModel);
     }
 
     @FXML

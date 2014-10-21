@@ -124,7 +124,7 @@ public class TrainController extends Thread {
 				
 				// 1 Column for the PE of one channel and 10 columns for the LSP
 				// coefficients
-				respectiveFeatureExtraxtionModel.createDataMatrix(respectiveFeatureExtraxtionModel.getNumberOfEpochs(), (1 + 10));
+				respectiveFeatureExtraxtionModel.init(respectiveFeatureExtraxtionModel.getNumberOfEpochs());
 				
 				// The next values are zeros, so set to the beginn of the actual data.
 				// +1 is important, because we always have one label at the beginning of the epoch

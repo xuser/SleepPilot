@@ -3,7 +3,7 @@ package view;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
-import help.BinaryFormat;
+import com.google.common.primitives.Doubles;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +21,6 @@ import model.RawDataModel;
 import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
-import controller.MainController;
 import controller.ModelReaderWriterController;
 import gnu.trove.list.array.TDoubleArrayList;
 import help.ChannelNames;
@@ -33,9 +32,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -71,6 +67,8 @@ import kcdetection.KCdetection;
 import static kcdetection.KCdetection.filterKCs;
 import static kcdetection.KCdetection.getKCs;
 import static kcdetection.KCdetection.mergeKCs;
+import org.apache.commons.math.stat.StatUtils;
+import tools.NeuralNetworks;
 import tools.Signal;
 import tools.Util;
 
@@ -90,6 +88,7 @@ public class FXApplicationController implements Initializable {
     private DataReaderController dataReaderController;
     private RawDataModel dataPointsModel;
     private FeatureExtractionModel featureExtractionModel;
+    private FeatureExtractionController featureExtractionController;
     private FXElectrodeConfiguratorController config;
 
     private final boolean autoMode;
@@ -150,6 +149,8 @@ public class FXApplicationController implements Initializable {
     private Button electrodeConfiguratorButton;
     @FXML
     private Button classifyButton;
+    @FXML
+    private Button visualizeButton;
 
     private boolean kComplexFlag = false;
 
@@ -176,8 +177,6 @@ public class FXApplicationController implements Initializable {
     @FXML
     private Pane overlay4;
 
-//	Canvas canvas = new Canvas();
-//	ResizableCanvas canvas = new ResizableCanvas();
     @FXML
     private StackPane stackPane;
     @FXML
@@ -196,7 +195,7 @@ public class FXApplicationController implements Initializable {
     private Line line1;
     @FXML
     private Line line2;
-    
+
     @FXML
     ProgressBar progressBar;
 
@@ -207,6 +206,7 @@ public class FXApplicationController implements Initializable {
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataReaderController.getDataModel();
         this.featureExtractionModel = featureExtractionModel;
+        this.featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
         this.viewModel = viewModel;
 
         featureExtractionModel.setAutoMode(autoMode);
@@ -215,7 +215,7 @@ public class FXApplicationController implements Initializable {
         this.recreateModelMode = recreateModelMode;
 
         if (!recreateModelMode) {
-            featureExtractionModel.createDataMatrix(dataPointsModel.getNumberOf30sEpochs(), 1);
+            featureExtractionModel.init(dataPointsModel.getNumberOf30sEpochs());
         }
 
         // Creating FXML Loader
@@ -271,10 +271,6 @@ public class FXApplicationController implements Initializable {
 
         }
 
-        line1.setVisible(false);
-        line2.setVisible(false);
-        kComplexLabel.setVisible(true);
-
         loadEpoch(currentEpoch);
         showEpoch();
         computeKCfeatures();
@@ -290,6 +286,7 @@ public class FXApplicationController implements Initializable {
         updateProbabilities();
 
         initStarted = true;
+
     }
 
     @Override
@@ -435,7 +432,6 @@ public class FXApplicationController implements Initializable {
                 if (ke.getCode() == KeyCode.RIGHT) {
 
                     if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
-//                        lineChart.getData().clear();
 
                         overlay3.getChildren().clear();
                         lines.clear();
@@ -461,7 +457,6 @@ public class FXApplicationController implements Initializable {
 
                 if (ke.getCode() == KeyCode.LEFT) {
                     if (currentEpoch > 0) {
-//                        lineChart.getData().clear();
 
                         overlay3.getChildren().clear();
                         lines.clear();
@@ -484,13 +479,7 @@ public class FXApplicationController implements Initializable {
                 }
 
                 if (ke.getCode() == KeyCode.H) {
-                    if (viewModel.isHypnogrammActive() == false) {
-                        hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
-                        hypnogramm.changeCurrentEpochMarker(currentEpoch);
-                        viewModel.setHypnogrammActive(true);
-                    } else {
-                        hypnogramm.bringToFront();
-                    }
+                    hypnogramAction();
                 }
 
                 if (ke.getCode() == KeyCode.E) {
@@ -504,22 +493,10 @@ public class FXApplicationController implements Initializable {
 
                 if (ke.getCode() == KeyCode.L) {
                     help1OnAction();
-
-                    if (help1.isSelected()) {
-                        help1.setSelected(false);
-                    } else {
-                        help1.setSelected(true);
-                    }
                 }
 
                 if (ke.getCode() == KeyCode.K) {
                     kComplexOnAction();
-
-                    if (kComplex.isSelected()) {
-                        kComplex.setSelected(false);
-                    } else {
-                        kComplex.setSelected(true);
-                    }
 
                 }
 
@@ -651,10 +628,12 @@ public class FXApplicationController implements Initializable {
                 Platform.exit();
             }
         });
+
+        kComplexOnAction();
+        help1OnAction();
     }
 
     private void refreshZoom(double zoom) {
-//        lineChart.getData().clear();
 
         if (zoom == 1.) {
             scale.set(scale.get() * 1.1);
@@ -675,14 +654,15 @@ public class FXApplicationController implements Initializable {
 
     @SuppressWarnings("static-access")
     private void updateProbabilities() {
-        if (autoMode) {
+        if (featureExtractionModel.isFeaturesComputed()) {
             double[] probabilities = featureExtractionModel.getPredictProbabilities(currentEpoch);
 
-            double wake = (Math.round((probabilities[1] * 100) * Math.pow(10d, 2)) / Math.pow(10d, 2));
-            double n1 = (Math.round((probabilities[2] * 100) * Math.pow(10d, 2)) / Math.pow(10d, 2));
-            double n2 = (Math.round((probabilities[0] * 100) * Math.pow(10d, 2)) / Math.pow(10d, 2));
-            double n3 = (Math.round((probabilities[3] * 100) * Math.pow(10d, 2)) / Math.pow(10d, 2));
-            double rem = (Math.round((probabilities[4] * 100) * Math.pow(10d, 2)) / Math.pow(10d, 2));
+            double total = StatUtils.sum(probabilities);
+            int wake = (int) Math.round((probabilities[0] / total * 100));
+            int n1 = (int) Math.round((probabilities[1] / total * 100));
+            int n2 = (int) Math.round((probabilities[2] / total * 100));
+            int n3 = (int) Math.round((probabilities[3] / total * 100));
+            int rem = (int) Math.round((probabilities[4] / total * 100));
 
             String print = "W: " + wake + "%  N1: " + n1 + "%  N2: " + n2 + "%  N: " + n3 + "%  REM: " + rem + "%";
 
@@ -815,7 +795,7 @@ public class FXApplicationController implements Initializable {
 
         for (int i = 0; i < activeChannels.size(); i++) {
 
-            double realOffset = 1 - (i + 1.) * offsetSize;
+            double realOffset = (i + 1.) * offsetSize;
 
             Label label = new Label(getNameFromChannel(activeChannels.get(i)));
             label.setTextFill(Color.GRAY);
@@ -889,7 +869,8 @@ public class FXApplicationController implements Initializable {
     final public void filterEpoch() {
         LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
-            Signal.highpass(thisEpoch.get(i), 0.1, 0.5, 100);
+            Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayHighpassCoefficients());
+            Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayLowpasCoefficients());
         }
     }
 
@@ -946,11 +927,6 @@ public class FXApplicationController implements Initializable {
         showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
 
-//		for (int y = 0; y < activeChannelNumbers.size(); y++) {
-//			
-//			LinkedList<Double> tmp = dataReaderController.readDataFileInt(dataPointsModel.getDataFile(), activeChannelNumbers.get(y), (numberOfEpoch + 1));	
-//		
-//		}
     }
 
     public void updateEpoch() {
@@ -1087,10 +1063,19 @@ public class FXApplicationController implements Initializable {
             help1Flag = false;
             line1.setVisible(false);
             line2.setVisible(false);
+
+            if (help1.isSelected()) {
+                help1.setSelected(false);
+            }
+
         } else {
             help1Flag = true;
             line1.setVisible(true);
             line2.setVisible(true);
+
+            if (!help1.isSelected()) {
+                help1.setSelected(true);
+            }
         }
 
         lineChart.requestFocus();
@@ -1100,15 +1085,21 @@ public class FXApplicationController implements Initializable {
     protected void kComplexOnAction() {
         if (kComplexFlag) {
             kComplexFlag = false;
-//            kComplexLabel.setVisible(false);
 
             overlay3.getChildren().clear();
             lines.clear();
+
+            if (kComplex.isSelected()) {
+                kComplex.setSelected(false);
+            }
 
         } else {
             kComplexFlag = true;
             kComplexLabel.setVisible(true);
 
+            if (!kComplex.isSelected()) {
+                kComplex.setSelected(true);
+            }
         }
 
         lineChart.requestFocus();
@@ -1188,22 +1179,13 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showScatterPlot() {
-// if (viewModel.isElectrodeConfiguratorActive() == false) {
-//            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels, this.viewModel);
-//            viewModel.setElectrodeConfiguratorActive(true);
-//        } else {
-//            config.stage.close();
-//            viewModel.setElectrodeConfiguratorActive(false);
-//        }
-        if (true) {
-            if (viewModel.isScatterPlotActive() == false) {
-                scatterPlot = new FXScatterPlot(dataPointsModel, featureExtractionModel, viewModel);
-                viewModel.setScatterPlotActive(true);
-            } else {
-                scatterPlot.bringToFront();
-            }
+
+        if (viewModel.isScatterPlotActive() == false) {
+            scatterPlot = new FXScatterPlot(dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
+            viewModel.setScatterPlotActive(true);
         } else {
-            popUp.showPopupMessage("Scatter plot only available in auto mode!", primaryStage);
+            scatterPlot.stage.close();
+            viewModel.setScatterPlotActive(false);
         }
     }
 
@@ -1213,8 +1195,10 @@ public class FXApplicationController implements Initializable {
         AnchorPane addGrid = new AnchorPane();
 
         // Creating FXML Loader
-        FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("About.fxml"));
-        loader.setController(this);
+        FXMLLoader loader = new FXMLLoader(FXStartController.class
+                .getResource("About.fxml"));
+        loader.setController(
+                this);
 
         // Try to load fxml file
         try {
@@ -1226,10 +1210,14 @@ public class FXApplicationController implements Initializable {
 
         Scene scene = new Scene(addGrid);
 
-        stage.setResizable(false);
+        stage.setResizable(
+                false);
         stage.setScene(scene);
+
         stage.show();
-        stage.setTitle("About");
+
+        stage.setTitle(
+                "About");
     }
 
     @FXML
@@ -1623,18 +1611,58 @@ public class FXApplicationController implements Initializable {
     @FXML
     protected void classifyButtonAction() {
 
-        ObservableList<String> choices = FXCollections.observableArrayList();
+//        ObservableList<String> choices = FXCollections.observableArrayList();
+//
+//        File folder = new File(".").getAbsoluteFile();
+//        for (File file : folder.listFiles()) {
+//            if (file.getName().contains("model")) {
+//                choices.add(file.getName());
+//            }
+//        }
+//        popUp.showPopupMessage("This will overwrite previous classification", primaryStage);
+        if (featureExtractionModel.isClassificationDone() == false) {
 
-        File folder = new File(".").getAbsoluteFile();
-        for (File file : folder.listFiles()) {
-            if (file.getName().contains("model")) {
-                choices.add(file.getName());
+            if (!featureExtractionModel.isReadinDone()) {
+                dataReaderController.readAll(5);
+                featureExtractionModel.setReadinDone(true);
+
+                dataPointsModel.setFeatureChannelData(
+                        featureExtractionController.assembleData(
+                                dataPointsModel.rawEpochs,
+                                dataPointsModel.getNumberOf30sEpochs() * 3000)
+                );
+
+                Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
+                        featureExtractionModel.getHighpassCoefficients());
+
             }
-        }
 
-//        progressBar.setVisible(true);
-        classify();
-//        progressBar.setVisible(false);
+            if (!featureExtractionModel.isFeaturesComputed()) {
+                featureExtractionController.start();
+                featureExtractionModel.setFeaturesComputed(true);
+            }
+
+            if (!featureExtractionModel.isClassificationDone()) {
+                classify();
+                featureExtractionModel.setClassificationDone(true);
+            }
+
+            updateProbabilities();
+            updateStage();
+
+            hypnogramAction();
+
+            classifyButton.setDisable(true);
+            featureExtractionModel.setClassificationDone(true);
+        } else {
+            classifyButton.setDisable(true);
+        }
+    }
+
+    @FXML
+    protected void visualizeButtonAction() {
+        classifyButtonAction();
+        showScatterPlot();
     }
 
     public void classify() {
@@ -1670,14 +1698,18 @@ public class FXApplicationController implements Initializable {
 //                }
 //            }
 //        }
-        long start = System.nanoTime();
+        NeuralNetworks nn = new NeuralNetworks("D:\\annDefinition1");
 
-        dataReaderController.readAll(5);
-        
-        FeatureExtractionController featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel, false);
-        featureExtractionController.start();
+        double[] output;
+        for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
+            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
 
-        System.out.println((System.nanoTime() - start) / 1e6);
+            int classLabel = Doubles.indexOf(output, Doubles.max(output)) + 1;
+            featureExtractionModel.setPredictProbabilities(i, output.clone());
+            featureExtractionModel.setFeatureClassLabel(i, classLabel);
+        }
+        featureExtractionModel.setClassificationDone(true);
+
     }
 
     private void checkProp() {
@@ -1699,4 +1731,42 @@ public class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
+    public void requestFocus() {
+        lineChart.requestFocus();
+    }
+
+    private void hypnogramAction() {
+        if (!featureExtractionModel.isReadinDone()) {
+            dataReaderController.readAll(5);
+            featureExtractionModel.setReadinDone(true);
+
+            dataPointsModel.setFeatureChannelData(
+                    featureExtractionController.assembleData(
+                            dataPointsModel.rawEpochs,
+                            dataPointsModel.getNumberOf30sEpochs() * 3000)
+            );
+
+            Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
+                    featureExtractionModel.getHighpassCoefficients());
+
+        }
+
+        if (hypnogramm == null) {
+            hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
+        }
+
+        if (viewModel.isHypnogrammActive() == false) {
+            hypnogramm.reloadHypnogramm();
+            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+
+            hypnogramm.show();
+            hypnogramm.bringToFront();
+            viewModel.setHypnogrammActive(true);
+
+        } else {
+            hypnogramm.bringToFront();
+            viewModel.setHypnogrammActive(true);
+            hypnogramm.reloadHypnogramm();
+        }
+    }
 }

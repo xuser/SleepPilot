@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import help.svm_scale;
 import libsvm.*;
 import model.FeatureExtractionModel;
+import tools.Util;
 
 /**
  * This class starts the support vector maschine and uses the LIBSVM framework.
@@ -84,7 +85,7 @@ public class SupportVectorMaschineController {
 
             // Create a matrix of SVM nodes. Each row is one feature vector.
             for (int i = 0; i < dataCount; i++) {
-                double[] features = respectiveFeatureExtractionModel.getFeatureVector(i);
+                double[] features = Util.floatToDouble(respectiveFeatureExtractionModel.getFeatureVector(i));
                 prob.x[i] = new svm_node[features.length - 1];
 
                 for (int j = 1; j < features.length; j++) {
