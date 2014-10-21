@@ -162,6 +162,7 @@ public class FXHypnogrammController implements Initializable {
         });
 
         //order of intiation is important!
+
         loadHypnogramm();
 
         updateHypnogramm();

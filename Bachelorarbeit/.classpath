@@ -19,5 +19,7 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jsci-wavelet.jar"/>
+	<classpathentry kind="lib" path="lib/trove-3.0.3.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
