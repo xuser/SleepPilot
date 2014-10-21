@@ -696,6 +696,9 @@ public class FXApplicationController implements Initializable {
             epoch = dataPointsModel.getNumberOf30sEpochs() - 1;
         }
 
+        overlay3.getChildren().clear();
+        lines.clear();
+
         currentEpoch = epoch;
 
         loadEpoch(currentEpoch);
@@ -712,6 +715,12 @@ public class FXApplicationController implements Initializable {
         if (viewModel.isHypnogrammActive()) {
             hypnogramm.changeCurrentEpochMarker(currentEpoch);
         }
+
+        if (viewModel.isScatterPlotActive()) {
+            scatterPlot.changeCurrentEpochMarker();
+        }
+
+        lineChart.requestFocus();
     }
 
     private void paintSpacing(double space) {
@@ -1314,156 +1323,56 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void awakeButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 1.0);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        featureExtractionModel.setFeatureClassLabel(currentEpoch, 1);
+        updateWindows();
     }
 
     @FXML
     protected void s1ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 2.0);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        featureExtractionModel.setFeatureClassLabel(currentEpoch, 2);
+        updateWindows();
     }
 
     @FXML
     protected void s2ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 3.0);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        featureExtractionModel.setFeatureClassLabel(currentEpoch, 3);
+        updateWindows();
     }
 
     @FXML
     protected void s3ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 4.0);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        featureExtractionModel.setFeatureClassLabel(currentEpoch, 4);
+        updateWindows();
     }
 
     @FXML
     protected void remButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 5.0);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        featureExtractionModel.setFeatureClassLabel(currentEpoch, 5);
+        updateWindows();
     }
 
     @FXML
     protected void artefactButtonOnAction() {
-
         featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        updateWindows();
     }
 
     @FXML
     protected void arrousalButtonOnAction() {
         featureExtractionModel.addArrousalToEpochProperty(currentEpoch);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        updateWindows();
     }
 
     @FXML
     protected void stimulationButtonOnAction() {
         featureExtractionModel.addStimulationToEpochProperty(currentEpoch);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        updateWindows();
     }
 
     @FXML
     protected void clearButtonOnAction() {
         featureExtractionModel.clearProperties(currentEpoch);
-        updateStage();
-
-        if (viewModel.isEvaluationWindowActive()) {
-            evaluationWindow.reloadEvaluationWindow();
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        lineChart.requestFocus();
+        updateWindows();
     }
 
     @FXML
@@ -1643,52 +1552,11 @@ public class FXApplicationController implements Initializable {
 
     public void keyAction(KeyEvent ke) {
         if (ke.getCode() == KeyCode.RIGHT) {
-
-            if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
-
-                overlay3.getChildren().clear();
-                lines.clear();
-
-                currentEpoch = currentEpoch + 1;
-
-                loadEpoch(currentEpoch);
-                updateEpoch();
-                computeKCfeatures();
-
-                toolBarGoto.setText((currentEpoch + 1) + "");
-                statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
-                updateStage();
-                updateProbabilities();
-
-                if (viewModel.isHypnogrammActive()) {
-                    hypnogramm.changeCurrentEpochMarker(currentEpoch);
-                }
-
-            }
-
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.LEFT) {
-            if (currentEpoch > 0) {
-
-                overlay3.getChildren().clear();
-                lines.clear();
-
-                currentEpoch = currentEpoch - 1;
-
-                loadEpoch(currentEpoch);
-                updateEpoch();
-                computeKCfeatures();
-
-                toolBarGoto.setText((currentEpoch + 1) + "");
-                statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
-                updateStage();
-                updateProbabilities();
-
-                if (viewModel.isHypnogrammActive()) {
-                    hypnogramm.changeCurrentEpochMarker(currentEpoch);
-                }
-            }
+            goToEpoch(currentEpoch - 1);
         }
 
         if (ke.getCode() == KeyCode.H) {
@@ -1772,5 +1640,25 @@ public class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.HOME) {
             goToEpoch(0);
         }
+    }
+
+    private void updateWindows() {
+        updateStage();
+
+        if (viewModel.isEvaluationWindowActive()) {
+            evaluationWindow.reloadEvaluationWindow();
+        }
+
+        if (viewModel.isHypnogrammActive()) {
+            hypnogramm.reloadHypnogramm();
+            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+        }
+
+        if (viewModel.isScatterPlotActive()) {
+            scatterPlot.updateScatterPlot();
+            scatterPlot.changeCurrentEpochMarker();
+        }
+
+        lineChart.requestFocus();
     }
 }

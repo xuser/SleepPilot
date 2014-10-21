@@ -1,14 +1,14 @@
 package view;
 
+import com.google.common.collect.HashBiMap;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
+import java.util.HashMap;
 
-import gnu.trove.map.hash.TIntIntHashMap;
-import java.util.Arrays;
 import tsne.TSNE;
 import model.FXViewModel;
 import model.FeatureExtractionModel;
@@ -20,7 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
-import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
@@ -43,7 +43,6 @@ public class FXScatterPlot implements Initializable {
     private FeatureExtractionController featureExtractionController;
     private RawDataModel dataPointsModel;
     private DataReaderController dataReaderController;
-    private TIntIntHashMap plotItemsMap;
 
     public Stage stage;
 
@@ -51,6 +50,27 @@ public class FXScatterPlot implements Initializable {
     private ScatterChart<Number, Number> scatterChart;
     @FXML
     private ProgressIndicator progressIndicator;
+
+    XYChart.Series seriesRem;
+
+    XYChart.Series seriesN1;
+
+    XYChart.Series seriesN2;
+
+    XYChart.Series seriesN3;
+
+    XYChart.Series seriesWake;
+
+    XYChart.Series seriesUnclassified;
+
+    final InnerShadow ds = new InnerShadow(20, Color.YELLOW);
+
+    int lastEpoch = 0;
+
+    BlendMode bm;
+
+    private HashBiMap<Node, Integer> plotItemsMap;
+    private HashMap<Node, XYChart.Data> nodeToXYDataMap;
 
     public FXScatterPlot(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FeatureExtractionController featureExtractionController, FXViewModel viewModel) {
         this.featureExtractionModel = featureExtractionModel;
@@ -129,62 +149,23 @@ public class FXScatterPlot implements Initializable {
                     @Override
                     public void run() {
 
-                        XYChart.Series seriesRem = new XYChart.Series();
+                        seriesRem = new XYChart.Series();
                         seriesRem.setName("REM");
 
-                        XYChart.Series seriesN1 = new XYChart.Series();
+                        seriesN1 = new XYChart.Series();
                         seriesN1.setName("N1");
 
-                        XYChart.Series seriesN2 = new XYChart.Series();
+                        seriesN2 = new XYChart.Series();
                         seriesN2.setName("N2");
 
-                        XYChart.Series seriesN3 = new XYChart.Series();
+                        seriesN3 = new XYChart.Series();
                         seriesN3.setName("N3");
 
-                        XYChart.Series seriesWake = new XYChart.Series();
+                        seriesWake = new XYChart.Series();
                         seriesWake.setName("Awake");
 
-                        XYChart.Series seriesUnclassified = new XYChart.Series();
+                        seriesUnclassified = new XYChart.Series();
                         seriesUnclassified.setName("Unclassified");
-
-                        plotItemsMap = new TIntIntHashMap();
-
-                        for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
-
-                            XYChart.Data dataItem;
-                            switch (featureExtractionModel.getFeatureClassLabel(i)) {
-                                case 1:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesWake.getData().add(dataItem);
-                                    break;
-                                case 2:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesN1.getData().add(new XYChart.Data(output[i][0], output[i][1]));
-                                    break;
-                                case 3:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesN2.getData().add(new XYChart.Data(output[i][0], output[i][1]));
-                                    break;
-                                case 4:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesN3.getData().add(new XYChart.Data(output[i][0], output[i][1]));
-                                    break;
-                                case 5:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesRem.getData().add(new XYChart.Data(output[i][0], output[i][1]));
-                                    break;
-                                case 0:
-                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
-                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
-                                    seriesUnclassified.getData().add(dataItem);
-                                    break;
-                            }
-                        }
 
                         scatterChart.getData().add(seriesRem);
                         scatterChart.getData().add(seriesN1);
@@ -192,25 +173,66 @@ public class FXScatterPlot implements Initializable {
                         scatterChart.getData().add(seriesN3);
                         scatterChart.getData().add(seriesWake);
                         scatterChart.getData().add(seriesUnclassified);
-                                           
-                        
 
-                        final InnerShadow ds = new InnerShadow(20, Color.YELLOW);
+                        plotItemsMap = HashBiMap.create();
+
+                        for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
+
+                            XYChart.Data dataItem;
+                            switch (featureExtractionModel.getFeatureClassLabel(i)) {
+                                case 1:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesWake.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                                case 2:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesN1.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                                case 3:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesN2.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                                case 4:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesN3.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                                case 5:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesRem.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                                case 0:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    seriesUnclassified.getData().add(dataItem);
+                                    plotItemsMap.put(dataItem.getNode(), i);
+                                    break;
+                            }
+
+                        }
+
+                        //this is a hack, because JavaFX won't update the legend otherwise
+                        scatterChart.getData().add(new XYChart.Series());
+                        scatterChart.getData().remove(6);
+                        
+                        nodeToXYDataMap = new HashMap();
 
                         for (XYChart.Series<Number, Number> series : scatterChart.getData()) {
                             for (XYChart.Data<Number, Number> d : series.getData()) {
+                                nodeToXYDataMap.put(d.getNode(), d);
+
                                 d.getNode().opacityProperty().set(0.5);
-                                BlendMode bm = d.getNode().blendModeProperty().get();
-                                
-                                final double[] hash = new double[]{d.getXValue().doubleValue(),
-                                    d.getYValue().doubleValue()};
+                                bm = d.getNode().blendModeProperty().get();
 
                                 d.getNode().setOnMouseClicked(new EventHandler<MouseEvent>() {
 
                                     @Override
                                     public void handle(MouseEvent event) {
                                         appController.goToEpoch(plotItemsMap
-                                                .get(Arrays.hashCode(hash))
+                                                .get(d.getNode())
                                         );
                                         d.getNode().toBack();
                                     }
@@ -239,16 +261,18 @@ public class FXScatterPlot implements Initializable {
                                 });
                             }
                         }
-                        scatterChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+                        scatterChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
                             @Override
                             public void handle(KeyEvent event) {
                                 appController.keyAction(event);
                             }
-                           
+
                         });
-                        
+
                         scatterChart.requestFocus();
+
                     }
 
                 });
@@ -274,4 +298,56 @@ public class FXScatterPlot implements Initializable {
         stage.toFront();
     }
 
+    public void updateScatterPlot() {
+        int currentEpoch = appController.getCurrentEpoch();
+
+        Node node = plotItemsMap.inverse().get(currentEpoch);
+        XYChart.Data xyData = nodeToXYDataMap.get(node);
+
+        seriesN1.getData().remove(xyData);
+        seriesN2.getData().remove(xyData);
+        seriesN3.getData().remove(xyData);
+        seriesRem.getData().remove(xyData);
+        seriesUnclassified.getData().remove(xyData);
+        seriesWake.getData().remove(xyData);
+
+        int label = featureExtractionModel.getFeatureClassLabel(currentEpoch);
+        switch (label) {
+            case 1:
+                seriesWake.getData().add(xyData);
+                break;
+            case 2:
+                seriesN1.getData().add(xyData);
+                break;
+            case 3:
+                seriesN2.getData().add(xyData);
+                break;
+            case 4:
+                seriesN3.getData().add(xyData);
+                break;
+            case 5:
+                seriesRem.getData().add(xyData);
+                break;
+            case 0:
+                seriesUnclassified.getData().add(xyData);
+                break;
+        }
+
+    }
+
+    public void changeCurrentEpochMarker() {
+        int currentEpoch = appController.getCurrentEpoch();
+
+        Node node = plotItemsMap.inverse().get(currentEpoch);
+        node.setEffect(ds);
+        node.setOpacity(1.);
+        node.blendModeProperty().set(BlendMode.SRC_OVER);
+
+        node = plotItemsMap.inverse().get(lastEpoch);
+        node.setEffect(null);
+        node.setOpacity(0.5);
+        node.blendModeProperty().set(bm);
+
+        lastEpoch = currentEpoch;
+    }
 }
