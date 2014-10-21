@@ -16,11 +16,7 @@
   <bottom>
     <ToolBar fx:id="statusBar" focusTraversable="false" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
       <items>
-            <HBox prefWidth="200.0">
-               <children>
-          <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="Epoch 1" />
-               </children>
-            </HBox>
+            <HBox prefWidth="200.0" />
             <HBox prefWidth="200.0">
                <children>
           <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-complex: 0.0%" />
@@ -130,12 +126,12 @@
               </padding>
             </HBox>
             <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="1" />
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="62.0">
+            <HBox alignment="CENTER" prefHeight="25.0">
               <padding>
                 <Insets left="6.0" />
               </padding>
                      <children>
-                        <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" text="classify" />
+                <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="/" />
                      </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
@@ -143,7 +139,7 @@
                 <Insets left="6.0" />
               </padding>
                      <children>
-                        <Button fx:id="visualizeButton" focusTraversable="false" mnemonicParsing="false" onAction="#visualizeButtonAction" text="visualize" />
+                        <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" text="classify" />
                      </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
@@ -151,9 +147,10 @@
                 <Insets left="6.0" />
               </padding>
                      <children>
-                        <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
+                        <Button fx:id="visualizeButton" focusTraversable="false" mnemonicParsing="false" onAction="#visualizeButtonAction" text="visualize" />
                      </children>
             </HBox>
+                  <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
           </items>
         </ToolBar>
       </children>
