@@ -20,11 +20,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -191,12 +192,16 @@ public class FXScatterPlot implements Initializable {
                         scatterChart.getData().add(seriesN3);
                         scatterChart.getData().add(seriesWake);
                         scatterChart.getData().add(seriesUnclassified);
+                                           
+                        
 
-                        final InnerShadow ds = new InnerShadow(5, Color.YELLOW);
+                        final InnerShadow ds = new InnerShadow(20, Color.YELLOW);
 
                         for (XYChart.Series<Number, Number> series : scatterChart.getData()) {
                             for (XYChart.Data<Number, Number> d : series.getData()) {
-
+                                d.getNode().opacityProperty().set(0.5);
+                                BlendMode bm = d.getNode().blendModeProperty().get();
+                                
                                 final double[] hash = new double[]{d.getXValue().doubleValue(),
                                     d.getYValue().doubleValue()};
 
@@ -207,6 +212,7 @@ public class FXScatterPlot implements Initializable {
                                         appController.goToEpoch(plotItemsMap
                                                 .get(Arrays.hashCode(hash))
                                         );
+                                        d.getNode().toBack();
                                     }
                                 });
 
@@ -216,6 +222,8 @@ public class FXScatterPlot implements Initializable {
                                     public void handle(MouseEvent arg0) {
                                         d.getNode().setEffect(ds);
                                         d.getNode().setCursor(Cursor.HAND);
+                                        d.getNode().setOpacity(1.);
+                                        d.getNode().blendModeProperty().set(BlendMode.SRC_OVER);
                                     }
                                 });
 
@@ -225,6 +233,8 @@ public class FXScatterPlot implements Initializable {
                                     public void handle(MouseEvent arg0) {
                                         d.getNode().setEffect(null);
                                         d.getNode().setCursor(Cursor.DEFAULT);
+                                        d.getNode().setOpacity(0.5);
+                                        d.getNode().blendModeProperty().set(bm);
                                     }
                                 });
                             }
