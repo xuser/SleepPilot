@@ -7,6 +7,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
@@ -118,15 +119,13 @@
             <ToggleButton fx:id="s2Button" focusTraversable="false" mnemonicParsing="false" onAction="#s2ButtonOnAction" styleClass="toolBarButtons" text="N2" />
             <ToggleButton id="s3Button1" fx:id="s3Button" focusTraversable="false" mnemonicParsing="false" onAction="#s3ButtonOnAction" styleClass="toolBarButtons" text="N3" />
             <ToggleButton id="remButton1" fx:id="remButton" focusTraversable="false" mnemonicParsing="false" onAction="#remButtonOnAction" selected="false" styleClass="toolBarButtons" text="REM" />
-            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <HBox prefHeight="25.0" prefWidth="4.0" />
             <ToggleButton id="arrousalButton" fx:id="artefactButton" focusTraversable="false" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
             <ToggleButton id="arrousalButton1" fx:id="arrousalButton" focusTraversable="false" mnemonicParsing="false" onAction="#arrousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
             <ToggleButton id="arrousalButton1" fx:id="stimulationButton" focusTraversable="false" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="S" />
-            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <HBox prefHeight="25.0" prefWidth="3.999900000002526" />
             <Button fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
-            <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <ToggleButton fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="75µV bars" />
-            <ToggleButton fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="K-complex ruler" />
+            <HBox prefHeight="25.0" prefWidth="4.0" />
             <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="1" />
             <HBox alignment="CENTER" prefHeight="25.0">
               <children>
@@ -136,23 +135,52 @@
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="77.0">
-              <children>
-                <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" prefWidth="69.00009999999747" styleClass="toolBarButtons" text="Classify" />
-              </children>
-              <padding>
-                <Insets left="6.0" />
-              </padding>
-            </HBox>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="77.0">
-              <children>
-                <Button fx:id="visualizeButton" focusTraversable="false" mnemonicParsing="false" onAction="#visualizeButtonAction" styleClass="toolBarButtons" text="Visualize" />
-              </children>
-              <padding>
-                <Insets left="6.0" />
-              </padding>
-            </HBox>
-            <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" styleClass="toolBarButtons" text="Configure Channels" />
+            <HBox prefHeight="25.0" prefWidth="49.0" />
+            <ToggleButton fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="">
+              <graphic>
+                <ImageView fitHeight="15.0" fitWidth="19.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/ruler.png" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="">
+              <graphic>
+                <ImageView fitHeight="15.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/bars.png" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </ToggleButton>
+            <Button fx:id="classifyButton" focusTraversable="false" graphicTextGap="6.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" prefWidth="88.0" styleClass="toolBarButtons" text="Classify">
+              <graphic>
+                <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/classify.png" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </Button>
+            <Button fx:id="visualizeButton" focusTraversable="false" graphicTextGap="6.0" mnemonicParsing="false" onAction="#visualizeButtonAction" prefWidth="108.0" styleClass="toolBarButtons" text="Visualize">
+              <graphic>
+                <ImageView fitHeight="15.0" fitWidth="36.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/visual.png" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </Button>
+            <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" graphicTextGap="6.0" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="26.0" prefWidth="99.0" styleClass="toolBarButtons" text="Channels">
+              <graphic>
+                <ImageView fitHeight="15.0" fitWidth="19.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/configure.png" />
+                  </image>
+                </ImageView>
+              </graphic>
+            </Button>
           </items>
         </ToolBar>
       </children>
