@@ -12,31 +12,30 @@
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <bottom>
     <ToolBar fx:id="statusBar" focusTraversable="false" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
       <items>
-            <HBox prefWidth="200.0" />
-            <HBox prefWidth="200.0">
-               <children>
-          <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-complex: 0.0%" />
-               </children>
-            </HBox>
-            <HBox>
-               <children>
-          <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" />
-               </children>
-            </HBox>
+        <HBox prefWidth="200.0">
+          <children>
+            <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-complex: 0.0%" />
+          </children>
+        </HBox>
+        <HBox>
+          <children>
+            <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" />
+          </children>
+        </HBox>
       </items>
     </ToolBar>
   </bottom>
   <center>
     <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0">
       <children>
-            <Pane fx:id="overlay4" prefHeight="200.0" prefWidth="200.0" />
+        <Pane fx:id="overlay4" prefHeight="200.0" prefWidth="200.0" />
         <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" visible="true">
           <xAxis>
-            <NumberAxis animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" fx:id="xAxis" />
+            <NumberAxis fx:id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" />
           </xAxis>
           <yAxis>
             <NumberAxis fx:id="yAxis" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
@@ -117,40 +116,32 @@
             <Separator orientation="VERTICAL" prefHeight="200.0" />
             <ToggleButton fx:id="help1" focusTraversable="false" mnemonicParsing="false" onAction="#help1OnAction" styleClass="toolBarButtons" text="75µV bars" />
             <ToggleButton fx:id="kComplex" focusTraversable="false" mnemonicParsing="false" onAction="#kComplexOnAction" styleClass="toolBarButtons" text="K-complex ruler" />
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
+            <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="1" />
+            <HBox alignment="CENTER" prefHeight="25.0">
               <children>
-                <Label styleClass="textLabel" text="Goto:" />
+                <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="/" />
               </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
             </HBox>
-            <TextField fx:id="toolBarGoto" focusTraversable="false" prefWidth="38.0" text="1" />
-            <HBox alignment="CENTER" prefHeight="25.0">
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="77.0">
+              <children>
+                <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" prefWidth="69.00009999999747" styleClass="toolBarButtons" text="Classify" />
+              </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
-                     <children>
-                <Label fx:id="statusBarLabel1" focusTraversable="false" styleClass="textLabel" text="/" />
-                     </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="49.0">
+            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="77.0">
+              <children>
+                <Button fx:id="visualizeButton" focusTraversable="false" mnemonicParsing="false" onAction="#visualizeButtonAction" styleClass="toolBarButtons" text="Visualize" />
+              </children>
               <padding>
                 <Insets left="6.0" />
               </padding>
-                     <children>
-                        <Button fx:id="classifyButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" text="classify" />
-                     </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="25.0" prefWidth="75.0">
-              <padding>
-                <Insets left="6.0" />
-              </padding>
-                     <children>
-                        <Button fx:id="visualizeButton" focusTraversable="false" mnemonicParsing="false" onAction="#visualizeButtonAction" text="visualize" />
-                     </children>
-            </HBox>
-                  <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" text="Channels..." />
+            <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="22.0" prefWidth="104.0" styleClass="toolBarButtons" text="Configure Channels" />
           </items>
         </ToolBar>
       </children>
