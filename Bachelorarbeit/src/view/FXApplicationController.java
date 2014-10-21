@@ -181,6 +181,7 @@ public class FXApplicationController implements Initializable {
     private StackPane stackPane;
     @FXML
     private HBox statusBarHBox;
+   
 
     @FXML
     private MenuItem showAdtVisualization;
@@ -383,7 +384,10 @@ public class FXApplicationController implements Initializable {
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
+            	
+            	double width = (double) newSceneWidth;
+            	statusBarGrid.setPrefWidth(width - 15);		// -15 for additional padding
+            	
                 growCoefWidth = overlay3.getWidth() / oldWidth;
                 oldWidth = overlay3.getWidth();
 
@@ -400,7 +404,7 @@ public class FXApplicationController implements Initializable {
         primaryStage.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
+            	
                 growCoefHeight = overlay3.getHeight() / oldHeight;
                 oldHeight = overlay3.getHeight();
 

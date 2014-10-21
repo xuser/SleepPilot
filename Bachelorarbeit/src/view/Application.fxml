@@ -16,16 +16,27 @@
   <bottom>
     <ToolBar fx:id="statusBar" focusTraversable="false" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
       <items>
-        <HBox prefWidth="200.0">
+        <GridPane fx:id="statusBarGrid" prefHeight="13.0" prefWidth="-1.0">
           <children>
-            <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-complex: 0.0%" />
+            <HBox GridPane.columnIndex="0" GridPane.rowIndex="0">
+              <children>
+                <Label fx:id="kComplexLabel" focusTraversable="false" styleClass="textLabel" text="K-complex: 0.0%" />
+              </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" prefWidth="-1.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+              <children>
+                <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" />
+              </children>
+            </HBox>
           </children>
-        </HBox>
-        <HBox>
-          <children>
-            <Label fx:id="statusBarLabel2" focusTraversable="false" styleClass="textLabel" text="Label" />
-          </children>
-        </HBox>
+          <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          </columnConstraints>
+          <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          </rowConstraints>
+        </GridPane>
       </items>
     </ToolBar>
   </bottom>
