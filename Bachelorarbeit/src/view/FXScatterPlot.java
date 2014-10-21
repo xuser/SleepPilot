@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.css.converters.ShapeConverter;
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
 
-import controller.MainController;
+import gnu.trove.map.hash.TIntIntHashMap;
+import java.util.Arrays;
 import tsne.TSNE;
 import model.FXViewModel;
 import model.FeatureExtractionModel;
@@ -19,13 +19,17 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.InnerShadow;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.SVGPath;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import tools.Util;
@@ -38,6 +42,7 @@ public class FXScatterPlot implements Initializable {
     private FeatureExtractionController featureExtractionController;
     private RawDataModel dataPointsModel;
     private DataReaderController dataReaderController;
+    private TIntIntHashMap plotItemsMap;
 
     public Stage stage;
 
@@ -52,8 +57,7 @@ public class FXScatterPlot implements Initializable {
         this.viewModel = viewModel;
         this.dataPointsModel = dataPointsModel;
         this.dataReaderController = dataReaderController;
-
-        appController = viewModel.getAppController();
+        this.appController = viewModel.getAppController();
 
         stage = new Stage();
         BorderPane addGrid = new BorderPane();
@@ -142,28 +146,41 @@ public class FXScatterPlot implements Initializable {
                         XYChart.Series seriesUnclassified = new XYChart.Series();
                         seriesUnclassified.setName("Unclassified");
 
+                        plotItemsMap = new TIntIntHashMap();
+
                         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
 
-                            System.out.println(featureExtractionModel.getFeatureClassLabel(i));
-                            
+                            XYChart.Data dataItem;
                             switch (featureExtractionModel.getFeatureClassLabel(i)) {
                                 case 1:
-                                    seriesWake.getData().add(new XYChart.Data(output[i][0], output[i][1]));
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
+                                    seriesWake.getData().add(dataItem);
                                     break;
                                 case 2:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
                                     seriesN1.getData().add(new XYChart.Data(output[i][0], output[i][1]));
                                     break;
                                 case 3:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
                                     seriesN2.getData().add(new XYChart.Data(output[i][0], output[i][1]));
                                     break;
                                 case 4:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
                                     seriesN3.getData().add(new XYChart.Data(output[i][0], output[i][1]));
                                     break;
                                 case 5:
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
                                     seriesRem.getData().add(new XYChart.Data(output[i][0], output[i][1]));
                                     break;
                                 case 0:
-                                    seriesUnclassified.getData().add(new XYChart.Data(output[i][0], output[i][1]));
+                                    dataItem = new XYChart.Data(output[i][0], output[i][1]);
+                                    plotItemsMap.put(Arrays.hashCode(new double[]{output[i][0], output[i][1]}), i);
+                                    seriesUnclassified.getData().add(dataItem);
                                     break;
                             }
                         }
@@ -175,7 +192,55 @@ public class FXScatterPlot implements Initializable {
                         scatterChart.getData().add(seriesWake);
                         scatterChart.getData().add(seriesUnclassified);
 
+                        final InnerShadow ds = new InnerShadow(5, Color.YELLOW);
+
+                        for (XYChart.Series<Number, Number> series : scatterChart.getData()) {
+                            for (XYChart.Data<Number, Number> d : series.getData()) {
+
+                                final double[] hash = new double[]{d.getXValue().doubleValue(),
+                                    d.getYValue().doubleValue()};
+
+                                d.getNode().setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+                                    @Override
+                                    public void handle(MouseEvent event) {
+                                        appController.goToEpoch(plotItemsMap
+                                                .get(Arrays.hashCode(hash))
+                                        );
+                                    }
+                                });
+
+                                d.getNode().setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+                                    @Override
+                                    public void handle(MouseEvent arg0) {
+                                        d.getNode().setEffect(ds);
+                                        d.getNode().setCursor(Cursor.HAND);
+                                    }
+                                });
+
+                                d.getNode().setOnMouseExited(new EventHandler<MouseEvent>() {
+
+                                    @Override
+                                    public void handle(MouseEvent arg0) {
+                                        d.getNode().setEffect(null);
+                                        d.getNode().setCursor(Cursor.DEFAULT);
+                                    }
+                                });
+                            }
+                        }
+                        scatterChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>(){
+
+                            @Override
+                            public void handle(KeyEvent event) {
+                                appController.keyAction(event);
+                            }
+                           
+                        });
+                        
+                        scatterChart.requestFocus();
                     }
+
                 });
 
                 Platform.runLater(new Runnable() {

@@ -11,14 +11,6 @@
   <center>
     <StackPane prefHeight="150.0" prefWidth="200.0">
       <children>
-        <ScatterChart fx:id="scatterChart" animated="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="true" verticalGridLinesVisible="false" verticalZeroLineVisible="false">
-          <xAxis>
-            <NumberAxis animated="false" autoRanging="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
-          </xAxis>
-          <yAxis>
-            <NumberAxis autoRanging="true" forceZeroInRange="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
-          </yAxis>
-        </ScatterChart>
         <GridPane>
           <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
@@ -34,6 +26,14 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           </rowConstraints>
         </GridPane>
+        <ScatterChart fx:id="scatterChart" animated="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="true" verticalGridLinesVisible="false" verticalZeroLineVisible="false">
+          <xAxis>
+            <NumberAxis animated="false" autoRanging="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
+          </xAxis>
+          <yAxis>
+            <NumberAxis autoRanging="true" forceZeroInRange="true" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
+          </yAxis>
+        </ScatterChart>
       </children>
     </StackPane>
   </center>

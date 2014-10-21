@@ -116,6 +116,9 @@ public class FXHypnogrammController implements Initializable {
                     stage.hide();
                     viewModel.setHypnogrammActive(false);
                 }
+                
+                appController
+                        .keyAction(ke);
             }
         });
 

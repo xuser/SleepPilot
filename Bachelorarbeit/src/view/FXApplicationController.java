@@ -429,136 +429,7 @@ public class FXApplicationController implements Initializable {
 
             @Override
             public void handle(KeyEvent ke) {
-                if (ke.getCode() == KeyCode.RIGHT) {
-
-                    if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
-
-                        overlay3.getChildren().clear();
-                        lines.clear();
-
-                        currentEpoch = currentEpoch + 1;
-
-                        loadEpoch(currentEpoch);
-                        updateEpoch();
-                        computeKCfeatures();
-
-                        toolBarGoto.setText((currentEpoch + 1) + "");
-                        statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
-                        updateStage();
-                        updateProbabilities();
-
-                        if (viewModel.isHypnogrammActive()) {
-                            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-                        }
-
-                    }
-
-                }
-
-                if (ke.getCode() == KeyCode.LEFT) {
-                    if (currentEpoch > 0) {
-
-                        overlay3.getChildren().clear();
-                        lines.clear();
-
-                        currentEpoch = currentEpoch - 1;
-
-                        loadEpoch(currentEpoch);
-                        updateEpoch();
-                        computeKCfeatures();
-
-                        toolBarGoto.setText((currentEpoch + 1) + "");
-                        statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
-                        updateStage();
-                        updateProbabilities();
-
-                        if (viewModel.isHypnogrammActive()) {
-                            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-                        }
-                    }
-                }
-
-                if (ke.getCode() == KeyCode.H) {
-                    hypnogramAction();
-                }
-
-                if (ke.getCode() == KeyCode.E) {
-                    if (viewModel.isEvaluationWindowActive() == false) {
-                        evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
-                        viewModel.setEvaluationWindowActive(true);
-                    } else {
-                        evaluationWindow.bringToFront();
-                    }
-                }
-
-                if (ke.getCode() == KeyCode.L) {
-                    help1OnAction();
-                }
-
-                if (ke.getCode() == KeyCode.K) {
-                    kComplexOnAction();
-
-                }
-
-                if (ke.getCode() == KeyCode.UP) {
-                    refreshZoom(+1);
-                }
-
-                if (ke.getCode() == KeyCode.DOWN) {
-                    refreshZoom(-1);
-                }
-
-                if (ke.getCode() == KeyCode.W) {
-                    awakeButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.R) {
-                    remButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.DIGIT1) {
-                    s1ButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.DIGIT2) {
-                    s2ButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.DIGIT3) {
-                    s3ButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.A) {
-                    artefactButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.M) {
-                    arrousalButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.S) {
-                    stimulationButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.C) {
-                    clearButtonOnAction();
-                }
-
-                if (ke.getCode() == KeyCode.PAGE_DOWN) {
-                    goToEpoch(currentEpoch - 10);
-                }
-
-                if (ke.getCode() == KeyCode.PAGE_UP) {
-                    goToEpoch(currentEpoch + 10);
-                }
-
-                if (ke.getCode() == KeyCode.END) {
-                    goToEpoch(dataPointsModel.getNumberOf30sEpochs() - 1);
-                }
-
-                if (ke.getCode() == KeyCode.HOME) {
-                    goToEpoch(0);
-                }
+                keyAction(ke);
             }
 
         });
@@ -1768,5 +1639,138 @@ public class FXApplicationController implements Initializable {
             viewModel.setHypnogrammActive(true);
             hypnogramm.reloadHypnogramm();
         }
+    }
+    
+    public void keyAction(KeyEvent ke){
+        if (ke.getCode() == KeyCode.RIGHT) {
+
+                    if (currentEpoch < (dataPointsModel.getNumberOf30sEpochs() - 1)) {
+
+                        overlay3.getChildren().clear();
+                        lines.clear();
+
+                        currentEpoch = currentEpoch + 1;
+
+                        loadEpoch(currentEpoch);
+                        updateEpoch();
+                        computeKCfeatures();
+
+                        toolBarGoto.setText((currentEpoch + 1) + "");
+                        statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
+                        updateStage();
+                        updateProbabilities();
+
+                        if (viewModel.isHypnogrammActive()) {
+                            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+                        }
+
+                    }
+
+                }
+
+                if (ke.getCode() == KeyCode.LEFT) {
+                    if (currentEpoch > 0) {
+
+                        overlay3.getChildren().clear();
+                        lines.clear();
+
+                        currentEpoch = currentEpoch - 1;
+
+                        loadEpoch(currentEpoch);
+                        updateEpoch();
+                        computeKCfeatures();
+
+                        toolBarGoto.setText((currentEpoch + 1) + "");
+                        statusBarLabel1.setText("Epoch " + (currentEpoch + 1) + "/" + (dataPointsModel.getNumberOf30sEpochs()));
+                        updateStage();
+                        updateProbabilities();
+
+                        if (viewModel.isHypnogrammActive()) {
+                            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+                        }
+                    }
+                }
+
+                if (ke.getCode() == KeyCode.H) {
+                    hypnogramAction();
+                }
+
+                if (ke.getCode() == KeyCode.E) {
+                    if (viewModel.isEvaluationWindowActive() == false) {
+                        evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
+                        viewModel.setEvaluationWindowActive(true);
+                    } else {
+                        evaluationWindow.bringToFront();
+                    }
+                }
+
+                if (ke.getCode() == KeyCode.L) {
+                    help1OnAction();
+                }
+
+                if (ke.getCode() == KeyCode.K) {
+                    kComplexOnAction();
+
+                }
+
+                if (ke.getCode() == KeyCode.UP) {
+                    refreshZoom(+1);
+                }
+
+                if (ke.getCode() == KeyCode.DOWN) {
+                    refreshZoom(-1);
+                }
+
+                if (ke.getCode() == KeyCode.W) {
+                    awakeButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.R) {
+                    remButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.DIGIT1) {
+                    s1ButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.DIGIT2) {
+                    s2ButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.DIGIT3) {
+                    s3ButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.A) {
+                    artefactButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.M) {
+                    arrousalButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.S) {
+                    stimulationButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.C) {
+                    clearButtonOnAction();
+                }
+
+                if (ke.getCode() == KeyCode.PAGE_DOWN) {
+                    goToEpoch(currentEpoch - 10);
+                }
+
+                if (ke.getCode() == KeyCode.PAGE_UP) {
+                    goToEpoch(currentEpoch + 10);
+                }
+
+                if (ke.getCode() == KeyCode.END) {
+                    goToEpoch(dataPointsModel.getNumberOf30sEpochs() - 1);
+                }
+
+                if (ke.getCode() == KeyCode.HOME) {
+                    goToEpoch(0);
+                }
     }
 }
