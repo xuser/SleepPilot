@@ -36,7 +36,7 @@ public class FeatureExtractionController {
 
         this.dataPointsModel = dataPointsModel;
         this.featureExtractionModel = featureExtractionModel;
-        
+
         FilterCoefficients coefficients = null;
         try {
             double fstop = 0.01;
@@ -52,15 +52,32 @@ public class FeatureExtractionController {
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        
+
         featureExtractionModel.setHighpassCoefficients(coefficients);
+
+        FilterCoefficients coefficients2 = null;
+        try {
+            double fstop = 7.;
+            double fpass = 4.;
+            double fs = 100;
+            coefficients2 = IIRDesigner.designDigitalFilter(
+                    ApproximationFunctionType.CHEBYSHEV2,
+                    FilterType.LOWPASS,
+                    new double[]{fpass},
+                    new double[]{fstop},
+                    1.0, 40.0, fs);
+
+        } catch (BadFilterParametersException ex) {
+            ex.printStackTrace();
+        }
+
+        featureExtractionModel.setLowpassCoefficients(coefficients2);
 
     }
 
     public void start() {
-        
+
         double[] data = dataPointsModel.getFeatureChannelData();
-        
 
         List<float[]> featureList = IntStream.range(0, dataPointsModel.getNumberOf30sEpochs())
                 .parallel()
@@ -94,10 +111,9 @@ public class FeatureExtractionController {
         return features.toArray();
     }
 
-    
     public static double[] assembleData(ArrayList<TDoubleArrayList> epochedDataList, int capacity) {
         //assambled data of all epochs into one array
-         
+
         TDoubleArrayList dataList = new TDoubleArrayList(capacity);
         for (TDoubleArrayList list : epochedDataList) {
             dataList.addAll(list);
@@ -105,7 +121,7 @@ public class FeatureExtractionController {
 
         return dataList.toArray();
     }
-    
+
 }
 
 //        while (supportVectorMaschineThreadStartedFlag == false) {

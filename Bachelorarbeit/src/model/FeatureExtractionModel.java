@@ -963,6 +963,14 @@ public class FeatureExtractionModel implements Serializable {
     public FilterCoefficients getHighpassCoefficients() {
         return highpassCoefficients;
     }
+
+    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
+        this.lowpassCoefficients = lowpassCoefficients;
+    }
+
+    public FilterCoefficients getLowpassCoefficients() {
+        return lowpassCoefficients;
+    }
     
     
 

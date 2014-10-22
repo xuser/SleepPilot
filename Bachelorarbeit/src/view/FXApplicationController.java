@@ -140,6 +140,7 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private ToggleButton help1;
+
     private boolean help1Flag = false;
 
     @FXML
@@ -151,6 +152,13 @@ public class FXApplicationController implements Initializable {
     private Button classifyButton;
     @FXML
     private Button visualizeButton;
+
+    @FXML
+    private ToggleButton kcMarkersButton;
+    @FXML
+    private ToggleButton dcRemoveButton;
+    @FXML
+    private ToggleButton highpassButton;
 
     private boolean kComplexFlag = false;
 
@@ -181,7 +189,6 @@ public class FXApplicationController implements Initializable {
     private StackPane stackPane;
     @FXML
     private HBox statusBarHBox;
-   
 
     @FXML
     private MenuItem showAdtVisualization;
@@ -274,7 +281,10 @@ public class FXApplicationController implements Initializable {
 
         loadEpoch(currentEpoch);
         showEpoch();
-        computeKCfeatures();
+
+        if (viewModel.isKcMarkersActive()) {
+            computeKCfeatures();
+        }
 
         showLabelsForEpoch(returnActiveChannels());
 
@@ -384,10 +394,10 @@ public class FXApplicationController implements Initializable {
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-            	
-            	double width = (double) newSceneWidth;
-            	statusBarGrid.setPrefWidth(width - 15);		// -15 for additional padding
-            	
+
+                double width = (double) newSceneWidth;
+                statusBarGrid.setPrefWidth(width - 15);		// -15 for additional padding
+
                 growCoefWidth = overlay3.getWidth() / oldWidth;
                 oldWidth = overlay3.getWidth();
 
@@ -404,7 +414,7 @@ public class FXApplicationController implements Initializable {
         primaryStage.heightProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-            	
+
                 growCoefHeight = overlay3.getHeight() / oldHeight;
                 oldHeight = overlay3.getHeight();
 
@@ -468,7 +478,12 @@ public class FXApplicationController implements Initializable {
 
                         loadEpoch(currentEpoch);
                         updateEpoch();
-                        computeKCfeatures();
+
+                        if (viewModel.isKcMarkersActive()) {
+                            computeKCfeatures();
+                        } else {
+                            overlay4.getChildren().clear();
+                        }
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -707,7 +722,11 @@ public class FXApplicationController implements Initializable {
 
         loadEpoch(currentEpoch);
         updateEpoch();
-        computeKCfeatures();
+        if (viewModel.isKcMarkersActive()) {
+            computeKCfeatures();
+        } else {
+            overlay4.getChildren().clear();
+        }
 
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -747,7 +766,14 @@ public class FXApplicationController implements Initializable {
             thisEpoch.add(i, epoch.toArray());
         }
 
-        filterEpoch();
+        if (viewModel.isFiltersActive() == true) {
+            filterEpoch();
+        }
+
+        if ((viewModel.isDcRemoveActive() == true)&&(viewModel.isFiltersActive()== false)) {
+            removeDcOffset();
+        }
+
     }
 
     final public void filterEpoch() {
@@ -755,6 +781,13 @@ public class FXApplicationController implements Initializable {
         for (int i = 0; i < activeChannelNumbers.size(); i++) {
             Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayHighpassCoefficients());
             Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayLowpasCoefficients());
+        }
+    }
+
+    final public void removeDcOffset() {
+        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+            Signal.removeDC(thisEpoch.get(i));
         }
     }
 
@@ -805,8 +838,6 @@ public class FXApplicationController implements Initializable {
 
             lineChart.getData().add(series);
         }
-
-        computeKCfeatures();
 
         showLabelsForEpoch(returnActiveChannels());
         lineChart.requestFocus();
@@ -863,7 +894,7 @@ public class FXApplicationController implements Initializable {
         for (Integer activeChannelNumber : activeChannelNumbers) {
             epoch2 = thisEpoch.get(activeChannelNumber).clone();
 
-            Signal.lowpass(epoch2, 4., 7., 100);
+            Signal.filtfilt(epoch2, featureExtractionModel.getLowpassCoefficients());
             KCdetection.KC[] kcs = getKCs(epoch2);
             kcs = filterKCs(kcs, 20, 100, 0, 65);
             kcList.addAll(Arrays.asList(kcs));
@@ -1644,6 +1675,15 @@ public class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.HOME) {
             goToEpoch(0);
         }
+        if (ke.getCode() == KeyCode.F12) {
+            kcMarkersButtonAction();
+        }
+        if (ke.getCode() == KeyCode.F11) {
+            dcRemoveButtonAction();
+        }
+        if (ke.getCode() == KeyCode.F10) {
+            filterButtonAction();
+        }
     }
 
     private void updateWindows() {
@@ -1664,5 +1704,52 @@ public class FXApplicationController implements Initializable {
         }
 
         lineChart.requestFocus();
+    }
+
+    @FXML
+    private void dcRemoveButtonAction() {
+        if (viewModel.isDcRemoveActive() == true) {
+//            filtersButton.setSelected(false);
+            viewModel.setDcRemoveActive(false);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+
+        } else {
+//            filtersButton.setSelected(true);
+            viewModel.setDcRemoveActive(true);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+        }
+    }
+
+    @FXML
+    private void kcMarkersButtonAction() {
+        if (viewModel.isKcMarkersActive() == true) {
+//            kcMarkersButton.setSelected(false);
+            viewModel.setKcMarkersActive(false);
+            overlay4.getChildren().clear();
+        } else {
+//            kcMarkersButton.setSelected(true);
+            viewModel.setKcMarkersActive(true);
+            computeKCfeatures();
+        }
+
+    }
+
+    @FXML
+    private void filterButtonAction() {
+        if (viewModel.isFiltersActive() == true) {
+//            filtersButton.setSelected(false);
+            viewModel.setFiltersActive(false);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+
+        } else {
+//            filtersButton.setSelected(true);
+            viewModel.setFiltersActive(true);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+        }
+
     }
 }

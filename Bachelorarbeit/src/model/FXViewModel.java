@@ -17,6 +17,12 @@ public class FXViewModel {
 
     private boolean electrodeConfigurator = false;
     
+    private boolean kcMarkersActive = true;
+    
+    private boolean filtersActive = true;
+    
+    private boolean dcRemoveActive = true;
+    
     private FilterCoefficients displayHighpassCoefficients;
     
     private FilterCoefficients displayLowpasCoefficients;
@@ -140,7 +146,30 @@ public class FXViewModel {
     public FilterCoefficients getDisplayLowpasCoefficients() {
         return displayLowpasCoefficients;
     }
+
     
-    
+    public void setKcMarkersActive(boolean kcMarkersActive) {
+        this.kcMarkersActive = kcMarkersActive;
+    }
+
+    public boolean isKcMarkersActive() {
+        return kcMarkersActive;
+    }
+
+    public boolean isFiltersActive() {
+        return filtersActive;
+    }
+
+    public void setFiltersActive(boolean filtersActive) {
+        this.filtersActive = filtersActive;
+    }
+
+    public void setDcRemoveActive(boolean dcRemoveActive) {
+        this.dcRemoveActive = dcRemoveActive;
+    }
+
+    public boolean isDcRemoveActive() {
+        return dcRemoveActive;
+    }
 
 }
