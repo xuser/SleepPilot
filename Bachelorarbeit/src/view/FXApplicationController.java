@@ -105,7 +105,8 @@ public class FXApplicationController implements Initializable {
     private int currentEpoch = 0;
     private String[] channelNames;
 
-    private HashMap<String, Double[]> activeChannels = new HashMap();
+    private HashMap<String, Double[]> allChannels = new HashMap();
+    LinkedList<Integer> activeChannels = new LinkedList();
 
     private LinkedList<Line> lines = new LinkedList();
 
@@ -267,14 +268,14 @@ public class FXApplicationController implements Initializable {
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 1.0;
                 channelProp[1] = 1.0;
-                activeChannels.put(channelNames[i], channelProp);
+                allChannels.put(channelNames[i], channelProp);
             } else {
                 //The first value represents wheater the channel is shown
                 //The second value represents the current zoom level
                 Double[] channelProp = new Double[2];
                 channelProp[0] = 0.0;
                 channelProp[1] = 1.0;
-                activeChannels.put(channelNames[i], channelProp);
+                allChannels.put(channelNames[i], channelProp);
             }
 
         }
@@ -282,11 +283,7 @@ public class FXApplicationController implements Initializable {
         loadEpoch(currentEpoch);
         showEpoch();
 
-        if (viewModel.isKcMarkersActive()) {
-            computeKCfeatures();
-        }
-
-        showLabelsForEpoch(returnActiveChannels());
+        showLabelsForEpoch();
 
         checkProp();
 
@@ -351,12 +348,9 @@ public class FXApplicationController implements Initializable {
 
                 if (help1Flag) {
 
-                    LinkedList<Integer> activeChannels = returnActiveChannels();
-
                     double offsetSize = 1. / (activeChannels.size() + 1.);
 
                     double posOnOverlay = mouse.getY();
-                    System.out.println("PosOnOverlay: " + posOnOverlay);
 
                     double zoom = 1.0;
                     for (int i = 0; i < activeChannels.size(); i++) {
@@ -376,8 +370,6 @@ public class FXApplicationController implements Initializable {
                                 && (posOnOverlay > lowerBound)) {
 
                             zoom = getZoomFromChannel(activeChannels.get(i));
-                            System.out.println("Actice Channel: " + activeChannels.get(i));
-                            System.out.println("Actice Zoom:  " + zoom);
                         }
                     }
 
@@ -478,12 +470,6 @@ public class FXApplicationController implements Initializable {
 
                         loadEpoch(currentEpoch);
                         updateEpoch();
-
-                        if (viewModel.isKcMarkersActive()) {
-                            computeKCfeatures();
-                        } else {
-                            overlay4.getChildren().clear();
-                        }
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -648,16 +634,16 @@ public class FXApplicationController implements Initializable {
 
     public LinkedList<Integer> returnActiveChannels() {
 
-        LinkedList<Integer> channels = new LinkedList<Integer>();
+        activeChannels = new LinkedList<Integer>();
 
         for (int i = 0; i < channelNames.length; i++) {
-            Double[] tempProp = activeChannels.get(channelNames[i]);
+            Double[] tempProp = allChannels.get(channelNames[i]);
             if (tempProp[0] == 1.0) {
-                channels.add(i);
+                activeChannels.add(i);
             }
         }
 
-        return channels;
+        return activeChannels;
 
     }
 
@@ -665,7 +651,7 @@ public class FXApplicationController implements Initializable {
 
         String channel = channelNames[channelNumber];
 
-        Double[] tempProp = activeChannels.get(channel);
+        Double[] tempProp = allChannels.get(channel);
         double channelZoom = tempProp[1];
 
         return channelZoom;
@@ -678,16 +664,17 @@ public class FXApplicationController implements Initializable {
         return channel;
     }
 
-    public void showLabelsForEpoch(LinkedList<Integer> activeChannels) {
+    public void showLabelsForEpoch() {
 
         overlay.getChildren().clear();
+
         double offsetSize = 1. / (activeChannels.size() + 1);
 
         for (int i = 0; i < activeChannels.size(); i++) {
 
             double realOffset = (i + 1.) * offsetSize;
 
-            Label label = new Label(getNameFromChannel(activeChannels.get(i)));
+            Label label = new Label(channelNames[activeChannels.get(i)]);
             label.setTextFill(Color.GRAY);
             label.setStyle("-fx-font-family: sans-serif;");
             label.setLayoutX(1);
@@ -722,11 +709,6 @@ public class FXApplicationController implements Initializable {
 
         loadEpoch(currentEpoch);
         updateEpoch();
-        if (viewModel.isKcMarkersActive()) {
-            computeKCfeatures();
-        } else {
-            overlay4.getChildren().clear();
-        }
 
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
@@ -758,55 +740,67 @@ public class FXApplicationController implements Initializable {
     }
 
     final public void loadEpoch(int numberOfEpoch) {
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+        returnActiveChannels();
+        for (Integer activeChannel : activeChannels) {
+            TDoubleArrayList epoch = dataReaderController.read(activeChannel, numberOfEpoch);
+            thisEpoch.add(activeChannel, epoch.toArray());
+        }
 
-        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+        if (dataPointsModel.getSamplingRateConvertedToHertz() != 100) {
+            decimateSignal();
+        }
 
-            TDoubleArrayList epoch = dataReaderController.read(activeChannelNumbers.get(i), numberOfEpoch);
-            thisEpoch.add(i, epoch.toArray());
+        if (viewModel.isKcMarkersActive()) {
+            computeKCfeatures();
+        } else {
+            overlay4.getChildren().clear();
         }
 
         if (viewModel.isFiltersActive() == true) {
             filterEpoch();
         }
 
-        if ((viewModel.isDcRemoveActive() == true)&&(viewModel.isFiltersActive()== false)) {
+        if ((viewModel.isDcRemoveActive() == true) && (viewModel.isFiltersActive() == false)) {
             removeDcOffset();
         }
 
     }
 
     final public void filterEpoch() {
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-        for (int i = 0; i < activeChannelNumbers.size(); i++) {
-            Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayHighpassCoefficients());
-            Signal.filtfilt(thisEpoch.get(i), viewModel.getDisplayLowpasCoefficients());
+        for (Integer activeChannel : activeChannels) {
+            Signal.filtfilt(thisEpoch.get(activeChannel), viewModel.getDisplayHighpassCoefficients());
+            Signal.filtfilt(thisEpoch.get(activeChannel), viewModel.getDisplayLowpasCoefficients());
         }
     }
 
     final public void removeDcOffset() {
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-        for (int i = 0; i < activeChannelNumbers.size(); i++) {
-            Signal.removeDC(thisEpoch.get(i));
+        for (Integer activeChannel : activeChannels) {
+            Signal.removeDC(thisEpoch.get(activeChannel));
+        }
+    }
+
+    final public void decimateSignal() {
+        for (Integer activeChannel : activeChannels) {
+            thisEpoch.set(activeChannel, Signal.resample(thisEpoch.get(activeChannel), (int) dataPointsModel.getSamplingRateConvertedToHertz()));
         }
     }
 
     final public void showEpoch() {
 
+        lineChart.getData().clear();
+
         double[] epoch;
 
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
-
         double offsetSize = 0;
-        if (activeChannelNumbers.size() != 0) {
-            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
+        if (activeChannels.size() != 0) {
+            offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
-        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+        for (int i = 0; i < activeChannels.size(); i++) {
 
-            epoch = thisEpoch.get(i);
+            epoch = thisEpoch.get(activeChannels.get(i));
 
-            double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
+            double zoom = getZoomFromChannel(activeChannels.get(i));
 
             // in local yAxis-coordinates
             double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
@@ -839,7 +833,7 @@ public class FXApplicationController implements Initializable {
             lineChart.getData().add(series);
         }
 
-        showLabelsForEpoch(returnActiveChannels());
+        showLabelsForEpoch();
         lineChart.requestFocus();
 
     }
@@ -847,21 +841,21 @@ public class FXApplicationController implements Initializable {
     public void updateEpoch() {
 
         // works on list of XYChart.series
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+        returnActiveChannels();
 
         double offsetSize = 0;
 
-        if (activeChannelNumbers.size() != 0) {
-            offsetSize = 1. / (activeChannelNumbers.size() + 1.);
+        if (activeChannels.size() != 0) {
+            offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
         double[] epoch = null;
 
-        for (int i = 0; i < activeChannelNumbers.size(); i++) {
+        for (int i = 0; i < activeChannels.size(); i++) {
 
-            epoch = thisEpoch.get(i);
+            epoch = thisEpoch.get(activeChannels.get(i));
 
-            double zoom = getZoomFromChannel(activeChannelNumbers.get(i));
+            double zoom = getZoomFromChannel(activeChannels.get(i));
 
             // in local yAxis-coordinates
             double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
@@ -884,36 +878,56 @@ public class FXApplicationController implements Initializable {
     }
 
     final public void computeKCfeatures() {
-
-        LinkedList<Integer> activeChannelNumbers = returnActiveChannels();
+        overlay4.getChildren()
+                .clear();
 
         Set<Range<Integer>> kcPlotRanges = null;
         ArrayList<KCdetection.KC> kcList = new ArrayList();
         double[] epoch2 = null;
 
-        for (Integer activeChannelNumber : activeChannelNumbers) {
-            epoch2 = thisEpoch.get(activeChannelNumber).clone();
-
+        for (Integer activeChannel : activeChannels) {
+            epoch2 = thisEpoch.get(activeChannel).clone();
             Signal.filtfilt(epoch2, featureExtractionModel.getLowpassCoefficients());
+            Signal.filtfilt(epoch2, viewModel.getDisplayHighpassCoefficients());
             KCdetection.KC[] kcs = getKCs(epoch2);
-            kcs = filterKCs(kcs, 20, 100, 0, 65);
-            kcList.addAll(Arrays.asList(kcs));
+            kcs = filterKCs(kcs, 15, 100, 0, 65);
+            if (kcs != null) {
+                kcList.addAll(Arrays.asList(kcs));
+
+//                //test KC detection
+//                for (int i = 0; i < kcs.length; i++) {
+//                    Line line = new Line();
+//                    line.setStyle("-fx-stroke: black;");
+//
+//                    line.layoutXProperty()
+//                            .bind(this.xAxis.widthProperty()
+//                                    .multiply((kcs[i].indexNeg + 1) / (double) epoch2.length)
+//                                    .add(this.xAxis.layoutXProperty())
+//                            );
+//
+//                    line.setLayoutY(0);
+//                    line.endYProperty()
+//                            .bind(overlay3.heightProperty());
+//
+//                    overlay3.getChildren().add(line);
+//            }
+            }
         }
 
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
-            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) epoch2.length;
+            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) dataPointsModel.getNumberOfDataPoints();
         }
         percentageSum *= 100;
 
-        kComplexLabel.setVisible(true);
-        kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
+        kComplexLabel.setVisible(
+                true);
+        kComplexLabel.setText(
+                "K-Complex: " + roundValues(percentageSum) + "%");
 
         //draw yellow rectangles for every pair of coordinates in kcPlotRanges
-        overlay4.getChildren().clear();
-
         double start;
         double stop;
 
@@ -939,37 +953,12 @@ public class FXApplicationController implements Initializable {
             r.opacityProperty().set(0.5);
 
             overlay4.getChildren().add(r);
+
         }
 
-        showLabelsForEpoch(returnActiveChannels());
-        lineChart.requestFocus();
+        showLabelsForEpoch();
 
-        //            //test KC detection
-//            for (int i = 0; i < kcs.length; i++) {
-//                Line line = new Line();
-//                line.setStyle("-fx-stroke: black;");
-//
-//                line.layoutXProperty()
-//                        .bind(this.xAxis.widthProperty()
-//                                .multiply((kcs[i].indexNeg + 1)/ (double) epoch2.length)
-//                                .add(this.xAxis.layoutXProperty())
-//                        );
-//
-//                line.setLayoutY(0);
-//                line.endYProperty()
-//                        .bind(overlay3.heightProperty());
-//
-//                overlay3.getChildren().add(line);
-//            }
-//        for (KCdetection.KC kc : kcList) {
-//            System.out.println(kc.indexPrePos);
-//            System.out.println(kc.indexNeg);
-//            System.out.println(kc.indexPostPos);
-//        }
-//        for (Range range : kcPlotRanges) {
-//            System.out.println(range.toString());
-//        }
-//        System.out.println("======================");
+        lineChart.requestFocus();
     }
 
     @FXML
@@ -1413,7 +1402,7 @@ public class FXApplicationController implements Initializable {
     @FXML
     protected void electrodeConfiguratorButtonAction() {
         if (viewModel.isElectrodeConfiguratorActive() == false) {
-            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.activeChannels, this.viewModel);
+            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.allChannels, this.viewModel);
             viewModel.setElectrodeConfiguratorActive(true);
         } else {
             config.stage.close();
@@ -1530,7 +1519,7 @@ public class FXApplicationController implements Initializable {
     private void checkProp() {
 
         for (int i = 0; i < channelNames.length; i++) {
-            Double[] prop = activeChannels.get(channelNames[i]);
+            Double[] prop = allChannels.get(channelNames[i]);
             System.out.println(channelNames[i] + " " + prop[0] + " " + prop[1]);
         }
         System.out.println("----------------------------");
@@ -1556,7 +1545,7 @@ public class FXApplicationController implements Initializable {
             featureExtractionModel.setReadinDone(true);
 
             dataPointsModel.setFeatureChannelData(
-                    featureExtractionController.assembleData(
+                    FeatureExtractionController.assembleData(
                             dataPointsModel.rawEpochs,
                             dataPointsModel.getNumberOf30sEpochs() * 3000)
             );
@@ -1724,16 +1713,15 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private void kcMarkersButtonAction() {
-        if (viewModel.isKcMarkersActive() == true) {
+        if (viewModel.isKcMarkersActive()) {
 //            kcMarkersButton.setSelected(false);
             viewModel.setKcMarkersActive(false);
-            overlay4.getChildren().clear();
         } else {
 //            kcMarkersButton.setSelected(true);
             viewModel.setKcMarkersActive(true);
-            computeKCfeatures();
         }
-
+        loadEpoch(currentEpoch);
+        updateEpoch();
     }
 
     @FXML

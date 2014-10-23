@@ -73,7 +73,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
 
     Stage stage;
     ObservableList<Channel> observableChannels;
-    HashMap<String, Double[]> activeChannels;
+    HashMap<String, Double[]> allChannels;
     FXViewModel view;
 
     @FXML
@@ -105,7 +105,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
 
 //            //The first value represents wheater the channel is shown
 //            //The second value represents the current zoom level
-            activeChannels.put(
+            allChannels.put(
                     observableChannels.get(i).nameProperty().get(),
                     new Double[]{
                         observableChannels.get(i).visibilityProperty().get() ? 1. : 0.,
@@ -115,11 +115,9 @@ public class FXElectrodeConfiguratorController implements Initializable {
         }
 
         //refresh (everything: labels, traces )
-        view.getAppController().clearLineChart();
         view.getAppController().loadEpoch(view.getAppController().getCurrentEpoch());
         view.getAppController().showEpoch();
-        view.getAppController().computeKCfeatures();
-        view.getAppController().showLabelsForEpoch(view.getAppController().returnActiveChannels());
+        view.getAppController().showLabelsForEpoch();
     }
 
     @Override
@@ -134,8 +132,8 @@ public class FXElectrodeConfiguratorController implements Initializable {
         });
     }
 
-    public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> activeChannels, FXViewModel view) {
-        this.activeChannels = activeChannels;
+    public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> allChannels, FXViewModel view) {
+        this.allChannels = allChannels;
         this.view = view;
 
         stage = new Stage();
@@ -166,20 +164,13 @@ public class FXElectrodeConfiguratorController implements Initializable {
         observableChannels = FXCollections.observableArrayList();
 
         //Get properties for the channels
-        for (int i = 0; i < channelNames.length; i++) {
+        for (String channelName : channelNames) {
             Channel channel = new Channel();
-            channel.setName(channelNames[i]);
+            channel.setName(channelName);
             channel.setType("EEG");
-            channel.setVisibility(activeChannels.get(channelNames[i])[0] == 1. ? true : false);
-            channel.setZoom(activeChannels.get(channelNames[i])[1]);
+            channel.setVisibility(allChannels.get(channelName)[0] == 1.);
+            channel.setZoom(allChannels.get(channelName)[1]);
             observableChannels.add(channel);
-
-//            //The first value represents wheater the channel is shown
-//            //The second value represents the current zoom level
-//            Double[] channelProp = new Double[2];
-//            channelProp[0] = 1.0;
-//            channelProp[1] = 5.0;
-//            activeChannels.put(channelNames[i], channeProp);
         }
 
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
