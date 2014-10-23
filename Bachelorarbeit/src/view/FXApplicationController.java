@@ -174,8 +174,6 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private GridPane statusBarGrid;
-    @FXML
-    private ToolBar statusBar;
 
     @FXML
     private Pane overlay;
@@ -386,9 +384,6 @@ public class FXApplicationController implements Initializable {
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
-                double width = (double) newSceneWidth;
-                statusBarGrid.setPrefWidth(width - 15);		// -15 for additional padding
 
                 growCoefWidth = overlay3.getWidth() / oldWidth;
                 oldWidth = overlay3.getWidth();
