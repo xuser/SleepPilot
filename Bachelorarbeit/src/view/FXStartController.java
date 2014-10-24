@@ -121,6 +121,7 @@ public class FXStartController implements Initializable {
         // Creating FXML Loader
         FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Start.fxml"));
         loader.setController(this);
+        
 
         // Try to load fxml file
         try {

@@ -13,7 +13,7 @@
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<BorderPane minHeight="200.0" minWidth="360.0" prefHeight="600.0" prefWidth="1200.0" styleClass="appBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <bottom>
     <ToolBar fx:id="statusBar" focusTraversable="false" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="24.0" styleClass="statusBar">
       <items>
@@ -47,7 +47,7 @@
         <Pane fx:id="overlay4" prefHeight="200.0" prefWidth="200.0" />
         <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" visible="true">
           <xAxis>
-            <NumberAxis fx:id="xAxis" animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" />
+            <NumberAxis animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" fx:id="xAxis" />
           </xAxis>
           <yAxis>
             <NumberAxis fx:id="yAxis" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
@@ -154,33 +154,56 @@
                 </ImageView>
               </graphic>
             </ToggleButton>
-            <Button fx:id="classifyButton" focusTraversable="false" graphicTextGap="6.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#classifyButtonAction" prefWidth="88.0" styleClass="toolBarButtons" text="Classify">
-              <graphic>
+                  <ToggleButton fx:id="classifyButton" mnemonicParsing="false" onAction="#classifyButtonAction" styleClass="toolBarButtons">
+                     <graphic>
                 <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                   <image>
                     <Image url="@img/classify.png" />
                   </image>
                 </ImageView>
-              </graphic>
-            </Button>
-            <Button fx:id="visualizeButton" focusTraversable="false" graphicTextGap="6.0" mnemonicParsing="false" onAction="#visualizeButtonAction" prefWidth="108.0" styleClass="toolBarButtons" text="Visualize">
-              <graphic>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="visualizeButton" mnemonicParsing="false" onAction="#visualizeButtonAction" styleClass="toolBarButtons">
+                     <graphic>
                 <ImageView fitHeight="15.0" fitWidth="36.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                   <image>
                     <Image url="@img/visual.png" />
                   </image>
                 </ImageView>
-              </graphic>
-            </Button>
-            <Button fx:id="electrodeConfiguratorButton" focusTraversable="false" graphicTextGap="6.0" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" prefHeight="26.0" prefWidth="99.0" styleClass="toolBarButtons" text="Channels">
-              <graphic>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="electrodeConfiguratorButton" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" styleClass="toolBarButtons">
+                     <graphic>
                 <ImageView fitHeight="15.0" fitWidth="19.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                   <image>
                     <Image url="@img/configure.png" />
                   </image>
                 </ImageView>
-              </graphic>
-            </Button>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="filterButton" mnemonicParsing="false" onAction="#filterButtonAction" styleClass="toolBarButtons">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@img/filter.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="kcMarkersButton" mnemonicParsing="false" onAction="#kcMarkersButtonAction" styleClass="toolBarButtons" text="K-complex">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" />
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="dcRemoveButton" mnemonicParsing="false" onAction="#dcRemoveButtonAction" styleClass="toolBarButtons">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@img/dcRemove.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </ToggleButton>
           </items>
         </ToolBar>
       </children>

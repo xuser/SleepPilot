@@ -17,6 +17,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import model.RawDataModel;
 
@@ -82,7 +84,7 @@ public class DataReaderController {
             respectiveModel.addRawEpoch(tmpEpoch);
         }
         respectiveModel.setReadingComplete(true);
-        
+
     }
 
     public TDoubleArrayList read(int channel, int epoch) {
@@ -129,7 +131,28 @@ public class DataReaderController {
             readHeaderFromVHDR();
             numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
 
+            long bytes = 2;
+            if (respectiveModel.getNumberOfDataPoints() == 0) {
+                if (dataFormat.equals(DataFormat.BINARY)) {
+                    if (binaryFormat == BinaryFormat.INT_16) {
+                        bytes = 2;
+                    }
+                    if (binaryFormat == BinaryFormat.IEEE_FLOAT_32) {
+                        bytes = 4;
+                    }
+                }
+                try {
+                    respectiveModel.setNumberOfDataPoints((int) (dataFile.length()/bytes/(long)respectiveModel.getNumberOfChannels()));
+                } catch (IOException ex) {
+                    Logger.getLogger(DataReaderController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
             printPropertiesVHDR();
+
+            if (dataType == null) {
+                dataType = DataType.TIMEDOMAIN;
+            }
 
             if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 
@@ -501,7 +524,7 @@ public class DataReaderController {
                     }
                 }
 
-                // Read DataOrientation
+                // Read DataType
                 if (zeile.startsWith("DataType=")) {
                     switch (zeile.substring(9)) {
                         case "TIMEDOMAIN":

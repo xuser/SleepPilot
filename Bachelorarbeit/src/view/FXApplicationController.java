@@ -47,6 +47,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -148,18 +149,18 @@ public class FXApplicationController implements Initializable {
     private ToggleButton kComplex;
 
     @FXML
-    private Button electrodeConfiguratorButton;
+    private ToggleButton electrodeConfiguratorButton;
     @FXML
-    private Button classifyButton;
+    private ToggleButton classifyButton;
     @FXML
-    private Button visualizeButton;
+    private ToggleButton visualizeButton;
 
     @FXML
     private ToggleButton kcMarkersButton;
     @FXML
     private ToggleButton dcRemoveButton;
     @FXML
-    private ToggleButton highpassButton;
+    private ToggleButton filterButton;
 
     private boolean kComplexFlag = false;
 
@@ -236,7 +237,7 @@ public class FXApplicationController implements Initializable {
             mainGrid = loader.load();
         } catch (IOException e) {
             System.err.println("Error during loading Application.fxml file!");
-            //e.printStackTrace();
+            e.printStackTrace();
         }
 
         // Create stage with mainGrid
@@ -293,8 +294,17 @@ public class FXApplicationController implements Initializable {
 
         updateProbabilities();
 
-        initStarted = true;
+        tooltips();
 
+        kcMarkersButton.setSelected(viewModel.isKcMarkersActive());
+        filterButton.setSelected(viewModel.isFiltersActive());
+        dcRemoveButton.setSelected(viewModel.isDcRemoveActive());
+        visualizeButton.setSelected(viewModel.isScatterPlotActive());
+        electrodeConfiguratorButton.setSelected(viewModel.isElectrodeConfiguratorActive());
+//        classifyButton.setSelected(viewModel.);
+//        hypnogramButton.setSelected(viewModel.isHypnogrammActive());
+        
+        initStarted = true;
     }
 
     @Override
@@ -323,7 +333,7 @@ public class FXApplicationController implements Initializable {
 
                     }
 
-                    if (mouse.isPrimaryButtonDown()) {
+                    if (mouse.isPrimaryButtonDown() && (!lines.isEmpty())) {
                         Line line = lines.getLast();
                         double endXPos = mouseX.get() - line.getLayoutX();
                         double endYPos = mouseY.get() - line.getLayoutY();
@@ -331,7 +341,10 @@ public class FXApplicationController implements Initializable {
                         line.setEndX(endXPos);
                         line.setEndY(endYPos);
 
-                        calculatePercentageKComplex();
+                        if (kComplexFlag) {
+                            calculatePercentageKComplex();
+                        }
+
                     }
 
                 }
@@ -374,8 +387,6 @@ public class FXApplicationController implements Initializable {
                     }
 
                     double space = 75.0 * zoom / yAxis.getUpperBound() * yAxis.getHeight();
-                    System.out.println("Space: " + space);
-
                     paintSpacing(space);
                 }
 
@@ -755,7 +766,7 @@ public class FXApplicationController implements Initializable {
         } else {
             overlay4.getChildren().clear();
         }
-
+        
         if (viewModel.isFiltersActive() == true) {
             filterEpoch();
         }
@@ -893,24 +904,6 @@ public class FXApplicationController implements Initializable {
             kcs = filterKCs(kcs, 15, 100, 0, 65);
             if (kcs != null) {
                 kcList.addAll(Arrays.asList(kcs));
-
-//                //test KC detection
-//                for (int i = 0; i < kcs.length; i++) {
-//                    Line line = new Line();
-//                    line.setStyle("-fx-stroke: black;");
-//
-//                    line.layoutXProperty()
-//                            .bind(this.xAxis.widthProperty()
-//                                    .multiply((kcs[i].indexNeg + 1) / (double) epoch2.length)
-//                                    .add(this.xAxis.layoutXProperty())
-//                            );
-//
-//                    line.setLayoutY(0);
-//                    line.endYProperty()
-//                            .bind(overlay3.heightProperty());
-//
-//                    overlay3.getChildren().add(line);
-//            }
             }
         }
 
@@ -918,7 +911,7 @@ public class FXApplicationController implements Initializable {
 
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
-            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) dataPointsModel.getNumberOfDataPoints();
+            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) thisEpoch.get(0).length;
         }
         percentageSum *= 100;
 
@@ -927,6 +920,7 @@ public class FXApplicationController implements Initializable {
         kComplexLabel.setText(
                 "K-Complex: " + roundValues(percentageSum) + "%");
 
+        System.out.println(roundValues(percentageSum));
         //draw yellow rectangles for every pair of coordinates in kcPlotRanges
         double start;
         double stop;
@@ -1000,7 +994,6 @@ public class FXApplicationController implements Initializable {
         } else {
             kComplexFlag = true;
             kComplexLabel.setVisible(true);
-
             if (!kComplex.isSelected()) {
                 kComplex.setSelected(true);
             }
@@ -1083,13 +1076,16 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showScatterPlot() {
-
-        if (viewModel.isScatterPlotActive() == false) {
-            scatterPlot = new FXScatterPlot(dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
-            viewModel.setScatterPlotActive(true);
-        } else {
+        if (viewModel.isScatterPlotActive()) {
+            visualizeButton.setSelected(false);
             scatterPlot.stage.close();
             viewModel.setScatterPlotActive(false);
+        } else {
+            visualizeButton.setDisable(true);
+            scatterPlot = new FXScatterPlot(dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
+            viewModel.setScatterPlotActive(true);
+            visualizeButton.setDisable(false);
+            visualizeButton.setSelected(true);
         }
     }
 
@@ -1401,12 +1397,15 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void electrodeConfiguratorButtonAction() {
-        if (viewModel.isElectrodeConfiguratorActive() == false) {
-            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.allChannels, this.viewModel);
-            viewModel.setElectrodeConfiguratorActive(true);
-        } else {
+        if (viewModel.isElectrodeConfiguratorActive()) {
+            electrodeConfiguratorButton.setSelected(false);
             config.stage.close();
             viewModel.setElectrodeConfiguratorActive(false);
+
+        } else {
+            electrodeConfiguratorButton.setSelected(true);
+            config = new FXElectrodeConfiguratorController(this.dataPointsModel, this.allChannels, this.viewModel);
+            viewModel.setElectrodeConfiguratorActive(true);
         }
 
         lineChart.requestFocus();
@@ -1467,6 +1466,7 @@ public class FXApplicationController implements Initializable {
     protected void visualizeButtonAction() {
         classifyButtonAction();
         showScatterPlot();
+        lineChart.requestFocus();
     }
 
     public void classify() {
@@ -1664,15 +1664,25 @@ public class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.HOME) {
             goToEpoch(0);
         }
-        if (ke.getCode() == KeyCode.F12) {
-            kcMarkersButtonAction();
+        if (ke.getCode() == KeyCode.F7) {
+            classifyButtonAction();
         }
-        if (ke.getCode() == KeyCode.F11) {
-            dcRemoveButtonAction();
+        if (ke.getCode() == KeyCode.F8) {
+            visualizeButtonAction();
+        }
+        if (ke.getCode() == KeyCode.F9) {
+            electrodeConfiguratorButtonAction();
         }
         if (ke.getCode() == KeyCode.F10) {
             filterButtonAction();
         }
+        if (ke.getCode() == KeyCode.F11) {
+            kcMarkersButtonAction();
+        }
+        if (ke.getCode() == KeyCode.F12) {
+            dcRemoveButtonAction();
+        }
+
     }
 
     private void updateWindows() {
@@ -1697,14 +1707,14 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private void dcRemoveButtonAction() {
-        if (viewModel.isDcRemoveActive() == true) {
-//            filtersButton.setSelected(false);
+        if (viewModel.isDcRemoveActive()) {
+            dcRemoveButton.setSelected(false);
             viewModel.setDcRemoveActive(false);
             loadEpoch(currentEpoch);
             updateEpoch();
 
         } else {
-//            filtersButton.setSelected(true);
+            dcRemoveButton.setSelected(true);
             viewModel.setDcRemoveActive(true);
             loadEpoch(currentEpoch);
             updateEpoch();
@@ -1714,10 +1724,10 @@ public class FXApplicationController implements Initializable {
     @FXML
     private void kcMarkersButtonAction() {
         if (viewModel.isKcMarkersActive()) {
-//            kcMarkersButton.setSelected(false);
+            kcMarkersButton.setSelected(false);
             viewModel.setKcMarkersActive(false);
         } else {
-//            kcMarkersButton.setSelected(true);
+            kcMarkersButton.setSelected(true);
             viewModel.setKcMarkersActive(true);
         }
         loadEpoch(currentEpoch);
@@ -1726,18 +1736,28 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private void filterButtonAction() {
-        if (viewModel.isFiltersActive() == true) {
-//            filtersButton.setSelected(false);
+        if (viewModel.isFiltersActive()) {
+            filterButton.setSelected(false);
             viewModel.setFiltersActive(false);
             loadEpoch(currentEpoch);
             updateEpoch();
 
         } else {
-//            filtersButton.setSelected(true);
+            filterButton.setSelected(true);
             viewModel.setFiltersActive(true);
             loadEpoch(currentEpoch);
             updateEpoch();
         }
 
+    }
+
+    private void tooltips() {
+        help1.setTooltip(new Tooltip("Slow wave activity ruler (K)"));
+        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F7)"));
+        visualizeButton.setTooltip(new Tooltip("Show cluster plot (F8)"));
+        electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F9)"));
+        filterButton.setTooltip(new Tooltip("Filters on/off (F10)"));
+        kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F11)"));
+        dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F12)"));
     }
 }
