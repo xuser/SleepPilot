@@ -58,13 +58,9 @@ public class MainController extends Application {
         featureExtractionModel = new FeatureExtractionModel();
         startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
 
-        // Creating chart controller
-        //new ChartController(primaryStage, dataPointsModel);
     }
 
     public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames, final boolean autoMode) {
-
-        featureExtractionModel.setFileLocation(fileLocation);
 
         if (trainMode == false) {
             //removed
@@ -135,6 +131,10 @@ public class MainController extends Application {
         }
     }
 
+    public static void setFeatureExtractionModel(FeatureExtractionModel model){
+        featureExtractionModel = model;
+    }
+            
     /**
      * Starts the application with the needed parameters.
      *

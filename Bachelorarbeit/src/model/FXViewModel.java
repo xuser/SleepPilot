@@ -1,10 +1,5 @@
 package model;
 
-import org.jdsp.iirfilterdesigner.IIRDesigner;
-import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
-import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
-import org.jdsp.iirfilterdesigner.model.FilterType;
 import view.FXApplicationController;
 
 public class FXViewModel {
@@ -16,55 +11,16 @@ public class FXViewModel {
     private boolean scatterPlotActive = false;
 
     private boolean electrodeConfigurator = false;
-    
+
     private boolean kcMarkersActive = true;
-    
+
     private boolean filtersActive = true;
-    
+
     private boolean dcRemoveActive = true;
-    
-    private FilterCoefficients displayHighpassCoefficients;
-    
-    private FilterCoefficients displayLowpasCoefficients;
 
     private FXApplicationController appController;
 
     public FXViewModel() {
-        FilterCoefficients coefficients = null;
-        try {
-            double fstop = 0.1;
-            double fpass = 0.5;
-            double fs = 100;
-            coefficients = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.BUTTERWORTH,
-                    FilterType.HIGHPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 20.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-        
-        setDisplayHighpassCoefficients(coefficients);
-        
-        FilterCoefficients coefficients2 = null;
-        try {
-            double fstop = 35;
-            double fpass = 25;
-            double fs = 100;
-            coefficients2 = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.CHEBYSHEV2,
-                    FilterType.LOWPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 40.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-        
-        setDisplayLowpasCoefficients(coefficients2);
     }
 
     /**
@@ -131,22 +87,6 @@ public class FXViewModel {
         this.electrodeConfigurator = electrodeConfiguratorActive;
     }
 
-    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
-        this.displayHighpassCoefficients = displayHighpassCoefficients;
-    }
-
-    public void setDisplayLowpasCoefficients(FilterCoefficients displayLowpasCoefficients) {
-        this.displayLowpasCoefficients = displayLowpasCoefficients;
-    }
-
-    public FilterCoefficients getDisplayHighpassCoefficients() {
-        return displayHighpassCoefficients;
-    }
-
-    public FilterCoefficients getDisplayLowpasCoefficients() {
-        return displayLowpasCoefficients;
-    }
-
     
     public void setKcMarkersActive(boolean kcMarkersActive) {
         this.kcMarkersActive = kcMarkersActive;
@@ -172,4 +112,5 @@ public class FXViewModel {
         return dcRemoveActive;
     }
 
+    
 }

@@ -36,43 +36,6 @@ public class FeatureExtractionController {
 
         this.dataPointsModel = dataPointsModel;
         this.featureExtractionModel = featureExtractionModel;
-
-        FilterCoefficients coefficients = null;
-        try {
-            double fstop = 0.01;
-            double fpass = 0.3;
-            double fs = 100;
-            coefficients = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.BUTTERWORTH,
-                    FilterType.HIGHPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 20.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        featureExtractionModel.setHighpassCoefficients(coefficients);
-
-        FilterCoefficients coefficients2 = null;
-        try {
-            double fstop = 7.;
-            double fpass = 4.;
-            double fs = 100;
-            coefficients2 = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.CHEBYSHEV2,
-                    FilterType.LOWPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 40.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        featureExtractionModel.setLowpassCoefficients(coefficients2);
-
     }
 
     public void start() {

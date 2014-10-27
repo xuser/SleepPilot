@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import java.util.*?>
@@ -156,6 +157,7 @@
                 </ImageView>
               </graphic>
             </ToggleButton>
+                  <ChoiceBox fx:id="choiceBox" focusTraversable="false" styleClass="choiceBox" />
                   <ToggleButton fx:id="classifyButton" focusTraversable="false" mnemonicParsing="false" onAction="#classifyButtonAction" styleClass="toolBarButtons">
                      <graphic>
                 <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
@@ -192,9 +194,12 @@
                         </ImageView>
                      </graphic>
                   </ToggleButton>
-                  <ToggleButton fx:id="kcMarkersButton" focusTraversable="false" mnemonicParsing="false" onAction="#kcMarkersButtonAction" styleClass="toolBarButtons" text="K-complex">
+                  <ToggleButton fx:id="kcMarkersButton" focusTraversable="false" mnemonicParsing="false" onAction="#kcMarkersButtonAction" styleClass="toolBarButtons">
                      <graphic>
-                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@img/kc.png" />
+                           </image></ImageView>
                      </graphic>
                   </ToggleButton>
                   <ToggleButton fx:id="dcRemoveButton" focusTraversable="false" mnemonicParsing="false" onAction="#dcRemoveButtonAction" styleClass="toolBarButtons">
@@ -202,6 +207,15 @@
                         <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@img/dcRemove.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="hypnogramButton" focusTraversable="false" mnemonicParsing="false" onAction="#hypnogramAction" styleClass="toolBarButtons">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true">
+                           <image>
+                              <Image url="@img/hypno.png" />
                            </image>
                         </ImageView>
                      </graphic>

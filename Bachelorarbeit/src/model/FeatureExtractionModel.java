@@ -7,7 +7,6 @@ import java.util.LinkedList;
 
 import help.ChannelNames;
 import java.util.Arrays;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -136,10 +135,8 @@ public class FeatureExtractionModel implements Serializable {
     private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
 
     private int featureChannel;
-
-    private FilterCoefficients highpassCoefficients;
-
-    private FilterCoefficients lowpassCoefficients;
+    
+    private int currentEpoch;
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -189,7 +186,7 @@ public class FeatureExtractionModel implements Serializable {
         stimulation[epoch] = 0;
         arousals[epoch] = 0;
         artefacts[epoch] = 0;
-        labels[epoch] = 0;
+        labels[epoch] = -1;
     }
 
     /**
@@ -233,7 +230,10 @@ public class FeatureExtractionModel implements Serializable {
      */
     public void setFeatures(float[][] features) {
         this.features = features;
-        numberOfFeatures = features[0].length;
+        if (features != null) {
+            numberOfFeatures = features[0].length;
+        }
+
     }
 
     /**
@@ -258,14 +258,14 @@ public class FeatureExtractionModel implements Serializable {
      * @param row the number of scored feature value.
      * @param label the class label to set.
      */
-    public void setLabel(int row, int label) {
+    public void setLabel(int row, int label) {  
         labels[row] = label;
     }
 
     public void setLabels(int[] labels) {
         this.labels = labels;
     }
-    
+
     public int[] getLabels() {
         return labels;
     }
@@ -273,26 +273,27 @@ public class FeatureExtractionModel implements Serializable {
     public void setArtefacts(int[] artefacts) {
         this.artefacts = artefacts;
     }
-    
+
     public int[] getArtefacts() {
         return artefacts;
     }
-    
+
     public void setArousals(int[] arousals) {
         this.arousals = arousals;
     }
-    
+
     public int[] getArousals() {
         return arousals;
     }
-    
+
     public void setStimulation(int[] stimulation) {
         this.stimulation = stimulation;
     }
-    
+
     public int[] getStimulation() {
         return stimulation;
     }
+
     /**
      * Get the scored class label for a feature vector in the matrix.
      *
@@ -684,22 +685,6 @@ public class FeatureExtractionModel implements Serializable {
         this.featureChannel = featureChannel;
     }
 
-    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
-        this.highpassCoefficients = highpassCoefficients;
-    }
-
-    public FilterCoefficients getHighpassCoefficients() {
-        return highpassCoefficients;
-    }
-
-    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
-        this.lowpassCoefficients = lowpassCoefficients;
-    }
-
-    public FilterCoefficients getLowpassCoefficients() {
-        return lowpassCoefficients;
-    }
-
     public int getArousal(int i) {
         return arousals[i];
     }
@@ -723,4 +708,14 @@ public class FeatureExtractionModel implements Serializable {
     public void setArtefact(int i, int a) {
         artefacts[i] = a;
     }
+
+    public void setCurrentEpoch(int currentEpoch) {
+        this.currentEpoch = currentEpoch;
+    }
+
+    public int getCurrentEpoch() {
+        return currentEpoch;
+    }
+
+    
 }

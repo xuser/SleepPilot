@@ -71,7 +71,7 @@ public class FXHypnogrammController implements Initializable {
     final InnerShadow ds = new InnerShadow(20, Color.YELLOW);
 
     int lastEpoch = 0;
-    
+
     Line line;
 
     public FXHypnogrammController(RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
@@ -123,11 +123,6 @@ public class FXHypnogrammController implements Initializable {
 
             @Override
             public void handle(KeyEvent ke) {
-                if (ke.getCode() == KeyCode.H) {
-                    stage.hide();
-                    viewModel.setHypnogrammActive(false);
-                }
-
                 appController
                         .keyAction(ke);
             }
@@ -325,6 +320,7 @@ public class FXHypnogrammController implements Initializable {
         int currentEpoch = appController.getCurrentEpoch();
 
         Node node = plotItemsMap.inverse().get(currentEpoch);
+        node.toFront();
         node.setEffect(ds);
         node.blendModeProperty().set(BlendMode.SRC_OVER);
 
@@ -510,6 +506,7 @@ public class FXHypnogrammController implements Initializable {
     }
 //
 //    @SuppressWarnings("unchecked")
+
     public void changeCurrentEpochMarker(int currentEpoch) {
 //		for (int i = 0; i < scatterChart.getData().size(); i++) {
 //		    for (Node node : scatterChart.lookupAll(".series4")) {
@@ -520,6 +517,5 @@ public class FXHypnogrammController implements Initializable {
 //        scatterChart.getData().get(4).getData().get(1).setXValue(currentEpoch);
         line.setStartX(lastEpoch);
     }
-
 
 }

@@ -8,6 +8,8 @@ import java.util.ResourceBundle;
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import tsne.TSNE;
 import model.FXViewModel;
@@ -69,8 +71,12 @@ public class FXScatterPlot implements Initializable {
 
     BlendMode bm;
 
+    public boolean scatterChartDone = false;
+
     private HashBiMap<Node, Integer> plotItemsMap;
     private HashMap<Node, XYChart.Data> nodeToXYDataMap;
+
+    double opacity = 0.7;
 
     public FXScatterPlot(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FeatureExtractionController featureExtractionController, FXViewModel viewModel) {
         this.featureExtractionModel = featureExtractionModel;
@@ -116,6 +122,15 @@ public class FXScatterPlot implements Initializable {
             public void handle(WindowEvent we) {
                 viewModel.setScatterPlotActive(false);
                 System.out.println("Scatter Plot is closing.");
+            }
+
+        });
+
+        scatterChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent event) {
+                appController.keyAction(event);
             }
 
         });
@@ -217,14 +232,14 @@ public class FXScatterPlot implements Initializable {
                         //this is a hack, because JavaFX won't update the legend otherwise
                         scatterChart.getData().add(new XYChart.Series());
                         scatterChart.getData().remove(6);
-                        
+
                         nodeToXYDataMap = new HashMap();
 
                         for (XYChart.Series<Number, Number> series : scatterChart.getData()) {
                             for (XYChart.Data<Number, Number> d : series.getData()) {
                                 nodeToXYDataMap.put(d.getNode(), d);
 
-                                d.getNode().opacityProperty().set(0.9);
+                                d.getNode().setOpacity(opacity);
                                 bm = d.getNode().blendModeProperty().get();
 
                                 d.getNode().setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -255,22 +270,14 @@ public class FXScatterPlot implements Initializable {
                                     public void handle(MouseEvent arg0) {
                                         d.getNode().setEffect(null);
                                         d.getNode().setCursor(Cursor.DEFAULT);
-                                        d.getNode().setOpacity(0.9);
+                                        d.getNode().setOpacity(opacity);
                                         d.getNode().blendModeProperty().set(bm);
                                     }
                                 });
                             }
                         }
 
-                        scatterChart.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
-                            @Override
-                            public void handle(KeyEvent event) {
-                                appController.keyAction(event);
-                            }
-
-                        });
-
+                        scatterChartDone = true;
                         scatterChart.requestFocus();
 
                     }
@@ -290,7 +297,13 @@ public class FXScatterPlot implements Initializable {
 
         };
 
-        new Thread(task).start();
+        Thread thread = new Thread(task);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FXScatterPlot.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
@@ -304,31 +317,34 @@ public class FXScatterPlot implements Initializable {
         Node node = plotItemsMap.inverse().get(currentEpoch);
         XYChart.Data xyData = nodeToXYDataMap.get(node);
 
-        seriesN1.getData().remove(xyData);
+        
+        
         seriesN2.getData().remove(xyData);
         seriesN3.getData().remove(xyData);
         seriesRem.getData().remove(xyData);
-        seriesUnclassified.getData().remove(xyData);
+        seriesN1.getData().remove(xyData);
         seriesWake.getData().remove(xyData);
+        
+        
 
         int label = featureExtractionModel.getLabel(currentEpoch);
         switch (label) {
-            case 1:
+            case 0:
                 seriesWake.getData().add(xyData);
                 break;
-            case 2:
+            case 1:
                 seriesN1.getData().add(xyData);
                 break;
-            case 3:
+            case 2:
                 seriesN2.getData().add(xyData);
                 break;
-            case 4:
+            case 3:
                 seriesN3.getData().add(xyData);
                 break;
             case 5:
                 seriesRem.getData().add(xyData);
                 break;
-            case 0:
+            case -1:
                 seriesUnclassified.getData().add(xyData);
                 break;
         }
@@ -339,15 +355,29 @@ public class FXScatterPlot implements Initializable {
         int currentEpoch = appController.getCurrentEpoch();
 
         Node node = plotItemsMap.inverse().get(currentEpoch);
+        node.toFront();
         node.setEffect(ds);
         node.setOpacity(1.);
         node.blendModeProperty().set(BlendMode.SRC_OVER);
 
         node = plotItemsMap.inverse().get(lastEpoch);
         node.setEffect(null);
-        node.setOpacity(0.9);
+        node.setOpacity(opacity);
         node.blendModeProperty().set(bm);
 
         lastEpoch = currentEpoch;
     }
+
+    public void hide() {
+        stage.hide();
+    }
+
+    public void show() {
+        stage.show();
+    }
+
+    public void close() {
+        stage.close();
+    }
+
 }

@@ -8,7 +8,6 @@ package view;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -22,15 +21,14 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -75,6 +73,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
     ObservableList<Channel> observableChannels;
     HashMap<String, Double[]> allChannels;
     FXViewModel view;
+    FXApplicationController appController;
 
     @FXML
     void invertSelectionAction() {
@@ -130,11 +129,21 @@ public class FXElectrodeConfiguratorController implements Initializable {
             }
 
         });
+
+        stage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent event) {
+                appController.keyAction(event);
+            }
+
+        });
     }
 
     public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> allChannels, FXViewModel view) {
         this.allChannels = allChannels;
         this.view = view;
+        this.appController = view.getAppController();
 
         stage = new Stage();
 
@@ -180,8 +189,6 @@ public class FXElectrodeConfiguratorController implements Initializable {
         visibilityCol.setCellValueFactory(new PropertyValueFactory("visibility"));
         visibilityCol.setCellFactory(CheckBoxTableCell.forTableColumn(visibilityCol));
         visibilityCol.setEditable(true);
-
-        
 
         nameCol.setCellValueFactory(new PropertyValueFactory("name"));
 
@@ -241,6 +248,18 @@ public class FXElectrodeConfiguratorController implements Initializable {
             this.zoom.set(zoom);
         }
 
+    }
+
+    public void hide() {
+        stage.hide();
+    }
+
+    public void show() {
+        stage.show();
+    }
+
+    public void close() {
+        stage.close();
     }
 
 }
