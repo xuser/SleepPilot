@@ -27,6 +27,9 @@ import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -523,11 +526,17 @@ public class FXApplicationController implements Initializable {
 
             }
         });
-
+        
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override
             public void handle(WindowEvent event) {
+                try {
+                    System.out.println("RandomAccessFile closed");
+                    dataPointsModel.getDataFile().close();
+                } catch (IOException ex) {
+                    Logger.getLogger(FXApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 Platform.exit();
             }
         });
@@ -1885,4 +1894,5 @@ public class FXApplicationController implements Initializable {
         return lowpassCoefficients;
     }
 
+    
 }

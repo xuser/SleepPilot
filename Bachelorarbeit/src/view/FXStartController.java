@@ -121,7 +121,6 @@ public class FXStartController implements Initializable {
         // Creating FXML Loader
         FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Start.fxml"));
         loader.setController(this);
-        
 
         // Try to load fxml file
         try {
@@ -213,10 +212,21 @@ public class FXStartController implements Initializable {
                 );
 
                 if (file != null) {
-
+                    DataReaderController dataReaderController;
                     try {
-                        DataReaderController dataReaderController = new DataReaderController(file);
+                        dataReaderController = new DataReaderController(file);
 
+                        Runtime.getRuntime().addShutdownHook(new Thread() {
+                            public void run() {
+                                try {
+                                    if (dataPointsModel.getDataFile()!=null) {
+                                        dataPointsModel.getDataFile().close();
+                                    }
+                                } catch (IOException ex) {
+                                    Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        });
                         //Create application controller
                         System.out.println("AppController starting!");
                         Platform.runLater(new Runnable() {
@@ -231,13 +241,6 @@ public class FXStartController implements Initializable {
                     } catch (IOException ex) {
                         Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
                     }
-
-//                    if ((startModel.getSelectedModel() != null) || (startModel.isAutoModeFlag() == false)) {
-//                        featureExtractionModel.setSelectedModel(startModel.getSelectedModel());
-//                        startAction(file);
-//                    } else {
-//                        popUp.showPopupMessage("Please first go to settings and select a model!", primaryStage);
-//                    }
                 }
 
             }

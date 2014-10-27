@@ -214,7 +214,7 @@ public class DataReaderController {
 
     private void readHeaderFromSMR() {
         try {
-            dataFile = new RandomAccessFile(file, "rw");
+            dataFile = new RandomAccessFile(file, "r");
             respectiveModel.setDataFile(dataFile);
 
             FileChannel inChannel = dataFile.getChannel();
