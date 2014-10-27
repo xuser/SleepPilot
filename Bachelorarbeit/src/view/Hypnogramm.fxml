@@ -12,66 +12,17 @@
 
 <AnchorPane prefHeight="287.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <SplitPane dividerPositions="0.48771929824561405" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                <Pane fx:id="pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <children>
-                    <Text fill="$x1" layoutX="26.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="W" />
-                    <Text layoutX="10.0" layoutY="56.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="REM">
-                      <fill>
-                        <Color blue="0.376" green="0.376" red="0.376" fx:id="x2" />
-                      </fill>
-                    </Text>
-                    <Text fill="$x2" layoutX="24.0" layoutY="88.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S1" />
-                    <Text fill="$x2" layoutX="23.0" layoutY="120.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S2" />
-                    <Text fill="$x2" layoutX="29.0" layoutY="153.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="N" />
-                    <Text fill="$x2" layoutX="29.0" layoutY="216.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="A" />
-                    <Text fill="$x2" layoutX="19.0" layoutY="246.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="MA" />
-                    <Text fill="$x2" layoutX="30.0" layoutY="278.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textLabel" text="S" />
-                  </children>
-                </Pane>
-                <LineChart fx:id="lineChart" animated="false" createSymbols="false" horizontalZeroLineVisible="true" legendVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                  <xAxis>
-                    <NumberAxis autoRanging="false" forceZeroInRange="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" fx:id="xAxisHypnogram">
-                           <padding>
-                              <Insets left="10.0" />
-                           </padding></NumberAxis>
-                  </xAxis>
-                  <yAxis>
-                    <NumberAxis fx:id="yAxisHypnogram" animated="false" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickMarkVisible="false" tickUnit="1.0" upperBound="9.0">
-                      <tickLabelFill>
-                        <Color blue="0.375" green="0.375" red="0.375" fx:id="x1" />
-                      </tickLabelFill>
-                    </NumberAxis>
-                  </yAxis>
-                     <padding>
-                        <Insets left="20.0" />
-                     </padding>
-                </LineChart>
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-               <children>
-                  <LineChart fx:id="lineChartOverview" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="false" verticalGridLinesVisible="false" verticalZeroLineVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <xAxis>
-                        <NumberAxis autoRanging="false" forceZeroInRange="true" minorTickVisible="false" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" fx:id="xAxisOverview" />
-                     </xAxis>
-                     <yAxis>
-                        <NumberAxis fx:id="yAxisOverview" animated="false" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="12.0" tickMarkVisible="false" tickUnit="1.0" upperBound="9.0">
-                           <tickLabelFill>
-                              <Color blue="0.375" green="0.375" red="0.375" fx:id="x11" />
-                           </tickLabelFill>
-                        </NumberAxis>
-                     </yAxis>
-                     <padding>
-                        <Insets left="20.0" />
-                     </padding>
-                  </LineChart>
-               </children>
-            </AnchorPane>
-        </items>
-      </SplitPane>
+    <Pane fx:id="pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <ScatterChart fx:id="scatterChart" alternativeRowFillVisible="false" animated="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="true" stylesheets="@Hypnogramm.css" verticalGridLinesVisible="false" verticalZeroLineVisible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <xAxis>
+            <NumberAxis animated="false" autoRanging="false" minorTickVisible="false" prefHeight="0.0" side="BOTTOM" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" fx:id="xAxisHypnogram" />
+         </xAxis>
+         <yAxis>
+            <NumberAxis fx:id="yAxisHypnogram" autoRanging="true" forceZeroInRange="true" minorTickVisible="false" prefWidth="0.0" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" />
+         </yAxis>
+         <padding>
+            <Insets left="20.0" />
+         </padding>
+      </ScatterChart>
    </children>
 </AnchorPane>

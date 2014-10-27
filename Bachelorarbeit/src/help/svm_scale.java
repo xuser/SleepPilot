@@ -95,7 +95,7 @@ public class svm_scale {
         }
 
         // Save the scaled values into the PE model.
-        respectiveFeatureExtractionModel.setFeatureClassLabel(row, value);
+        respectiveFeatureExtractionModel.setLabel(row, (int)value);
 //		System.out.print(value + " ");
     }
 

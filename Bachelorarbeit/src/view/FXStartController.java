@@ -223,7 +223,7 @@ public class FXStartController implements Initializable {
                             @Override
                             public void run() {
                                 FXViewModel viewModel = new FXViewModel();
-                                FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, false, false);
+                                FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, false);
                                 viewModel.setAppController(appController);
                                 primaryStage.close();
                             }

@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import help.ChannelNames;
-import java.util.concurrent.atomic.AtomicInteger;
-import javafx.scene.control.ProgressBar;
+import java.util.Arrays;
 import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 
 /**
@@ -28,7 +27,10 @@ public class FeatureExtractionModel implements Serializable {
      * classified sleep stage.
      */
     private float[][] features;
-    private int[] labels = null;
+    private int[] labels;
+    private int[] artefacts;
+    private int[] arousals;
+    private int[] stimulation;
     private double[][] tsneFeatures;
 
     /**
@@ -107,17 +109,17 @@ public class FeatureExtractionModel implements Serializable {
      * Tells whether channel data has been read
      */
     private boolean readinDone = false;
-    
+
     /**
      * Tells whether features have been computed
      */
     private boolean featuresComputed = false;
-    
+
     /**
      * Tells whether dimension reduction of features has been computed
      */
     private boolean tsneComputed = false;
-    
+
     /**
      * The number of samples for one epoch.
      */
@@ -136,9 +138,9 @@ public class FeatureExtractionModel implements Serializable {
     private int featureChannel;
 
     private FilterCoefficients highpassCoefficients;
-    
+
     private FilterCoefficients lowpassCoefficients;
-   
+
     /**
      * Creates the feature value matrix with the needed size. The first column
      * holds the classified sleep stage. Test mode: The first column has the
@@ -148,276 +150,46 @@ public class FeatureExtractionModel implements Serializable {
      * NOTATION: 1	Wake 2	Sleep stage 1 3	Sleep stage 2 4	Sleep stage 3 5	REM
      * sleep stage 99	Unscored
      */
-    
-    
-    
     public void init(int rows) {
         numberOfEpochs = rows;
         labels = new int[rows];
+        Arrays.fill(labels, -1);
+
+        artefacts = new int[rows];
+        arousals = new int[rows];
+        stimulation = new int[rows];
         predictProbabilities = new double[rows][];
     }
 
     public void addArtefactToEpochProperty(int epoch) {
-        if (epochProperties.containsKey(epoch)) {
-            int tmpMAFlag = 0;
-            boolean aButtonWasActiveFlag = false;
-
-            Integer[] tempProp = epochProperties.get(epoch);
-            epochProperties.remove(epoch);
-
-            if (tempProp[0] == 1) {
-                aButtonWasActiveFlag = true;
-                countA--;
-            }
-
-            if (tempProp[1] == 1) {
-                countMA--;
-                tmpMAFlag = 1;
-            }
-
-            if (tempProp[2] == 1) {
-                countS--;
-            }
-
-            if (aButtonWasActiveFlag) {
-                Integer[] prop = {0, tmpMAFlag, 0};
-                if (tmpMAFlag == 1) {
-                    countMA++;
-                }
-
-                epochProperties.put(epoch, prop);
-
-            } else {
-                Integer[] prop = {1, tmpMAFlag, 0};
-                countA++;
-
-                if (tmpMAFlag == 1) {
-                    countMA++;
-                }
-
-                epochProperties.put(epoch, prop);
-
-            }
-
+        if (artefacts[epoch] == 0) {
+            artefacts[epoch] = 1;
         } else {
-            Integer[] prop = {1, 0, 0};
-            countA++;
-            epochProperties.put(epoch, prop);
+            artefacts[epoch] = 0;
         }
     }
 
-    public void addArrousalToEpochProperty(int epoch) {
-        if (epochProperties.containsKey(epoch)) {
-
-            boolean aButtonWasActiveFlag = false;
-            boolean maButtonWasActiveFlag = false;
-
-            Integer[] tempProp = epochProperties.get(epoch);
-            epochProperties.remove(epoch);
-
-            if (tempProp[0] == 1) {
-                aButtonWasActiveFlag = true;
-                countA--;
-            }
-
-            if (tempProp[1] == 1) {
-                maButtonWasActiveFlag = true;
-                countMA--;
-            }
-
-            if (tempProp[2] == 1) {
-                countS--;
-            }
-
-            if (maButtonWasActiveFlag) {
-
-                if (aButtonWasActiveFlag) {
-                    Integer[] prop = {1, 0, 0};
-                    countA++;
-                    epochProperties.put(epoch, prop);
-
-                } else {
-                    Integer[] prop = {0, 0, 0};
-                    epochProperties.put(epoch, prop);
-                }
-
-            } else {
-                Integer[] prop = {1, 1, 0};
-                countA++;
-                countMA++;
-
-                epochProperties.put(epoch, prop);
-            }
-
+    public void addArousalToEpochProperty(int epoch) {
+        if (arousals[epoch] == 0) {
+            arousals[epoch] = 1;
         } else {
-            Integer[] prop = {1, 1, 0};
-            countA++;
-            countMA++;
-            epochProperties.put(epoch, prop);
+            arousals[epoch] = 0;
         }
     }
 
     public void addStimulationToEpochProperty(int epoch) {
-        if (epochProperties.containsKey(epoch)) {
-
-            boolean sButtonWasActiveFlag = false;
-
-            Integer[] tempProp = epochProperties.get(epoch);
-            epochProperties.remove(epoch);
-
-            if (tempProp[0] == 1) {
-                countA--;
-            }
-
-            if (tempProp[1] == 1) {
-                countMA--;
-            }
-
-            if (tempProp[2] == 1) {
-                sButtonWasActiveFlag = true;
-                countS--;
-            }
-
-            if (sButtonWasActiveFlag) {
-
-                int label = getFeatureClassLabel(epoch);
-                switch (label) {
-                    case 1:
-                        countWake++;
-                        break;
-                    case 2:
-                        countS1++;
-                        break;
-                    case 3:
-                        countS2++;
-                        break;
-                    case 4:
-                        countN++;
-                        break;
-                    case 5:
-                        countREM++;
-                        break;
-                    default:
-                        System.out.println("No class label set!");
-                        break;
-                }
-
-            } else {
-                Integer[] prop = {0, 0, 1};
-                countS++;
-
-                int label = getFeatureClassLabel(epoch);
-                switch (label) {
-                    case 1:
-                        countWake--;
-                        break;
-                    case 2:
-                        countS1--;
-                        break;
-                    case 3:
-                        countS2--;
-                        break;
-                    case 4:
-                        countN--;
-                        break;
-                    case 5:
-                        countREM--;
-                        break;
-                    default:
-                        System.out.println("No class label set!");
-                        break;
-                }
-
-                epochProperties.put(epoch, prop);
-            }
-
+        if (stimulation[epoch] == 0) {
+            stimulation[epoch] = 1;
         } else {
-            Integer[] prop = {0, 0, 1};
-            countS++;
-
-            int label = getFeatureClassLabel(epoch);
-            switch (label) {
-                case 1:
-                    countWake--;
-                    break;
-                case 2:
-                    countS1--;
-                    break;
-                case 3:
-                    countS2--;
-                    break;
-                case 4:
-                    countN--;
-                    break;
-                case 5:
-                    countREM--;
-                    break;
-                default:
-                    System.out.println("No class label set!");
-                    break;
-            }
-
-            epochProperties.put(epoch, prop);
+            stimulation[epoch] = 0;
         }
     }
 
     public void clearProperties(int epoch) {
-        if (epochProperties.containsKey(epoch)) {
-            Integer[] tempProp = epochProperties.get(epoch);
-            epochProperties.remove(epoch);
-
-            if (tempProp[0] == 1) {
-                countA--;
-            }
-
-            if (tempProp[1] == 1) {
-                countMA--;
-            }
-
-            if (tempProp[2] == 1) {
-                countS--;
-
-                int label = getFeatureClassLabel(epoch);
-                switch (label) {
-                    case 1:
-                        countWake++;
-                        break;
-                    case 2:
-                        countS1++;
-                        break;
-                    case 3:
-                        countS2++;
-                        break;
-                    case 4:
-                        countN++;
-                        break;
-                    case 5:
-                        countREM++;
-                        break;
-                    default:
-                        System.out.println("No class label set!");
-                        break;
-                }
-            }
-
-        }
-    }
-
-    /**
-     * Return all additional epoch properties
-     *
-     * @param epoch the number of the needed epoch
-     * @return the array with the properties. 1st in array: 1 if artefact, else
-     * 0 2nd in array: 1 if arrousal, else 0 3hd in array: 1 if stimulation,
-     * else 0
-     */
-    public Integer[] getEpochProperty(int epoch) {
-
-        if (epochProperties.containsKey(epoch)) {
-            return epochProperties.get(epoch);
-        } else {
-            return null;
-        }
+        stimulation[epoch] = 0;
+        arousals[epoch] = 0;
+        artefacts[epoch] = 0;
+        labels[epoch] = 0;
     }
 
     /**
@@ -486,71 +258,48 @@ public class FeatureExtractionModel implements Serializable {
      * @param row the number of scored feature value.
      * @param label the class label to set.
      */
-    public void setFeatureClassLabel(int row, double label) {
-
-        if (classificationDone) {
-            int tmpLabel = getFeatureClassLabel(row);
-
-            switch (tmpLabel) {
-                case 1:
-                    countWake--;
-                    break;
-                case 2:
-                    countS1--;
-                    break;
-                case 3:
-                    countS2--;
-                    break;
-                case 4:
-                    countN--;
-                    break;
-                case 5:
-                    countREM--;
-                    break;
-                case 0:
-                    System.out.print("Case 0: SVM_Scale");			// Case 0 is just caused by svm_scale				
-                    break;
-                default:
-                    System.err.println("Error during setting the class label!");
-                    break;
-            }
-        }
-
-        int intLabel = (int) label;
-        switch (intLabel) {
-            case 1:
-                countWake++;
-                break;
-            case 2:
-                countS1++;
-                break;
-            case 3:
-                countS2++;
-                break;
-            case 4:
-                countN++;
-                break;
-            case 5:
-                countREM++;
-                break;
-            case 0:
-                System.out.print("Case 0: SVM_Scale");				// Case 0 is just caused by svm_scale
-                break;
-            default:
-                System.err.println("Error during setting the class label!");
-                break;
-        }
-
-        labels[row] = (int) label;
+    public void setLabel(int row, int label) {
+        labels[row] = label;
     }
 
+    public void setLabels(int[] labels) {
+        this.labels = labels;
+    }
+    
+    public int[] getLabels() {
+        return labels;
+    }
+
+    public void setArtefacts(int[] artefacts) {
+        this.artefacts = artefacts;
+    }
+    
+    public int[] getArtefacts() {
+        return artefacts;
+    }
+    
+    public void setArousals(int[] arousals) {
+        this.arousals = arousals;
+    }
+    
+    public int[] getArousals() {
+        return arousals;
+    }
+    
+    public void setStimulation(int[] stimulation) {
+        this.stimulation = stimulation;
+    }
+    
+    public int[] getStimulation() {
+        return stimulation;
+    }
     /**
      * Get the scored class label for a feature vector in the matrix.
      *
      * @param row the epoch of scored feature value.
      */
-    public int getFeatureClassLabel(int row) {
-        return (int) labels[row];
+    public int getLabel(int row) {
+        return labels[row];
     }
 
     /**
@@ -559,8 +308,6 @@ public class FeatureExtractionModel implements Serializable {
     public void rewindRowPosition() {
         rowPosition = 0;
     }
-
-    
 
     /**
      * Set the number of the epoch from which the PE has been calculated.
@@ -630,25 +377,6 @@ public class FeatureExtractionModel implements Serializable {
      */
     public float[] getFeatureVector(int row) {
         return features[row];
-    }
-
-    //TODO
-    /**
-     * This function only returns the matrix without the class label
-     *
-     * @return the whole feature value matrix
-     */
-    public double[][] getFeatureValueMatrix() {
-
-        double[][] matrix = new double[features.length][numberOfChannels];
-
-        for (int i = 0; i < features.length; i++) {
-            for (int x = 0; x < numberOfChannels; x++) {
-                matrix[i][x] = features[i][x + 1];
-            }
-        }
-
-        return matrix;
     }
 
     /**
@@ -971,7 +699,28 @@ public class FeatureExtractionModel implements Serializable {
     public FilterCoefficients getLowpassCoefficients() {
         return lowpassCoefficients;
     }
-    
-    
 
+    public int getArousal(int i) {
+        return arousals[i];
+    }
+
+    public int getStimulation(int i) {
+        return stimulation[i];
+    }
+
+    public int getArtefact(int i) {
+        return artefacts[i];
+    }
+
+    public void setArousal(int i, int a) {
+        arousals[i] = a;
+    }
+
+    public void setStimulation(int i, int a) {
+        stimulation[i] = a;
+    }
+
+    public void setArtefact(int i, int a) {
+        artefacts[i] = a;
+    }
 }

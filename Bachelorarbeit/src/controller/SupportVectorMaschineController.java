@@ -255,7 +255,7 @@ public class SupportVectorMaschineController {
                 double v = svm.svm_predict_probability(model, nodes, prob_estimates);
 
                 respectiveFeatureExtractionModel.setPredictProbabilities(i, prob_estimates);
-                respectiveFeatureExtractionModel.setFeatureClassLabel(i, v);
+                respectiveFeatureExtractionModel.setLabel(i, (int)v);
 
                 // **** START OUTPUT ON DESKTOP *****
 //			    String tmp = v + "";

@@ -179,23 +179,23 @@ public class FXScatterPlot implements Initializable {
                         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
 
                             XYChart.Data dataItem;
-                            switch (featureExtractionModel.getFeatureClassLabel(i)) {
-                                case 1:
+                            switch (featureExtractionModel.getLabel(i)) {
+                                case 0:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesWake.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
                                     break;
-                                case 2:
+                                case 1:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesN1.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
                                     break;
-                                case 3:
+                                case 2:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesN2.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
                                     break;
-                                case 4:
+                                case 3:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesN3.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
@@ -205,7 +205,7 @@ public class FXScatterPlot implements Initializable {
                                     seriesRem.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
                                     break;
-                                case 0:
+                                case -1:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesUnclassified.getData().add(dataItem);
                                     plotItemsMap.put(dataItem.getNode(), i);
@@ -224,7 +224,7 @@ public class FXScatterPlot implements Initializable {
                             for (XYChart.Data<Number, Number> d : series.getData()) {
                                 nodeToXYDataMap.put(d.getNode(), d);
 
-                                d.getNode().opacityProperty().set(0.5);
+                                d.getNode().opacityProperty().set(0.9);
                                 bm = d.getNode().blendModeProperty().get();
 
                                 d.getNode().setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -255,7 +255,7 @@ public class FXScatterPlot implements Initializable {
                                     public void handle(MouseEvent arg0) {
                                         d.getNode().setEffect(null);
                                         d.getNode().setCursor(Cursor.DEFAULT);
-                                        d.getNode().setOpacity(0.5);
+                                        d.getNode().setOpacity(0.9);
                                         d.getNode().blendModeProperty().set(bm);
                                     }
                                 });
@@ -311,7 +311,7 @@ public class FXScatterPlot implements Initializable {
         seriesUnclassified.getData().remove(xyData);
         seriesWake.getData().remove(xyData);
 
-        int label = featureExtractionModel.getFeatureClassLabel(currentEpoch);
+        int label = featureExtractionModel.getLabel(currentEpoch);
         switch (label) {
             case 1:
                 seriesWake.getData().add(xyData);
@@ -345,7 +345,7 @@ public class FXScatterPlot implements Initializable {
 
         node = plotItemsMap.inverse().get(lastEpoch);
         node.setEffect(null);
-        node.setOpacity(0.5);
+        node.setOpacity(0.9);
         node.blendModeProperty().set(bm);
 
         lastEpoch = currentEpoch;

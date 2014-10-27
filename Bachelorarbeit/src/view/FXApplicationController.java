@@ -75,7 +75,7 @@ import tools.Util;
 
 public class FXApplicationController implements Initializable {
 
-    private FXHypnogrammController hypnogramm;
+    private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
 
@@ -92,7 +92,6 @@ public class FXApplicationController implements Initializable {
     private FeatureExtractionController featureExtractionController;
     private FXElectrodeConfiguratorController config;
 
-    private final boolean autoMode;
     private final boolean recreateModelMode;
     private boolean initStarted = false;
     private String currentChannelName = null;
@@ -134,7 +133,7 @@ public class FXApplicationController implements Initializable {
     @FXML
     private ToggleButton artefactButton;
     @FXML
-    private ToggleButton arrousalButton;
+    private ToggleButton arousalButton;
     @FXML
     private ToggleButton stimulationButton;
     @FXML
@@ -207,7 +206,7 @@ public class FXApplicationController implements Initializable {
     @FXML
     ProgressBar progressBar;
 
-    public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean autoMode, boolean recreateModelMode) {
+    public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean recreateModelMode) {
         modulo = 2; //take every value for display
 
         primaryStage = new Stage();
@@ -217,9 +216,6 @@ public class FXApplicationController implements Initializable {
         this.featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
         this.viewModel = viewModel;
 
-        featureExtractionModel.setAutoMode(autoMode);
-
-        this.autoMode = featureExtractionModel.isAutoMode();
         this.recreateModelMode = recreateModelMode;
 
         if (!recreateModelMode) {
@@ -286,7 +282,7 @@ public class FXApplicationController implements Initializable {
 
         checkProp();
 
-        if (autoMode || recreateModelMode) {
+        if (recreateModelMode) {
             updateStage();
         }
 
@@ -301,7 +297,7 @@ public class FXApplicationController implements Initializable {
         electrodeConfiguratorButton.setSelected(viewModel.isElectrodeConfiguratorActive());
 //        classifyButton.setSelected(viewModel.);
 //        hypnogramButton.setSelected(viewModel.isHypnogrammActive());
-        
+
         initStarted = true;
     }
 
@@ -485,7 +481,7 @@ public class FXApplicationController implements Initializable {
                         updateProbabilities();
 
                         if (viewModel.isHypnogrammActive()) {
-                            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+                            hypnogram.changeCurrentEpochMarker();
                         }
 
                         overlay3.getChildren().clear();
@@ -564,30 +560,30 @@ public class FXApplicationController implements Initializable {
 
     private void updateStage() {
         // (1: W, 2: N1, 3: N2, 4: N3, 5: REM)
-        int label = featureExtractionModel.getFeatureClassLabel(currentEpoch);
+        int label = featureExtractionModel.getLabel(currentEpoch);
         switch (label) {
-            case 1:
+            case 0:
                 awakeButton.setSelected(true);
                 s1Button.setSelected(false);
                 s2Button.setSelected(false);
                 s3Button.setSelected(false);
                 remButton.setSelected(false);
                 break;
-            case 2:
+            case 1:
                 awakeButton.setSelected(false);
                 s1Button.setSelected(true);
                 s2Button.setSelected(false);
                 s3Button.setSelected(false);
                 remButton.setSelected(false);
                 break;
-            case 3:
+            case 2:
                 awakeButton.setSelected(false);
                 s1Button.setSelected(false);
                 s2Button.setSelected(true);
                 s3Button.setSelected(false);
                 remButton.setSelected(false);
                 break;
-            case 4:
+            case 3:
                 awakeButton.setSelected(false);
                 s1Button.setSelected(false);
                 s2Button.setSelected(false);
@@ -601,7 +597,7 @@ public class FXApplicationController implements Initializable {
                 s3Button.setSelected(false);
                 remButton.setSelected(true);
                 break;
-            default:
+            case -1:
                 awakeButton.setSelected(false);
                 s1Button.setSelected(false);
                 s2Button.setSelected(false);
@@ -610,30 +606,21 @@ public class FXApplicationController implements Initializable {
                 break;
         }
 
-        if (featureExtractionModel.getEpochProperty(currentEpoch) != null) {
-            Integer[] prop = featureExtractionModel.getEpochProperty(currentEpoch);
-
-            if (prop[0] == 1) {
-                artefactButton.setSelected(true);
-            } else {
-                artefactButton.setSelected(false);
-            }
-
-            if (prop[1] == 1) {
-                arrousalButton.setSelected(true);
-            } else {
-                arrousalButton.setSelected(false);
-            }
-
-            if (prop[2] == 1) {
-                stimulationButton.setSelected(true);
-            } else {
-                stimulationButton.setSelected(false);
-            }
-
+        if (featureExtractionModel.getArtefact(currentEpoch) == 1) {
+            artefactButton.setSelected(true);
         } else {
             artefactButton.setSelected(false);
-            arrousalButton.setSelected(false);
+        }
+
+        if (featureExtractionModel.getArousal(currentEpoch) == 1) {
+            arousalButton.setSelected(true);
+        } else {
+            arousalButton.setSelected(false);
+        }
+
+        if (featureExtractionModel.getStimulation(currentEpoch) == 1) {
+            stimulationButton.setSelected(true);
+        } else {
             stimulationButton.setSelected(false);
         }
     }
@@ -724,7 +711,7 @@ public class FXApplicationController implements Initializable {
         updateProbabilities();
 
         if (viewModel.isHypnogrammActive()) {
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+            hypnogram.changeCurrentEpochMarker();
         }
 
         if (viewModel.isScatterPlotActive()) {
@@ -761,7 +748,7 @@ public class FXApplicationController implements Initializable {
         } else {
             overlay4.getChildren().clear();
         }
-        
+
         if (viewModel.isFiltersActive() == true) {
             filterEpoch();
         }
@@ -1053,18 +1040,6 @@ public class FXApplicationController implements Initializable {
     }
 
     @FXML
-    protected void showHypnogrammAction() {
-        if (viewModel.isHypnogrammActive() == false) {
-            hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
-            viewModel.setHypnogrammActive(true);
-        } else {
-            hypnogramm.bringToFront();
-        }
-
-    }
-
-    @FXML
     protected void closeAction() {
         System.exit(0);
     }
@@ -1133,7 +1108,7 @@ public class FXApplicationController implements Initializable {
                 updateStage();
 
                 if (viewModel.isHypnogrammActive()) {
-                    hypnogramm.reloadHypnogramm();
+                    hypnogram.updateHypnogram();
                 }
 
                 if (viewModel.isEvaluationWindowActive()) {
@@ -1150,7 +1125,7 @@ public class FXApplicationController implements Initializable {
         }
 
         if (viewModel.isHypnogrammActive()) {
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+            hypnogram.changeCurrentEpochMarker();
         }
 
     }
@@ -1166,18 +1141,18 @@ public class FXApplicationController implements Initializable {
             String[] rowArray = row.split(" ");
 
             if (Integer.parseInt(rowArray[0]) == 5) {
-                featureExtractionModel.setFeatureClassLabel(epoch, 5);
+                featureExtractionModel.setLabel(epoch, 5);
             } else {
                 int label = Integer.parseInt(rowArray[0]);
-                featureExtractionModel.setFeatureClassLabel(epoch, label + 1);
+                featureExtractionModel.setLabel(epoch, label);
             }
 
             if (Integer.parseInt(rowArray[1]) == 1) {
-                featureExtractionModel.addArrousalToEpochProperty(epoch);
+                featureExtractionModel.addArousalToEpochProperty(epoch);
             }
 
             if (Integer.parseInt(rowArray[1]) == 2) {
-                featureExtractionModel.addArrousalToEpochProperty(epoch);
+                featureExtractionModel.addArousalToEpochProperty(epoch);
             }
 
             if (Integer.parseInt(rowArray[1]) == 3) {
@@ -1241,48 +1216,41 @@ public class FXApplicationController implements Initializable {
     // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void saveFile(File file) {
+        FileWriter fileWriter = null;
         try {
-            FileWriter fileWriter = null;
-
             fileWriter = new FileWriter(file);
 
+            String content = "Stage" + " "
+                    + "Arousal" + " "
+                    + "Artefact" + " "
+                    + "Stimulation"
+                    + "\n";
+            fileWriter.write(content);
+
             for (int i = 0; i < dataPointsModel.getNumberOf30sEpochs(); i++) {
-                int prop = 0;
+                featureExtractionModel.getLabel(i);
 
-                if (featureExtractionModel.getEpochProperty(i) != null) {
-                    Integer[] property = featureExtractionModel.getEpochProperty(i);
-
-                    if (property[0] == 1) {
-                        prop = 2;
-                    }
-
-                    if (property[1] == 1) {
-                        prop = 1;
-                    }
-
-                    if (property[2] == 1) {
-                        prop = 3;
-                    }
-                }
-
-                int classLabel = featureExtractionModel.getFeatureClassLabel(i);
-
-                if (classLabel == 5) {
-                    classLabel = 5;
-                } else {
-                    classLabel = classLabel - 1;
-                }
-
-                String content = classLabel + " " + prop + "\n";
+                content = featureExtractionModel.getLabel(i) + " "
+                        + featureExtractionModel.getArousal(i) + " "
+                        + featureExtractionModel.getArtefact(i) + " "
+                        + featureExtractionModel.getStimulation(i) + " "
+                        + "\n";
                 fileWriter.write(content);
             }
 
-            fileWriter.close();
             System.out.println("Finish writing!");
         } catch (IOException ex) {
             popUp.createPopup("Could not save Hypnogramm!");
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
     }
 
     @FXML
@@ -1338,31 +1306,31 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void awakeButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 1);
+        featureExtractionModel.setLabel(currentEpoch, 0);
         updateWindows();
     }
 
     @FXML
     protected void s1ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 2);
+        featureExtractionModel.setLabel(currentEpoch, 1);
         updateWindows();
     }
 
     @FXML
     protected void s2ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 3);
+        featureExtractionModel.setLabel(currentEpoch, 2);
         updateWindows();
     }
 
     @FXML
     protected void s3ButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 4);
+        featureExtractionModel.setLabel(currentEpoch, 3);
         updateWindows();
     }
 
     @FXML
     protected void remButtonOnAction() {
-        featureExtractionModel.setFeatureClassLabel(currentEpoch, 5);
+        featureExtractionModel.setLabel(currentEpoch, 5);
         updateWindows();
     }
 
@@ -1373,8 +1341,12 @@ public class FXApplicationController implements Initializable {
     }
 
     @FXML
-    protected void arrousalButtonOnAction() {
-        featureExtractionModel.addArrousalToEpochProperty(currentEpoch);
+    protected void arousalButtonOnAction() {
+        if ((featureExtractionModel.getArousal(currentEpoch) == 0)
+                && (featureExtractionModel.getArtefact(currentEpoch) == 0)) {
+            featureExtractionModel.addArtefactToEpochProperty(currentEpoch);
+        }
+        featureExtractionModel.addArousalToEpochProperty(currentEpoch);
         updateWindows();
     }
 
@@ -1448,6 +1420,12 @@ public class FXApplicationController implements Initializable {
             updateProbabilities();
             updateStage();
 
+            if (hypnogram != null) {
+                hypnogram.close();
+                hypnogram = null;
+                viewModel.setHypnogrammActive(false);
+            }
+
             hypnogramAction();
 
             classifyButton.setDisable(true);
@@ -1503,9 +1481,12 @@ public class FXApplicationController implements Initializable {
         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
             output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
 
-            int classLabel = Doubles.indexOf(output, Doubles.max(output)) + 1;
+            int classLabel = Doubles.indexOf(output, Doubles.max(output));
+            if (classLabel == 4) {
+                classLabel = 5;
+            }
             featureExtractionModel.setPredictProbabilities(i, output.clone());
-            featureExtractionModel.setFeatureClassLabel(i, classLabel);
+            featureExtractionModel.setLabel(i, classLabel);
         }
         featureExtractionModel.setClassificationDone(true);
 
@@ -1534,38 +1515,25 @@ public class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
+    @FXML
     private void hypnogramAction() {
-        if (!featureExtractionModel.isReadinDone()) {
-            dataReaderController.readAll(5);
-            featureExtractionModel.setReadinDone(true);
-
-            dataPointsModel.setFeatureChannelData(
-                    FeatureExtractionController.assembleData(
-                            dataPointsModel.rawEpochs,
-                            dataPointsModel.getNumberOf30sEpochs() * 3000)
-            );
-
-            Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
-                    featureExtractionModel.getHighpassCoefficients());
-
-        }
-
-        if (hypnogramm == null) {
-            hypnogramm = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
+        if (hypnogram == null) {
+            hypnogram = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
+            viewModel.setHypnogrammActive(true);
         }
 
         if (viewModel.isHypnogrammActive() == false) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+            hypnogram.updateHypnogram();
+            hypnogram.changeCurrentEpochMarker();
 
-            hypnogramm.show();
-            hypnogramm.bringToFront();
+            hypnogram.show();
+            hypnogram.bringToFront();
             viewModel.setHypnogrammActive(true);
 
         } else {
-            hypnogramm.bringToFront();
+            hypnogram.bringToFront();
             viewModel.setHypnogrammActive(true);
-            hypnogramm.reloadHypnogramm();
+            hypnogram.updateHypnogram();
         }
     }
 
@@ -1610,22 +1578,27 @@ public class FXApplicationController implements Initializable {
 
         if (ke.getCode() == KeyCode.W) {
             awakeButtonOnAction();
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.R) {
             remButtonOnAction();
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.DIGIT1) {
             s1ButtonOnAction();
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.DIGIT2) {
             s2ButtonOnAction();
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.DIGIT3) {
             s3ButtonOnAction();
+            goToEpoch(currentEpoch + 1);
         }
 
         if (ke.getCode() == KeyCode.A) {
@@ -1633,7 +1606,7 @@ public class FXApplicationController implements Initializable {
         }
 
         if (ke.getCode() == KeyCode.M) {
-            arrousalButtonOnAction();
+            arousalButtonOnAction();
         }
 
         if (ke.getCode() == KeyCode.S) {
@@ -1688,8 +1661,8 @@ public class FXApplicationController implements Initializable {
         }
 
         if (viewModel.isHypnogrammActive()) {
-            hypnogramm.reloadHypnogramm();
-            hypnogramm.changeCurrentEpochMarker(currentEpoch);
+            hypnogram.updateHypnogram();
+            hypnogram.changeCurrentEpochMarker();
         }
 
         if (viewModel.isScatterPlotActive()) {
@@ -1714,6 +1687,7 @@ public class FXApplicationController implements Initializable {
             loadEpoch(currentEpoch);
             updateEpoch();
         }
+        lineChart.requestFocus();
     }
 
     @FXML
@@ -1727,6 +1701,7 @@ public class FXApplicationController implements Initializable {
         }
         loadEpoch(currentEpoch);
         updateEpoch();
+        lineChart.requestFocus();
     }
 
     @FXML
@@ -1743,16 +1718,27 @@ public class FXApplicationController implements Initializable {
             loadEpoch(currentEpoch);
             updateEpoch();
         }
-
+        lineChart.requestFocus();
     }
 
     private void tooltips() {
-        help1.setTooltip(new Tooltip("Slow wave activity ruler (K)"));
+        help1.setTooltip(new Tooltip("75µV bars (L)"));
+        kComplex.setTooltip(new Tooltip("K-complex measurement tool (K)"));
         classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F7)"));
         visualizeButton.setTooltip(new Tooltip("Show cluster plot (F8)"));
         electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F9)"));
         filterButton.setTooltip(new Tooltip("Filters on/off (F10)"));
         kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F11)"));
         dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F12)"));
+        s1Button.setTooltip(new Tooltip("Sleep stage N1 (1)"));
+        s2Button.setTooltip(new Tooltip("Sleep stage N2 (2)"));
+        s3Button.setTooltip(new Tooltip("Sleep stage N3 (3)"));
+        awakeButton.setTooltip(new Tooltip("Wake (W)"));
+        remButton.setTooltip(new Tooltip("REM (R)"));
+        arousalButton.setTooltip(new Tooltip("Movement arousal (M)"));
+        artefactButton.setTooltip(new Tooltip("Artefact (A)"));
+        stimulationButton.setTooltip(new Tooltip("Stimulation (S)"));
+        clearButton.setTooltip(new Tooltip("Clear (C)"));
+
     }
 }

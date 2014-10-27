@@ -113,7 +113,7 @@ public class MainController extends Application {
                     @Override
                     public void run() {
                         FXViewModel viewModel = new FXViewModel();
-                        FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, featureExtractionModel.isAutoMode(), true);
+                        FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, true);
                         viewModel.setAppController(appController);
                         primaryStage.close();
                     }

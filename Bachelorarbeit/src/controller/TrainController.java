@@ -160,7 +160,7 @@ public class TrainController extends Thread {
 					if (currentEpochPos == (respectiveFeatureExtraxtionModel.getLengthOfOneEpoch() + 1)) {
 						
 						double label = epoch.get(0);
-						respectiveFeatureExtraxtionModel.setFeatureClassLabel(currentEpoch, label);
+						respectiveFeatureExtraxtionModel.setLabel(currentEpoch, (int)label);
 						
 						epoch.remove(0);
 						
