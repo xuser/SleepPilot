@@ -113,6 +113,7 @@ public class FXHypnogrammController implements Initializable {
             @Override
             public void handle(WindowEvent we) {
                 viewModel.setHypnogrammActive(false);
+                appController.updateWindows();
                 System.out.println("Hypnogramm is closing.");
             }
 

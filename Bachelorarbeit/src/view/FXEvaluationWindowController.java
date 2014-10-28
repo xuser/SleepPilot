@@ -111,6 +111,7 @@ public class FXEvaluationWindowController implements Initializable {
             @Override
             public void handle(WindowEvent we) {
                 viewModel.setEvaluationWindowActive(false);
+                appController.updateWindows();
                 System.out.println("EvaluationWindow is closing.");
             }
 

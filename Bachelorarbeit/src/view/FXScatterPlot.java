@@ -68,10 +68,9 @@ public class FXScatterPlot implements Initializable {
     final InnerShadow ds = new InnerShadow(20, Color.YELLOW);
 
     int lastEpoch = 0;
+    public boolean isPainted = false;
 
     BlendMode bm;
-
-    public boolean scatterChartDone = false;
 
     private HashBiMap<Node, Integer> plotItemsMap;
     private HashMap<Node, XYChart.Data> nodeToXYDataMap;
@@ -121,6 +120,7 @@ public class FXScatterPlot implements Initializable {
             @Override
             public void handle(WindowEvent we) {
                 viewModel.setScatterPlotActive(false);
+                appController.updateWindows();
                 System.out.println("Scatter Plot is closing.");
             }
 
@@ -151,18 +151,16 @@ public class FXScatterPlot implements Initializable {
                     }
                 });
 
-                if (!featureExtractionModel.isTsneComputed()) {
-                    TSNE tsne = new TSNE(Util.floatToDouble(featureExtractionModel.getFeatures()));
-                    featureExtractionModel.setTsneFeatures(tsne.tsne());
-                    featureExtractionModel.setTsneComputed(true);
-                }
-
-                final double[][] output = featureExtractionModel.getTsneFeatures();
-
                 Platform.runLater(new Runnable() {
 
                     @Override
                     public void run() {
+                        computeFeatures();
+
+                        scatterChart.getData().clear();
+                        isPainted = false;
+
+                        final double[][] output = featureExtractionModel.getTsneFeatures();
 
                         seriesRem = new XYChart.Series();
                         seriesRem.setName("REM");
@@ -277,12 +275,12 @@ public class FXScatterPlot implements Initializable {
                             }
                         }
 
-                        scatterChartDone = true;
                         scatterChart.requestFocus();
-
+                        isPainted = true;
                     }
 
-                });
+                }
+                );
 
                 Platform.runLater(new Runnable() {
 
@@ -298,6 +296,7 @@ public class FXScatterPlot implements Initializable {
         };
 
         Thread thread = new Thread(task);
+
         thread.start();
         try {
             thread.join();
@@ -317,15 +316,11 @@ public class FXScatterPlot implements Initializable {
         Node node = plotItemsMap.inverse().get(currentEpoch);
         XYChart.Data xyData = nodeToXYDataMap.get(node);
 
-        
-        
         seriesN2.getData().remove(xyData);
         seriesN3.getData().remove(xyData);
         seriesRem.getData().remove(xyData);
         seriesN1.getData().remove(xyData);
         seriesWake.getData().remove(xyData);
-        
-        
 
         int label = featureExtractionModel.getLabel(currentEpoch);
         switch (label) {
@@ -380,4 +375,12 @@ public class FXScatterPlot implements Initializable {
         stage.close();
     }
 
+    public void computeFeatures() {
+        if (!featureExtractionModel.isTsneComputed()) {
+            TSNE tsne = new TSNE(Util.floatToDouble(featureExtractionModel.getFeatures()));
+            featureExtractionModel.setTsneFeatures(tsne.tsne());
+            featureExtractionModel.setTsneComputed(true);
+        }
+
+    }
 }

@@ -227,6 +227,7 @@ public class FXStartController implements Initializable {
                                 }
                             }
                         });
+                        
                         //Create application controller
                         System.out.println("AppController starting!");
                         Platform.runLater(new Runnable() {

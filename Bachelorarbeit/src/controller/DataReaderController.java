@@ -79,6 +79,7 @@ public class DataReaderController {
 
     // TODO: DataFile have to be closed at the end!
     public void readAll(int channel) {
+        respectiveModel.rawEpochs.clear();
         for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
             tmpEpoch = read(channel, i);
             respectiveModel.addRawEpoch(tmpEpoch);

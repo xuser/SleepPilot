@@ -126,6 +126,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
             @Override
             public void handle(WindowEvent we) {
                 view.setElectrodeConfiguratorActive(false);
+                appController.updateWindows();
             }
 
         });

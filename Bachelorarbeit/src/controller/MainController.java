@@ -131,10 +131,10 @@ public class MainController extends Application {
         }
     }
 
-    public static void setFeatureExtractionModel(FeatureExtractionModel model) {
+    public static void setFeatureExtractionModel(FeatureExtractionModel model){
         featureExtractionModel = model;
     }
-
+            
     /**
      * Starts the application with the needed parameters.
      *
@@ -142,6 +142,7 @@ public class MainController extends Application {
      * @throws InterruptedException
      */
     public static void main(String[] args) throws InterruptedException {
+
         launch(args);
 
     }

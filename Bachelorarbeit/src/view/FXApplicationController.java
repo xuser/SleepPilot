@@ -82,6 +82,7 @@ import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
 import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
 import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 import org.jdsp.iirfilterdesigner.model.FilterType;
+import tsne.TSNE;
 
 public class FXApplicationController implements Initializable {
 
@@ -134,7 +135,8 @@ public class FXApplicationController implements Initializable {
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
 
-    int modulo = 1;
+    int modulo;
+    boolean recompute = false;
 
     @FXML
     private ToggleButton awakeButton;
@@ -300,16 +302,24 @@ public class FXApplicationController implements Initializable {
 
         ObservableList<String> choices = FXCollections.observableArrayList(Arrays.asList(channelNames));
         choiceBox.setItems(choices);
-        choiceBox.getSelectionModel().select(5);
 
         choiceBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
 
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 featureExtractionModel.setFeatureChannel(newValue.intValue());
+                featureExtractionModel.setTsneComputed(false);
+                featureExtractionModel.setFeaturesComputed(false);
+                featureExtractionModel.setClassificationDone(false);
+                featureExtractionModel.setReadinDone(false);
+                classifyButton.setDisable(false);
+                recompute = true;
             }
 
         });
+
+        choiceBox.getSelectionModel().select(5);
+        System.out.println(featureExtractionModel.getFeatureChannel());
         choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
 
         tooltips();
@@ -324,8 +334,6 @@ public class FXApplicationController implements Initializable {
 
         updateWindows();
 
-//        classifyButton.setSelected(viewModel.);
-//        hypnogramButton.setSelected(viewModel.isHypnogrammActive());
         featureExtractionModel.setFileLocation(dataPointsModel.getOrgFile());
     }
 
@@ -526,7 +534,7 @@ public class FXApplicationController implements Initializable {
 
             }
         });
-        
+
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override
@@ -1367,42 +1375,17 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void classifyButtonAction() {
+        computeFeatures();
 
-        if (featureExtractionModel.isClassificationDone() == false) {
-
-            if (!featureExtractionModel.isReadinDone()) {
-                dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
-                featureExtractionModel.setReadinDone(true);
-
-                dataPointsModel.setFeatureChannelData(
-                        featureExtractionController.assembleData(
-                                dataPointsModel.rawEpochs,
-                                dataPointsModel.getNumberOf30sEpochs() * 3000)
-                );
-
-                Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
-                        getHighpassCoefficients());
-
-            }
-
-            if (!featureExtractionModel.isFeaturesComputed()) {
-                featureExtractionController.start();
-                featureExtractionModel.setFeaturesComputed(true);
-            }
-
-            if (!featureExtractionModel.isClassificationDone()) {
-                classify();
-                featureExtractionModel.setClassificationDone(true);
-            }
-
-            viewModel.setHypnogrammActive(true);
-            updateWindows();
-
-            classifyButton.setDisable(true);
+        if (!featureExtractionModel.isClassificationDone()) {
+            classify();
             featureExtractionModel.setClassificationDone(true);
-        } else {
-            classifyButton.setDisable(true);
         }
+
+        updateWindows();
+
+        classifyButton.setDisable(true);
+
     }
 
     @FXML
@@ -1416,7 +1399,6 @@ public class FXApplicationController implements Initializable {
         classifyButtonAction();
         updateWindows();
 
-        lineChart.requestFocus();
     }
 
     public void classify() {
@@ -1444,20 +1426,20 @@ public class FXApplicationController implements Initializable {
 //                }
 //            }
 //        }
-        NeuralNetworks nn = new NeuralNetworks("D:\\annDefinition1");
+        NeuralNetworks nn = new NeuralNetworks("annDefinition1");
 
         double[] output;
         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
-            if (featureExtractionModel.getLabel(i) == -1) {
-                output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
 
-                int classLabel = Doubles.indexOf(output, Doubles.max(output));
-                if (classLabel == 4) {
-                    classLabel = 5;
-                }
-                featureExtractionModel.setPredictProbabilities(i, output.clone());
-                featureExtractionModel.setLabel(i, classLabel);
+            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
+
+            int classLabel = Doubles.indexOf(output, Doubles.max(output));
+            if (classLabel == 4) {
+                classLabel = 5;
             }
+            featureExtractionModel.setPredictProbabilities(i, output.clone());
+            featureExtractionModel.setLabel(i, classLabel);
+
         }
         featureExtractionModel.setClassificationDone(true);
 
@@ -1541,11 +1523,17 @@ public class FXApplicationController implements Initializable {
         if (viewModel.isScatterPlotActive()) {
             if (scatterPlot == null) {
                 scatterPlot = new FXScatterPlot(dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
-            }
-            if (scatterPlot.scatterChartDone) {
-                scatterPlot.updateScatterPlot();
-                scatterPlot.changeCurrentEpochMarker();
-                scatterPlot.show();
+            } else {
+                if (recompute) {
+                    scatterPlot.paintScatterChart();
+                    recompute=false;
+                }
+
+                if (scatterPlot.isPainted) {
+                    scatterPlot.updateScatterPlot();
+                    scatterPlot.changeCurrentEpochMarker();
+                    scatterPlot.show();
+                }
             }
 
         } else {
@@ -1703,7 +1691,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    private void updateWindows() {
+    public void updateWindows() {
         updateStage();
         updateProbabilities();
 
@@ -1894,5 +1882,24 @@ public class FXApplicationController implements Initializable {
         return lowpassCoefficients;
     }
 
-    
+    private void computeFeatures() {
+        if (!featureExtractionModel.isReadinDone()) {
+            dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
+            featureExtractionModel.setReadinDone(true);
+
+            dataPointsModel.setFeatureChannelData(
+                    featureExtractionController.assembleData(
+                            dataPointsModel.rawEpochs,
+                            dataPointsModel.getNumberOf30sEpochs() * 3000)
+            );
+
+            Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
+                    getHighpassCoefficients());
+        }
+
+        if (!featureExtractionModel.isFeaturesComputed()) {
+            featureExtractionController.start();
+            featureExtractionModel.setFeaturesComputed(true);
+        }
+    }
 }
