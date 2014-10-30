@@ -18,7 +18,7 @@
 
 .chart-vertical-zero-line{
 	-fx-stroke: transparent;
-	-fx-background-color: lightgray;
+	-fx-background-color: transparent;
 } 
 .chart-horizontal-zero-line  {
     -fx-stroke: transparent;
@@ -28,4 +28,8 @@
 .chart-symbol{ 
     -fx-stroke: #a9e200;
     -fx-shape: "M 100, 100  m -75, 0 a 75,75 0 1,0 150,0 a 75,75 0 1,0 -150,0";
+}
+
+.chart-plot-background {
+-fx-background-color: transparent;
 }

@@ -77,13 +77,13 @@ public class FXScatterPlot implements Initializable {
 
     double opacity = 0.7;
 
-    public FXScatterPlot(DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FeatureExtractionController featureExtractionController, FXViewModel viewModel) {
+    public FXScatterPlot(FXApplicationController appController, DataReaderController dataReaderController, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FeatureExtractionController featureExtractionController, FXViewModel viewModel) {
         this.featureExtractionModel = featureExtractionModel;
         this.featureExtractionController = featureExtractionController;
         this.viewModel = viewModel;
         this.dataPointsModel = dataPointsModel;
         this.dataReaderController = dataReaderController;
-        this.appController = viewModel.getAppController();
+        this.appController = appController;
 
         stage = new Stage();
         BorderPane addGrid = new BorderPane();
@@ -104,12 +104,10 @@ public class FXScatterPlot implements Initializable {
 
         stage.setResizable(true);
         stage.setScene(scene);
-        stage.show();
+        stage.hide();
         stage.setTitle("Scatter Plot");
 
         progressIndicator.setVisible(false);
-        paintScatterChart();
-
     }
 
     @Override
@@ -138,7 +136,7 @@ public class FXScatterPlot implements Initializable {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void paintScatterChart() {
-
+        isPainted = false;
         Task<Void> task = new Task<Void>() {
 
             @Override
@@ -155,10 +153,9 @@ public class FXScatterPlot implements Initializable {
 
                     @Override
                     public void run() {
-                        computeFeatures();
-
                         scatterChart.getData().clear();
-                        isPainted = false;
+
+                        computeFeatures();
 
                         final double[][] output = featureExtractionModel.getTsneFeatures();
 
@@ -276,7 +273,7 @@ public class FXScatterPlot implements Initializable {
                         }
 
                         scatterChart.requestFocus();
-                        isPainted = true;
+                        isPainted=true;
                     }
 
                 }
@@ -310,7 +307,7 @@ public class FXScatterPlot implements Initializable {
         stage.toFront();
     }
 
-    public void updateScatterPlot() {
+    public void update() {
         int currentEpoch = appController.getCurrentEpoch();
 
         Node node = plotItemsMap.inverse().get(currentEpoch);

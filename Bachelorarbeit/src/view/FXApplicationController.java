@@ -339,7 +339,7 @@ public class FXApplicationController implements Initializable {
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
-
+        scatterPlot = new FXScatterPlot(this, dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
         overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
             @Override
@@ -1385,7 +1385,6 @@ public class FXApplicationController implements Initializable {
         updateWindows();
 
         classifyButton.setDisable(true);
-
     }
 
     @FXML
@@ -1394,11 +1393,13 @@ public class FXApplicationController implements Initializable {
             viewModel.setScatterPlotActive(false);
         } else {
             viewModel.setScatterPlotActive(true);
+            classifyButtonAction();
+            scatterPlot.paintScatterChart();
+            scatterPlot.show();
         }
 
-        classifyButtonAction();
+        
         updateWindows();
-
     }
 
     public void classify() {
@@ -1521,25 +1522,13 @@ public class FXApplicationController implements Initializable {
     @FXML
     protected void showScatterPlot() {
         if (viewModel.isScatterPlotActive()) {
-            if (scatterPlot == null) {
-                scatterPlot = new FXScatterPlot(dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
-            } else {
-                if (recompute) {
-                    scatterPlot.paintScatterChart();
-                    recompute=false;
-                }
-
-                if (scatterPlot.isPainted) {
-                    scatterPlot.updateScatterPlot();
-                    scatterPlot.changeCurrentEpochMarker();
-                    scatterPlot.show();
-                }
+            if (scatterPlot.isPainted) {
+                scatterPlot.update();
+                scatterPlot.changeCurrentEpochMarker();
+                scatterPlot.show();
             }
-
         } else {
-            if (scatterPlot != null) {
-                scatterPlot.hide();
-            }
+            scatterPlot.hide();
         }
     }
 
