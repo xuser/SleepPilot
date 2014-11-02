@@ -8,14 +8,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
-import org.jdsp.iirfilterdesigner.IIRDesigner;
-import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
-import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
-import org.jdsp.iirfilterdesigner.model.FilterType;
 import tools.Math2;
 import tools.Signal;
-import static tools.Signal.filtfilt;
 import tools.Util;
 
 /**
@@ -74,11 +68,11 @@ public class FeatureExtractionController {
         return features.toArray();
     }
 
-    public static double[] assembleData(ArrayList<TDoubleArrayList> epochedDataList, int capacity) {
+    public static double[] assembleData(ArrayList<double[]> epochedDataList, int capacity) {
         //assambled data of all epochs into one array
 
         TDoubleArrayList dataList = new TDoubleArrayList(capacity);
-        for (TDoubleArrayList list : epochedDataList) {
+        for (double[] list : epochedDataList) {
             dataList.addAll(list);
         }
 

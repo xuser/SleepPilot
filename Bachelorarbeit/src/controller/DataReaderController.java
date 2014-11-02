@@ -1,6 +1,5 @@
 package controller;
 
-import gnu.trove.list.array.TDoubleArrayList;
 import help.BinaryFormat;
 import help.DataFormat;
 import help.DataOrientation;
@@ -60,8 +59,9 @@ public class DataReaderController {
     int countChannels = 0;
 
     // Temp Epoch. Will be overridden by each reading operation
-    TDoubleArrayList tmpEpoch;
     Reader reader;
+    ByteBuffer buf;
+    double[] tmpEpoch;
 
     /**
      * Constructor which initialize this reader class.
@@ -81,37 +81,33 @@ public class DataReaderController {
     public void readAll(int channel) {
         respectiveModel.rawEpochs.clear();
         for (int i = 0; i < respectiveModel.getNumberOf30sEpochs(); i++) {
-            tmpEpoch = read(channel, i);
-            respectiveModel.addRawEpoch(tmpEpoch);
+            double[] target = new double[numberOfSamplesForOneEpoch];
+            respectiveModel.addRawEpoch(read(channel, i, target));
         }
         respectiveModel.setReadingComplete(true);
-
     }
 
-    public TDoubleArrayList read(int channel, int epoch) {
-        return reader.read(channel, epoch);
+    public double[] read(int channel, int epoch, double[] target) {
+        return reader.read(channel, epoch, target);
     }
 
-    public void init() {
-//		headerFile = new File(fileLocationPath);
-
+    public final void init() {
         if (file.getName().toLowerCase().endsWith(".smr")) {
 
             readHeaderFromSMR();
-
+            respectiveModel.setReadingHeaderComplete(true);
+            
             reader = new Reader() {
                 @Override
-                public TDoubleArrayList read(int channel, int epoch) {
+                public double[] read(int channel, int epoch, double[] target) {
                     int tmp = (int) (respectiveModel.getlChanDvd(channel) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
                     respectiveModel.setSamplingIntervall(tmp);
 
                     int numberOfDataPoints = ((respectiveModel.getBlocks(channel) - 1) * respectiveModel.getMaxData(channel) + respectiveModel.getSizeOfLastBlock(channel));
                     respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
 
-                    respectiveModel.setReadingHeaderComplete(true);
-
                     numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-                    return readSMRChannel(dataFile, channel, epoch);
+                    return readSMRChannel(dataFile, channel, epoch, target);
                 }
             };
 
@@ -131,6 +127,7 @@ public class DataReaderController {
 
             readHeaderFromVHDR();
             numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+            respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
 
             long bytes = 2;
             if (respectiveModel.getNumberOfDataPoints() == 0) {
@@ -143,7 +140,7 @@ public class DataReaderController {
                     }
                 }
                 try {
-                    respectiveModel.setNumberOfDataPoints((int) (dataFile.length()/bytes/(long)respectiveModel.getNumberOfChannels()));
+                    respectiveModel.setNumberOfDataPoints((int) (dataFile.length() / bytes / (long) respectiveModel.getNumberOfChannels()));
                 } catch (IOException ex) {
                     Logger.getLogger(DataReaderController.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -160,32 +157,26 @@ public class DataReaderController {
                 if (dataFormat.equals(DataFormat.BINARY)) {
                     switch (binaryFormat) {
                         case INT_16:
-                            reader = new Reader() {
-                                @Override
-                                public TDoubleArrayList read(int channel, int epoch) {
-                                    return readDataFileInt(dataFile, channel, epoch);
-                                }
-                            };
-
+                            buf = ByteBuffer.allocate(2 * numberOfSamplesForOneEpoch * respectiveModel.getNumberOfChannels());
                             break;
                         case IEEE_FLOAT_32:
-                            reader = new Reader() {
-                                @Override
-                                public TDoubleArrayList read(int channel, int epoch) {
-                                    return readDataFileFloat(dataFile, channel, epoch);
-                                }
-                            };
+                            buf = ByteBuffer.allocate(4 * numberOfSamplesForOneEpoch * respectiveModel.getNumberOfChannels());
                             break;
                         default:
                             System.err.println("No compatible binary format!");
                             break;
                     }
+                    reader = new Reader() {
+                        @Override
+                        public double[] read(int channel, int epoch, double[] target) {
+                            return readDataFile(dataFile, channel, epoch, target, binaryFormat);
+                        }
+                    };
                     //} else if (dataFormat.equals(DataFormat.ASCII)) {
                     //	readDataFileAscii(dataFileForAscii);
 
                 } else {
                     System.err.println("No compatible data format!");
-
                 }
 
             } else {
@@ -360,10 +351,8 @@ public class DataReaderController {
 
     }
 
-    public TDoubleArrayList readSMRChannel(RandomAccessFile dataFile, int channel, int epoch) {
-        TDoubleArrayList tmpEpoch = new TDoubleArrayList(numberOfSamplesForOneEpoch);
+    public double[] readSMRChannel(RandomAccessFile dataFile, int channel, int epoch, double[] target) {
 
-//        tmpEpoch.add((double) epoch);
         int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channelsToRead.get(0));
 
         int sampleNumberInBlock = 0;
@@ -384,7 +373,7 @@ public class DataReaderController {
                 inChannel = inChannel.position(channelPosition + 4);
                 ByteBuffer buf = ByteBuffer.allocate(4);
                 buf.order(ByteOrder.LITTLE_ENDIAN);
-                int bytesRead = inChannel.read(buf);
+                inChannel.read(buf);
                 buf.flip();
 
                 channelPosition = buf.getInt();
@@ -394,9 +383,10 @@ public class DataReaderController {
 
             FileChannel inChannel = dataFile.getChannel();
             inChannel = inChannel.position(channelPosition);
-            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 4);					// * 2 because we have two bytes for each sample
+            
+            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 4);// * 2 because we have two bytes for each sample
             buf.order(ByteOrder.LITTLE_ENDIAN);
-            int bytesRead = inChannel.read(buf);
+            inChannel.read(buf);
             buf.flip();
 
             buf.position(buf.position() + 4);											// + 4 because we skip lastBlock element
@@ -409,18 +399,17 @@ public class DataReaderController {
                 runIndex = numberOfSamplesForOneEpoch;
 
                 for (int i = 0; i < runIndex; i++) {
-                    tmpEpoch.add((double) buf.getShort());
+                    target[i] = (double) buf.getShort();
                 }
 
             } else {
-
                 for (int i = 0; i < runIndex; i++) {
-                    tmpEpoch.add((double) buf.getShort());
+                    target[i] = (double) buf.getShort();
                 }
 
                 int nextBlock = channelPosition;
                 while (nextBlock != -1) {
-                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock);
+                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock, target);
                 }
 
             }
@@ -430,45 +419,40 @@ public class DataReaderController {
             e.printStackTrace();
         }
 
-        return tmpEpoch;
+        return target;
 
     }
 
-    private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock) throws IOException {
+    private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock, double[] target) throws IOException {
 
         FileChannel inChannel = dataFile.getChannel();
         inChannel = inChannel.position(succBlock);
-        int lastBlock = buf.getInt();
         int nextBlock = buf.getInt();
 
         buf.position(buf.position() + 8);
-        int channelNumber = buf.getShort();
+
         int itemsInBlock = buf.getShort();
 
-        int x = 0;
-        while ((x < itemsInBlock) && (tmpEpoch.size() < (numberOfSamplesForOneEpoch + 1))) {
-            Double value = (double) (buf.getShort() * respectiveModel.getScale(channelsToRead.get(0)));
+        double value;
+
+        int i = 0;
+        while ((i < itemsInBlock) && (target.length < (numberOfSamplesForOneEpoch + 1))) {
+            value = (double) (buf.getShort() * respectiveModel.getScale(channelsToRead.get(0)));
             value = value / 6553.6;
             value = value + respectiveModel.getOffset(channelsToRead.get(0));
 
             // Rounded a mantisse with value 3
-            double rValue = Math.round(value * Math.pow(10d, 3));
-            rValue = rValue / Math.pow(10d, 3);
-            tmpEpoch.add(rValue);
+            value = Math.round(value * 1000.);
+            value = value / 1000.;
+            target[i] = value;
 
-            x++;
+            i++;
         }
 
-        if (tmpEpoch.size() == (numberOfSamplesForOneEpoch + 1)) {
+        if (target.length == (numberOfSamplesForOneEpoch + 1)) {
             nextBlock = -1;
         }
 
-        // Header information for this block
-//		System.out.println("LastBlock: " + lastBlock);
-//		System.out.println("NextBlock: " + nextBlock);
-//
-//		System.out.println("ChannelNumer: " + channelNumber);
-//		System.out.println("Items in Block: " + itemsInBlock);	
         return nextBlock;
     }
 
@@ -486,7 +470,7 @@ public class DataReaderController {
                 // Open DataFile
                 if (zeile.startsWith("DataFile=")) {
                     dataFileLocation = file.getParent() + File.separator + zeile.substring(9);
-                    dataFile = new RandomAccessFile(dataFileLocation, "rw");
+                    dataFile = new RandomAccessFile(dataFileLocation, "r");
                     respectiveModel.setDataFile(dataFile);
                 }
 
@@ -631,206 +615,56 @@ public class DataReaderController {
      * Reads the first data value of channel 1
      *
      * @param dataFile file with data content
-     * @param epoch the epoch which have to be read.
+     * @param channelToRead
+     * @param epochToRead the epoch which have to be read.
      * @return
      */
-    public TDoubleArrayList readDataFileInt(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
-
-        TDoubleArrayList tmpEpochInt = new TDoubleArrayList(numberOfSamplesForOneEpoch);
+    public double[] readDataFile(RandomAccessFile dataFile, int channelToRead, int epochToRead, double[] target, BinaryFormat binaryFormat) {
+        int bytes = 2;
+        if (binaryFormat == BinaryFormat.INT_16) {
+            bytes = 2;
+        }
+        if (binaryFormat == BinaryFormat.IEEE_FLOAT_32) {
+            bytes = 4;
+        }
 
         try {
-            /* ---- Start just for testing ---- */
-//			File file = new File("/Users/Nils/Desktop/Decodierte Ascii Werte.txt");
-//			FileWriter writer = new FileWriter(file, true);
-			/* ---- End just for testing ---- */
-
-//			long start = new Date().getTime();
-//			long time;
-//            tmpEpochInt.add((double) epochToRead);
             FileChannel inChannel = dataFile.getChannel();
-            inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 2) * respectiveModel.getNumberOfChannels()) + (channelToRead * 2));
-
-            ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch) * 2 * respectiveModel.getNumberOfChannels());
-
-            //ByteBuffer buf = ByteBuffer.allocate((int) dataFile.length());
+            // Set the start position in the file
+            inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * bytes) * respectiveModel.getNumberOfChannels()) + (channelToRead * bytes));
             buf.order(ByteOrder.LITTLE_ENDIAN);
-
-            int bytesRead = inChannel.read(buf);
-
-            // This function has to be called here, because you now know how big the matrix have to be
-            //respectiveModel.createDataMatrix();
-            //while (bytesRead != -1) {
+            inChannel.read(buf);
             // Make buffer ready for read
             buf.flip();
 
-            // Set the start position in the file
-            //buf.position((epochToRead * (numberOfSamplesForOneEpoch * 2)) + (channelToRead * 2));
+            final int increment = (respectiveModel.getNumberOfChannels() * bytes) - bytes;
+
+            double value;
+            int i = 0;
             while (buf.hasRemaining()) {
-                Double value = (buf.getShort() * channelResolution);
+                value = buf.getShort() * channelResolution;
 
                 // Rounded a mantisse with value 3
-                double rValue = Math.round(value * Math.pow(10d, 3));
-                rValue = rValue / Math.pow(10d, 3);
+                value = Math.round(value * 1000.);
+                value /= 1000.;
 
-                tmpEpochInt.add(rValue);
+                target[i] = value;
 
                 // This is the next sample in this epoch for the given channel
                 if (buf.hasRemaining()) {
-                    buf.position(buf.position() + (respectiveModel.getNumberOfChannels() * 2) - 2);
+                    buf.position(buf.position() + increment);
                 }
+                i++;
             }
-
             buf.clear();
-//				inChannel.close();
 
-//				time = new Date().getTime() - start;
-//				System.out.println("RunTime: " + time);
-            /*while (buf.hasRemaining()) {
-             Double value = (buf.getShort() * channelResolution);
-					
-             // Rounded a mantisse with value 3
-             BigDecimal myDec = new BigDecimal(value);
-             myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
-             value = myDec.doubleValue();
-					
-             if (row < respectiveModel.getNumberOfDataPoints()) {
-             respectiveModel.setDataPoints(value, row, column);
-             }
-					
-             if ((buf.position()/2) % respectiveModel.getNumberOfChannels() == 0) {
-             column = 0;
-             row = row + 1;
-             respectiveModel.setRowInSampleFile(row);
-             } else {
-             column = column + 1;
-             }
-									
-             /* ---- Start just for testing ---- */
-//				writer.write(value + " ");
-//				writer.flush();
-//				
-//				// Modulo
-//				if ((buf.position()/2) % respectiveModel.getNumberOfChannels() == 0) {
-//					writer.write(System.getProperty("line.separator"));
-//					writer.flush();
-//				}
-				/* ---- End just for testing ---- */
-            /*}
-				
-             buf.clear(); //make buffer ready for writing
-             bytesRead = inChannel.read(buf);
-             }*/
-//			dataFile.close();
-//			writer.close();  // Just for testing
         } catch (FileNotFoundException e) {
             System.err.println("No file found on current location.");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return tmpEpochInt;
-    }
-
-    /**
-     * Reads the given data file and prints it on hard disk
-     *
-     * @param dataFile
-     * @return
-     */
-    public TDoubleArrayList readDataFileFloat(RandomAccessFile dataFile, int channelToRead, int epochToRead) {
-
-        TDoubleArrayList tmpEpochFloat = new TDoubleArrayList();
-
-        try {
-            /* ---- Start just for testing ---- */
-//			File file = new File("/Users/Nils/Desktop/Decodierte Float Werte.txt");
-//			FileWriter writer = new FileWriter(file, true);
-			/* ---- End just for testing ---- */
-
-//            tmpEpochFloat.add((double) epochToRead);
-            FileChannel inChannel = dataFile.getChannel();
-            inChannel.position((epochToRead * (numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels()) + (channelToRead * 4));
-
-            ByteBuffer buf = ByteBuffer.allocate((numberOfSamplesForOneEpoch * 4) * respectiveModel.getNumberOfChannels());
-            buf.order(ByteOrder.LITTLE_ENDIAN);
-
-            int bytesRead = inChannel.read(buf);
-
-            // Make buffer ready for read
-            buf.flip();
-            while (buf.hasRemaining()) {
-                Double value = (buf.getFloat() * channelResolution);
-
-                // Rounded a mantisse with value 3
-                double rValue = Math.round(value * Math.pow(10d, 3));
-                rValue = rValue / Math.pow(10d, 3);
-
-                tmpEpochFloat.add(rValue);
-
-                // This is the next sample in this epoch for the given channel
-                if (buf.hasRemaining()) {
-                    buf.position(buf.position() + (respectiveModel.getNumberOfChannels() * 4) - 4);
-                }
-            }
-
-            buf.clear();
-
-            /*
-             // This function has to be called here, because you now know how big the matrix have to be
-             respectiveModel.createDataMatrix();
-			
-             while (bytesRead != -1) {
-
-             //Make buffer ready for read
-             buf.flip();
-				
-             while (buf.hasRemaining()) {
-					
-             Double value = (buf.getFloat() * channelResolution);
-					
-             // Rounded a mantisse with value 3
-             BigDecimal myDec = new BigDecimal(value);
-             myDec = myDec.setScale(3, BigDecimal.ROUND_HALF_UP);
-             value = myDec.doubleValue();
-					
-             if (row < respectiveModel.getNumberOfDataPoints()) {
-             respectiveModel.setDataPoints(value, row, column);
-             }
-					
-             if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
-             column = 0;
-             row = row + 1;
-             respectiveModel.setRowInSampleFile(row);
-             } else {
-             column = column + 1;
-             }			
-				
-             /* ---- Start just for testing ---- */
-//				writer.write(value + " ");
-//				writer.flush();
-//				
-//				// Modulo
-//				if ((buf.position()/4) % respectiveModel.getNumberOfChannels() == 0) {
-//					writer.write(System.getProperty("line.separator"));
-//					writer.flush();
-//				}
-				/* ---- End just for testing ---- */
-            /*}
-				
-             buf.clear(); //make buffer ready for writing
-             bytesRead = inChannel.read(buf);
-             }
-			
-             dataFile.close();*/
-//			writer.close(); //Just for testing
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return tmpEpochFloat;
-
+        return target;
     }
 
     /**
@@ -954,8 +788,8 @@ public class DataReaderController {
 
     public static class Reader {
 
-        public TDoubleArrayList read(int channel, int epoch) {
-            return null;
+        public double[] read(int channel, int epoch, double[] target) {
+            return target;
         }
     }
 

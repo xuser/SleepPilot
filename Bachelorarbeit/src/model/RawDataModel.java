@@ -39,13 +39,9 @@ public class RawDataModel implements Serializable {
      * This list keeps lists with the epochs (raw data). IMPORTANT: The head of
      * the inter list keeps the assosiated epoch.
      */
-    public ArrayList<TDoubleArrayList> rawEpochs = new ArrayList();
-
-    /**
-     * This list keeps lists with the epochs (filtered data). IMPORTANT: The
-     * head of the inter list keeps the assosiated epoch.
-     */
-    private LinkedList<LinkedList<Double>> filteredEpochs = new LinkedList<LinkedList<Double>>();
+    public ArrayList<double[]> rawEpochs = new ArrayList();
+    public double[][] rawEpoch;
+    
 
     /**
      * This variable holds the value which number of the samples has been read.
@@ -304,7 +300,7 @@ public class RawDataModel implements Serializable {
         return rowFilteredValues;
     }
 
-    public void addRawEpoch(TDoubleArrayList rawEpoch) {
+    public void addRawEpoch(double[] rawEpoch) {
         rawEpochs.add(rawEpoch);
     }
 
@@ -320,23 +316,6 @@ public class RawDataModel implements Serializable {
 
     public int getSizeOfRawEpochList() {
         return rawEpochs.size();
-    }
-
-    public void addFilteredEpoch(LinkedList<Double> filteredEpoch) {
-        filteredEpochs.add(filteredEpoch);
-    }
-
-    /**
-     * Polls the rawEpoch. Get and remove the head of the list.
-     *
-     * @return LinkedList with the epochs.
-     */
-    public LinkedList<Double> getFilteredEpoch() {
-        return filteredEpochs.poll();
-    }
-
-    public int getSizeOfFilteredEpochList() {
-        return filteredEpochs.size();
     }
 
     /**

@@ -1,5 +1,8 @@
 package view;
 
+import biz.source_code.dsp.filter.FilterCharacteristicsType;
+import biz.source_code.dsp.filter.FilterPassType;
+import biz.source_code.dsp.filter.IirFilterCoefficients;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -23,13 +26,13 @@ import controller.DataReaderController;
 import controller.FeatureExtractionController;
 import controller.ModelReaderWriterController;
 import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
 import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -82,7 +85,9 @@ import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
 import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
 import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 import org.jdsp.iirfilterdesigner.model.FilterType;
-import tsne.TSNE;
+
+import static tools.Signal.filtfilt;
+import static tools.Signal.upsample;
 
 public class FXApplicationController implements Initializable {
 
@@ -94,13 +99,14 @@ public class FXApplicationController implements Initializable {
 
     private FilterCoefficients lowpassCoefficients;
 
+    private IirFilterCoefficients decimationCoefficients;
+
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
 
-    //This epoch is just an puffer
-//    private LinkedList<LinkedList<Double>> nextEpoch = new LinkedList<LinkedList<Double>>();
-    private ArrayList<double[]> thisEpoch = new ArrayList();
+    final private double[][] thisEpoch;
+    TDoubleArrayList epoch;
 
     private FXPopUp popUp = new FXPopUp();
     private FXViewModel viewModel;
@@ -113,17 +119,11 @@ public class FXApplicationController implements Initializable {
 
     private final boolean recreateModelMode;
 
-    private double oldWidth;
-    private double growCoefWidth = 1.0;
-
-    private double oldHeight;
-    private double growCoefHeight = 1.0;
-
     private int currentEpoch = 0;
     private String[] channelNames;
 
     private HashMap<String, Double[]> allChannels = new HashMap();
-    LinkedList<Integer> activeChannels = new LinkedList();
+    TIntArrayList activeChannels = new TIntArrayList();
 
     private LinkedList<Line> lines = new LinkedList();
 
@@ -131,12 +131,15 @@ public class FXApplicationController implements Initializable {
     private BorderPane mainGrid;
     final private Scene scene;
 
+    private DoubleProperty space = new SimpleDoubleProperty(1.);
     private DoubleProperty scale = new SimpleDoubleProperty(1e-1);
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
 
     int modulo;
-    boolean recompute = false;
+    private boolean recompute = false;
+    private boolean help1Flag = false;
+    private boolean kComplexFlag = false;
 
     @FXML
     private ToggleButton awakeButton;
@@ -159,9 +162,6 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     private ToggleButton help1;
-
-    private boolean help1Flag = false;
-
     @FXML
     private ToggleButton kComplex;
 
@@ -179,10 +179,7 @@ public class FXApplicationController implements Initializable {
     @FXML
     private ToggleButton filterButton;
     @FXML
-    private ToggleButton hypnogramButton;
-
-    private boolean kComplexFlag = false;
-
+    private ToggleButton hypnogramButton;   
     @FXML
     private Label statusBarLabel1;
     @FXML
@@ -268,9 +265,6 @@ public class FXApplicationController implements Initializable {
         primaryStage.show();
         primaryStage.setTitle(dataPointsModel.getOrgFile().getName());
 
-        oldWidth = overlay3.getWidth();
-        oldHeight = overlay3.getHeight();
-
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
 
         //Configure lineChart
@@ -324,21 +318,26 @@ public class FXApplicationController implements Initializable {
 
         tooltips();
 
-        createFilters();
-        loadEpoch(currentEpoch);
-        showEpoch();
+        thisEpoch = dataPointsModel.rawEpoch;
 
-        showLabelsForEpoch();
+        createFilters();
+
+        loadEpoch(currentEpoch);
+
+        showEpoch();
 
         checkProp();
 
         updateWindows();
 
         featureExtractionModel.setFileLocation(dataPointsModel.getOrgFile());
+
+        paintSpacing();
     }
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
+        System.out.println("initialize called");
         scatterPlot = new FXScatterPlot(this, dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
         overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
@@ -348,6 +347,7 @@ public class FXApplicationController implements Initializable {
                 mouseY.set(mouse.getY());
 
                 if (kComplexFlag) {
+                    System.out.println("mouse handler");
                     if (mouse.getEventType() == MouseEvent.MOUSE_PRESSED) {
                         Line line = new Line();
                         line.setStyle("-fx-stroke: red;");
@@ -378,16 +378,6 @@ public class FXApplicationController implements Initializable {
                     }
 
                 }
-            }
-
-        });
-
-        overlay3.setOnMouseMoved(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent mouse) {
-                mouseX.set(mouse.getX());
-                mouseY.set(mouse.getY());
 
                 if (help1Flag) {
 
@@ -416,56 +406,16 @@ public class FXApplicationController implements Initializable {
                         }
                     }
 
-                    double space = 75.0 * zoom / yAxis.getUpperBound() * yAxis.getHeight();
-                    paintSpacing(space);
+                    space.set(75.0 * zoom / yAxis.getUpperBound() * yAxis.getHeight());
+
+                    line1.setVisible(true);
+                    line2.setVisible(true);
+                } else {
+                    line1.setVisible(false);
+                    line2.setVisible(false);
                 }
-
             }
 
-        });
-
-        primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
-                growCoefWidth = overlay3.getWidth() / oldWidth;
-                oldWidth = overlay3.getWidth();
-
-                for (int i = 0; i < lines.size(); i++) {
-                    Line line = lines.get(i);
-                    line.setLayoutX(line.getLayoutX() * growCoefWidth);
-                    line.setEndX(line.getEndX() * growCoefWidth);
-                    lines.set(i, line);
-                }
-
-            }
-        });
-
-        primaryStage.heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
-
-                growCoefHeight = overlay3.getHeight() / oldHeight;
-                oldHeight = overlay3.getHeight();
-
-                for (int i = 0; i < lines.size(); i++) {
-                    Line line = lines.get(i);
-                    line.setLayoutY(line.getLayoutY() * growCoefHeight);
-                    line.setEndY(line.getEndY() * growCoefHeight);
-                    lines.set(i, line);
-                }
-
-            }
-        });
-
-        overlay3.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-
-                lineChart.requestFocus();
-
-            }
         });
 
         //Key Listener
@@ -551,6 +501,7 @@ public class FXApplicationController implements Initializable {
 
         kComplexOnAction();
         help1OnAction();
+
     }
 
     private void refreshZoom(double zoom) {
@@ -674,9 +625,9 @@ public class FXApplicationController implements Initializable {
         hypnogramButton.setSelected(viewModel.isHypnogrammActive());
     }
 
-    public LinkedList<Integer> returnActiveChannels() {
+    public TIntArrayList returnActiveChannels() {
 
-        activeChannels = new LinkedList<Integer>();
+        activeChannels.clear();
 
         for (int i = 0; i < channelNames.length; i++) {
             Double[] tempProp = allChannels.get(channelNames[i]);
@@ -752,29 +703,35 @@ public class FXApplicationController implements Initializable {
         loadEpoch(currentEpoch);
         updateEpoch();
 
-        updateWindows();
+        updateStage();
+        updateProbabilities();
+        toolBarGoto.setText((currentEpoch + 1) + "");
+        statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
+
+        if (viewModel.isScatterPlotActive()) {
+            if (scatterPlot.isPainted) {
+                scatterPlot.changeCurrentEpochMarker();
+            }
+        }
 
         featureExtractionModel.setCurrentEpoch(currentEpoch);
 
         lineChart.requestFocus();
     }
 
-    private void paintSpacing(double space) {
-
-        double tmpSpace = space / 2;
-
-        line1.layoutYProperty().bind(scale.multiply(+tmpSpace).add(mouseY));
+    private void paintSpacing() {
+        System.out.println("paintSpacing called");
+        line1.layoutYProperty().bind(scale.multiply(space).multiply(1 / 2.).add(mouseY));
         line1.endXProperty().bind(overlay3.widthProperty());
-        line2.layoutYProperty().bind(scale.multiply(-tmpSpace).add(mouseY));
+        line2.layoutYProperty().bind(scale.multiply(space).multiply(-1 / 2.).add(mouseY));
         line2.endXProperty().bind(overlay3.widthProperty());
-
     }
 
     final public void loadEpoch(int numberOfEpoch) {
         returnActiveChannels();
-        for (Integer activeChannel : activeChannels) {
-            TDoubleArrayList epoch = dataReaderController.read(activeChannel, numberOfEpoch);
-            thisEpoch.add(activeChannel, epoch.toArray());
+        for (int i = 0; i < activeChannels.size(); i++) {
+            dataReaderController
+                    .read(activeChannels.get(i), numberOfEpoch, thisEpoch[activeChannels.get(i)]);
         }
 
         if (dataPointsModel.getSamplingRateConvertedToHertz() != 100) {
@@ -794,30 +751,29 @@ public class FXApplicationController implements Initializable {
         if ((viewModel.isDcRemoveActive() == true) && (viewModel.isFiltersActive() == false)) {
             removeDcOffset();
         }
-
     }
 
     final public void filterEpoch() {
-        for (Integer activeChannel : activeChannels) {
-            Signal.filtfilt(thisEpoch.get(activeChannel), getDisplayHighpassCoefficients());
-            Signal.filtfilt(thisEpoch.get(activeChannel), getDisplayLowpasCoefficients());
+        for (int i = 0; i < activeChannels.size(); i++) {
+            Signal.filtfilt(thisEpoch[activeChannels.get(i)], getDisplayHighpassCoefficients());
+//            Signal.filtfilt(thisEpoch[activeChannel], getDisplayLowpasCoefficients());
         }
     }
 
     final public void removeDcOffset() {
-        for (Integer activeChannel : activeChannels) {
-            Signal.removeDC(thisEpoch.get(activeChannel));
+        for (int i = 0; i < activeChannels.size(); i++) {
+            Signal.removeDC(thisEpoch[activeChannels.get(i)]);
         }
     }
 
     final public void decimateSignal() {
-        for (Integer activeChannel : activeChannels) {
-            thisEpoch.set(activeChannel, Signal.resample(thisEpoch.get(activeChannel), (int) dataPointsModel.getSamplingRateConvertedToHertz()));
+        for (int i = 0; i < activeChannels.size(); i++) {
+            thisEpoch[activeChannels.get(i)] = resample(thisEpoch[activeChannels.get(i)], (int) dataPointsModel.getSamplingRateConvertedToHertz());
         }
     }
 
     final public void showEpoch() {
-
+        
         lineChart.getData().clear();
 
         double[] epoch;
@@ -829,7 +785,7 @@ public class FXApplicationController implements Initializable {
 
         for (int i = 0; i < activeChannels.size(); i++) {
 
-            epoch = thisEpoch.get(activeChannels.get(i));
+            epoch = thisEpoch[activeChannels.get(i)];
 
             double zoom = getZoomFromChannel(activeChannels.get(i));
 
@@ -854,7 +810,6 @@ public class FXApplicationController implements Initializable {
                     value = value + realOffset;
 
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
-
                     series.getData().add(dataItem);
 
                     xAxis++;
@@ -871,6 +826,7 @@ public class FXApplicationController implements Initializable {
 
     public void updateEpoch() {
 
+
         // works on list of XYChart.series
         returnActiveChannels();
 
@@ -880,27 +836,21 @@ public class FXApplicationController implements Initializable {
             offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
-        double[] epoch = null;
-
+        double[] epoch;
+        double zoom;
+        double realOffset;
         for (int i = 0; i < activeChannels.size(); i++) {
-
-            epoch = thisEpoch.get(activeChannels.get(i));
-
-            double zoom = getZoomFromChannel(activeChannels.get(i));
-
+            epoch = thisEpoch[activeChannels.get(i)];
+            zoom = getZoomFromChannel(activeChannels.get(i));
             // in local yAxis-coordinates
-            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+            realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
 
             int k = 0;
             for (int j = 0; j < epoch.length; j++) {
                 if (j % modulo == 0) {
-
-                    double value = epoch[j];
-
-                    value = value * zoom * scale.get();
-                    value = value + realOffset;
-
-                    lineChart.getData().get(i).getData().get(k).setYValue(value);
+                    lineChart.getData().get(i).getData().get(k).setYValue(
+                            epoch[j] * zoom * scale.get() + realOffset
+                    );
                     k++;
                 }
             }
@@ -909,29 +859,27 @@ public class FXApplicationController implements Initializable {
     }
 
     final public void computeKCfeatures() {
-        overlay4.getChildren()
-                .clear();
+
+        overlay4.getChildren().clear();
 
         Set<Range<Integer>> kcPlotRanges = null;
         ArrayList<KCdetection.KC> kcList = new ArrayList();
         double[] epoch2 = null;
 
-        for (Integer activeChannel : activeChannels) {
-            epoch2 = thisEpoch.get(activeChannel).clone();
-            Signal.filtfilt(epoch2, getLowpassCoefficients());
-            Signal.filtfilt(epoch2, getDisplayHighpassCoefficients());
-            KCdetection.KC[] kcs = getKCs(epoch2);
-            kcs = filterKCs(kcs, 15, 100, 0, 65);
-            if (kcs != null) {
-                kcList.addAll(Arrays.asList(kcs));
-            }
+        epoch2 = thisEpoch[featureExtractionModel.getFeatureChannel()].clone();
+        filtfilt(epoch2, getLowpassCoefficients());
+        filtfilt(epoch2, getDisplayHighpassCoefficients());
+        KCdetection.KC[] kcs = getKCs(epoch2);
+        kcs = filterKCs(kcs, 15, 100, 0, 65);
+        if (kcs != null) {
+            kcList.addAll(Arrays.asList(kcs));
         }
 
         kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
 
         double percentageSum = 0;
         for (Range<Integer> e : kcPlotRanges) {
-            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) thisEpoch.get(0).length;
+            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) thisEpoch[0].length;
         }
         percentageSum *= 100;
 
@@ -940,7 +888,6 @@ public class FXApplicationController implements Initializable {
         kComplexLabel.setText(
                 "K-Complex: " + roundValues(percentageSum) + "%");
 
-        System.out.println(roundValues(percentageSum));
         //draw yellow rectangles for every pair of coordinates in kcPlotRanges
         double start;
         double stop;
@@ -969,8 +916,6 @@ public class FXApplicationController implements Initializable {
             overlay4.getChildren().add(r);
 
         }
-
-        showLabelsForEpoch();
 
         lineChart.requestFocus();
     }
@@ -1398,7 +1343,6 @@ public class FXApplicationController implements Initializable {
             scatterPlot.show();
         }
 
-        
         updateWindows();
     }
 
@@ -1496,6 +1440,7 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showAdtVisualizationAction() {
+        System.out.println("showAdtVisualizationWindow called");
         if (viewModel.isEvaluationWindowActive()) {
             viewModel.setEvaluationWindowActive(false);
         } else {
@@ -1506,6 +1451,7 @@ public class FXApplicationController implements Initializable {
     }
 
     private void showEvaluationWindow() {
+        System.out.println("showEvaluationWindow called");
         if (viewModel.isEvaluationWindowActive()) {
             if (evaluationWindow == null) {
                 evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
@@ -1521,19 +1467,20 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showScatterPlot() {
-        if (viewModel.isScatterPlotActive()) {
-            if (scatterPlot.isPainted) {
-                scatterPlot.update();
-                scatterPlot.changeCurrentEpochMarker();
-                scatterPlot.show();
-            }
-        } else {
-            scatterPlot.hide();
-        }
+        System.out.println("showScatterPlot called");
+//        if (viewModel.isScatterPlotActive()) {
+//            if (scatterPlot.isPainted) {
+//                scatterPlot.changeCurrentEpochMarker();
+//                scatterPlot.show();
+//            }
+//        } else {
+//            scatterPlot.hide();
+//        }
     }
 
     @FXML
     private void hypnogramAction() {
+        System.out.println("hypnogramAction called");
         if (viewModel.isHypnogrammActive()) {
             hypnogramButton.setSelected(false);
             viewModel.setHypnogrammActive(false);
@@ -1837,6 +1784,14 @@ public class FXApplicationController implements Initializable {
 
         setLowpassCoefficients(coefficients3);
 
+        IirFilterCoefficients coeffs
+                = biz.source_code.dsp.filter.IirFilterDesignFisher.design(
+                        FilterPassType.lowpass,
+                        FilterCharacteristicsType.chebyshev,
+                        8, -1, 0.4, 0.);
+
+        setDecimationCoefficients(coeffs);
+
     }
 
     public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
@@ -1871,6 +1826,14 @@ public class FXApplicationController implements Initializable {
         return lowpassCoefficients;
     }
 
+    public void setDecimationCoefficients(IirFilterCoefficients decimationCoefficients) {
+        this.decimationCoefficients = decimationCoefficients;
+    }
+
+    public IirFilterCoefficients getDecimationCoefficients() {
+        return decimationCoefficients;
+    }
+
     private void computeFeatures() {
         if (!featureExtractionModel.isReadinDone()) {
             dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
@@ -1882,7 +1845,7 @@ public class FXApplicationController implements Initializable {
                             dataPointsModel.getNumberOf30sEpochs() * 3000)
             );
 
-            Signal.filtfilt(dataPointsModel.getFeatureChannelData(),
+            filtfilt(dataPointsModel.getFeatureChannelData(),
                     getHighpassCoefficients());
         }
 
@@ -1890,5 +1853,38 @@ public class FXApplicationController implements Initializable {
             featureExtractionController.start();
             featureExtractionModel.setFeaturesComputed(true);
         }
+    }
+
+    private double[] decimate(double[] x, int r) {
+        /*
+         modifies the input signal (inplace operation of filter step)
+         */
+
+        filtfilt(x, decimationCoefficients);
+
+        double[] y = new double[x.length / r];
+
+        for (int i = 0; i < y.length; i++) {
+            y[i] = x[i * r];
+        }
+        return y;
+    }
+
+    private double[] resample(double[] x, int fs) {
+        /*
+         downsample to 100 Hz, fs must be > 100 Hz; no input checking!
+         */
+
+        int factor = (int) Math.round(Math.ceil(fs / 100.));
+        double scale = Math.round(Math.ceil(fs / 100.)) / (fs / 100.);
+
+        double[] y = null;
+        if (scale != 1.) {
+            y = upsample(x, scale);
+        } else {
+            y = x;
+        }
+
+        return decimate(y, factor);
     }
 }

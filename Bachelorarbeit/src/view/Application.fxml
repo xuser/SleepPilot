@@ -48,12 +48,12 @@
     <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0">
       <children>
         <Pane fx:id="overlay4" prefHeight="200.0" prefWidth="200.0" />
-        <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false" horizontalGridLinesVisible="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" visible="true">
+        <LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" cacheShape="false" createSymbols="false" horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="false" minHeight="-1.0" minWidth="-1.0" verticalZeroLineVisible="false" visible="true">
           <xAxis>
-            <NumberAxis animated="true" autoRanging="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" fx:id="xAxis" />
+            <NumberAxis animated="true" autoRanging="false" cacheShape="false" centerShape="false" forceZeroInRange="true" label="" lowerBound="0.0" minorTickCount="3" minorTickLength="6.0" minorTickVisible="false" scaleShape="false" side="BOTTOM" tickLabelGap="0.0" tickLabelsVisible="false" tickLength="5.0" tickMarkVisible="false" tickUnit="10.0" visible="false" fx:id="xAxis" />
           </xAxis>
           <yAxis>
-            <NumberAxis fx:id="yAxis" autoRanging="false" minorTickVisible="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
+            <NumberAxis fx:id="yAxis" autoRanging="false" cacheShape="false" centerShape="false" minorTickVisible="false" scaleShape="false" side="LEFT" tickLabelsVisible="false" tickMarkVisible="false" upperBound="100.0" visible="true" />
           </yAxis>
           <padding>
             <Insets right="2.0" />
