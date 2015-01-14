@@ -259,7 +259,43 @@ public class FeatureExtractionModel implements Serializable {
      * @param label the class label to set.
      */
     public void setLabel(int row, int label) {  
-        labels[row] = label;
+        
+    	int oldLabel = labels[row];
+    	
+    	if (oldLabel == -1) {
+    		switch (label) {
+			case 0: countWake++;
+				break;
+			case 1: countS1++;
+				break;
+			case 2: countS2++;
+				break;
+			case 3: countS++;
+				break;
+			case 5: countREM++;
+				break;
+			default: System.err.println("Could not set epoch label. Incorrect Value!");
+				break;
+			}
+    	} else {
+    		switch (oldLabel) {
+			case 0: countWake--;
+				break;
+			case 1: countS1--;
+				break;
+			case 2: countS2--;
+				break;
+			case 3: countS--;
+				break;
+			case 5: countREM--;
+				break;
+			default: System.err.println("Could not decrement epoch label. Incorrect Value!");
+				break;
+			}
+    	}
+    	
+    	labels[row] = label;
+        
     }
 
     public void setLabels(int[] labels) {

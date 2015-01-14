@@ -347,7 +347,7 @@ public class FXApplicationController implements Initializable {
                 mouseY.set(mouse.getY());
 
                 if (kComplexFlag) {
-                    System.out.println("mouse handler");
+                    //System.out.println("mouse handler");
                     if (mouse.getEventType() == MouseEvent.MOUSE_PRESSED) {
                         Line line = new Line();
                         line.setStyle("-fx-stroke: red;");
@@ -1317,12 +1317,14 @@ public class FXApplicationController implements Initializable {
         featureExtractionModel.clearProperties(currentEpoch);
         updateWindows();
     }
-
+    
+    // TODO
     @FXML
     protected void classifyButtonAction() {
         computeFeatures();
 
         if (!featureExtractionModel.isClassificationDone()) {
+        	System.out.println("Classifiy!");
             classify();
             featureExtractionModel.setClassificationDone(true);
         }
@@ -1384,6 +1386,7 @@ public class FXApplicationController implements Initializable {
             }
             featureExtractionModel.setPredictProbabilities(i, output.clone());
             featureExtractionModel.setLabel(i, classLabel);
+            System.out.println("Predicted Class Label: " + classLabel);
 
         }
         featureExtractionModel.setClassificationDone(true);
@@ -1833,7 +1836,8 @@ public class FXApplicationController implements Initializable {
     public IirFilterCoefficients getDecimationCoefficients() {
         return decimationCoefficients;
     }
-
+    
+    // TODO
     private void computeFeatures() {
         if (!featureExtractionModel.isReadinDone()) {
             dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
