@@ -297,8 +297,6 @@ public class FeatureExtractionModel implements Serializable {
     public void setLabel(int row, int label) {  
         
     	int oldLabel = labels[row];
-    	System.out.println("Old label: " + oldLabel);
-    	System.out.println("New label: " + label);
     	
     	if (oldLabel == -1) {
     		switch (label) {
