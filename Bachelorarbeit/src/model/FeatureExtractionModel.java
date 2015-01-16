@@ -161,32 +161,68 @@ public class FeatureExtractionModel implements Serializable {
     public void addArtefactToEpochProperty(int epoch) {
         if (artefacts[epoch] == 0) {
             artefacts[epoch] = 1;
+            countA++;
         } else {
             artefacts[epoch] = 0;
+            countA--;
         }
     }
 
     public void addArousalToEpochProperty(int epoch) {
         if (arousals[epoch] == 0) {
             arousals[epoch] = 1;
+            countMA++;
         } else {
             arousals[epoch] = 0;
+            countMA--;
         }
     }
 
     public void addStimulationToEpochProperty(int epoch) {
         if (stimulation[epoch] == 0) {
             stimulation[epoch] = 1;
+            countS++;
         } else {
             stimulation[epoch] = 0;
+            countS--;
         }
     }
 
     public void clearProperties(int epoch) {
-        stimulation[epoch] = 0;
-        arousals[epoch] = 0;
-        artefacts[epoch] = 0;
-        labels[epoch] = -1;
+        
+    	int oldLabel = labels[epoch];
+    	
+		switch (oldLabel) {
+		case 0: countWake--;
+			break;
+		case 1: countS1--;
+			break;
+		case 2: countS2--;
+			break;
+		case 3: countN--;
+			break;
+		case 5: countREM--;
+			break;
+		default: System.err.println("Could not decrement epoch label. Incorrect Value!");
+			break;
+		}
+		
+		labels[epoch] = -1;
+    	
+        if (stimulation[epoch] == 1) {
+        	stimulation[epoch] = 0;
+        	countS--;
+        }
+		
+        if (arousals[epoch] == 1) {
+        	arousals[epoch] = 0;
+        	countMA--;
+        }
+        
+        if (artefacts[epoch] == 1) {
+        	artefacts[epoch] = 0;
+        	countA--;
+        }
     }
 
     /**
@@ -261,6 +297,8 @@ public class FeatureExtractionModel implements Serializable {
     public void setLabel(int row, int label) {  
         
     	int oldLabel = labels[row];
+    	System.out.println("Old label: " + oldLabel);
+    	System.out.println("New label: " + label);
     	
     	if (oldLabel == -1) {
     		switch (label) {
@@ -270,14 +308,14 @@ public class FeatureExtractionModel implements Serializable {
 				break;
 			case 2: countS2++;
 				break;
-			case 3: countS++;
+			case 3: countN++;
 				break;
 			case 5: countREM++;
 				break;
 			default: System.err.println("Could not set epoch label. Incorrect Value!");
 				break;
 			}
-    	} else {
+    	} else if (oldLabel != label) {
     		switch (oldLabel) {
 			case 0: countWake--;
 				break;
@@ -285,11 +323,26 @@ public class FeatureExtractionModel implements Serializable {
 				break;
 			case 2: countS2--;
 				break;
-			case 3: countS--;
+			case 3: countN--;
 				break;
 			case 5: countREM--;
 				break;
 			default: System.err.println("Could not decrement epoch label. Incorrect Value!");
+				break;
+			}
+    		
+    		switch (label) {
+			case 0: countWake++;
+				break;
+			case 1: countS1++;
+				break;
+			case 2: countS2++;
+				break;
+			case 3: countN++;
+				break;
+			case 5: countREM++;
+				break;
+			default: System.err.println("Could not set epoch label. Incorrect Value!");
 				break;
 			}
     	}

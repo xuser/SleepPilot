@@ -1264,6 +1264,7 @@ public class FXApplicationController implements Initializable {
     protected void awakeButtonOnAction() {
         featureExtractionModel.setLabel(currentEpoch, 0);
         updateWindows();
+        System.out.println("Current Epoch: " + currentEpoch);
     }
 
     @FXML
