@@ -1562,10 +1562,10 @@ public class FXApplicationController implements Initializable {
             }
             //TODO hypnogram.updateHypnogram();
             hypnogram.changeCurrentEpochMarker(currentEpoch);
-            //hypnogram.show();
+            hypnogram.show();
         } else {
             if (hypnogram != null) {
-                //hypnogram.hide();
+                hypnogram.hide();
             }
         }
     }
