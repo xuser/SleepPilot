@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane prefHeight="448.0" prefWidth="326.0" styleClass="background" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<BorderPane prefHeight="448.0" prefWidth="326.0" styleClass="background" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <bottom>
     <ToolBar minHeight="24.0" prefHeight="24.0" prefWidth="229.0" styleClass="menuAndToolBarBackground">
       <items>
@@ -28,17 +28,17 @@
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
           <children>
-            <Label styleClass="textLabel" text="S1:" />
+            <Label styleClass="textLabel" text="N1:" />
           </children>
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="3">
           <children>
-            <Label styleClass="textLabel" text="S2:" />
+            <Label styleClass="textLabel" text="N2:" />
           </children>
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="4">
           <children>
-            <Label styleClass="textLabel" text="N:" />
+            <Label styleClass="textLabel" text="N3:" />
           </children>
         </HBox>
         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="0" GridPane.rowIndex="5">
