@@ -137,6 +137,7 @@ public class FXScatterPlot implements Initializable {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void paintScatterChart() {
         isPainted = false;
+
         Task<Void> task = new Task<Void>() {
 
             @Override
@@ -273,7 +274,7 @@ public class FXScatterPlot implements Initializable {
                         }
 
                         scatterChart.requestFocus();
-                        isPainted=true;
+                        isPainted = true;
                     }
 
                 }
@@ -291,10 +292,10 @@ public class FXScatterPlot implements Initializable {
             }
 
         };
-
+        
         Thread thread = new Thread(task);
-
         thread.start();
+        
         try {
             thread.join();
         } catch (InterruptedException ex) {

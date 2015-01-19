@@ -158,6 +158,7 @@
               </graphic>
             </ToggleButton>
                   <ChoiceBox fx:id="choiceBox" focusTraversable="false" styleClass="choiceBox" />
+                  <ChoiceBox fx:id="choiceBoxModel" focusTraversable="false" styleClass="choiceBox" />
                   <ToggleButton fx:id="classifyButton" focusTraversable="false" mnemonicParsing="false" onAction="#classifyButtonAction" styleClass="toolBarButtons">
                      <graphic>
                 <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">

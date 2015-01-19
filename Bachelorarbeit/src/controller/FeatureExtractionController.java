@@ -33,7 +33,6 @@ public class FeatureExtractionController {
     }
 
     public void start() {
-
         double[] data = dataPointsModel.getFeatureChannelData();
 
         List<float[]> featureList = IntStream.range(0, dataPointsModel.getNumberOf30sEpochs())
@@ -52,7 +51,6 @@ public class FeatureExtractionController {
 
         featureExtractionModel.setFeatures(features);
         featureExtractionModel.setFeaturesComputed(true);
-
     }
 
     public static double[] computeFeatures(double[] x) {
@@ -69,7 +67,7 @@ public class FeatureExtractionController {
     }
 
     public static double[] assembleData(ArrayList<double[]> epochedDataList, int capacity) {
-        //assambled data of all epochs into one array
+        //assamble data of all epochs of a single channel into one array
 
         TDoubleArrayList dataList = new TDoubleArrayList(capacity);
         for (double[] list : epochedDataList) {

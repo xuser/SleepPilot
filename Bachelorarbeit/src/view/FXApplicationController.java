@@ -25,11 +25,13 @@ import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
 import controller.ModelReaderWriterController;
+import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,6 +103,8 @@ public class FXApplicationController implements Initializable {
 
     private IirFilterCoefficients decimationCoefficients;
 
+    private String classifier;
+
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
@@ -141,6 +145,8 @@ public class FXApplicationController implements Initializable {
     private boolean help1Flag = false;
     private boolean kComplexFlag = false;
 
+    ObservableList<String> choices;
+
     @FXML
     private ToggleButton awakeButton;
     @FXML
@@ -179,7 +185,7 @@ public class FXApplicationController implements Initializable {
     @FXML
     private ToggleButton filterButton;
     @FXML
-    private ToggleButton hypnogramButton;   
+    private ToggleButton hypnogramButton;
     @FXML
     private Label statusBarLabel1;
     @FXML
@@ -225,6 +231,9 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     ChoiceBox<String> choiceBox;
+
+    @FXML
+    ChoiceBox<String> choiceBoxModel;
 
     public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean recreateModelMode) {
         modulo = 2; //take every value for display
@@ -294,28 +303,6 @@ public class FXApplicationController implements Initializable {
 
         }
 
-        ObservableList<String> choices = FXCollections.observableArrayList(Arrays.asList(channelNames));
-        choiceBox.setItems(choices);
-
-        choiceBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                featureExtractionModel.setFeatureChannel(newValue.intValue());
-                featureExtractionModel.setTsneComputed(false);
-                featureExtractionModel.setFeaturesComputed(false);
-                featureExtractionModel.setClassificationDone(false);
-                featureExtractionModel.setReadinDone(false);
-                classifyButton.setDisable(false);
-                recompute = true;
-            }
-
-        });
-
-        choiceBox.getSelectionModel().select(5);
-        System.out.println(featureExtractionModel.getFeatureChannel());
-        choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
-
         tooltips();
 
         thisEpoch = dataPointsModel.rawEpoch;
@@ -333,6 +320,24 @@ public class FXApplicationController implements Initializable {
         featureExtractionModel.setFileLocation(dataPointsModel.getOrgFile());
 
         paintSpacing();
+
+        //        ObservableList<String> choices = FXCollections.observableArrayList(Arrays.asList(channelNames));
+        choices = FXCollections.observableArrayList();
+        updateChoiceBox();
+        choiceBox.getSelectionModel().select(0);
+
+        ObservableList<String> choicesModel = FXCollections.observableArrayList();
+
+        File folder = new File(".").getAbsoluteFile();
+        for (File file : folder.listFiles()) {
+            if (file.getName().contains("model")) {
+                choicesModel.add(file.getName());
+            }
+        }
+
+        choiceBoxModel.setItems(choicesModel);
+        choiceBoxModel.getSelectionModel().select(0);
+
     }
 
     @Override
@@ -347,7 +352,7 @@ public class FXApplicationController implements Initializable {
                 mouseY.set(mouse.getY());
 
                 if (kComplexFlag) {
-                    System.out.println("mouse handler");
+//                    System.out.println("mouse handler");
                     if (mouse.getEventType() == MouseEvent.MOUSE_PRESSED) {
                         Line line = new Line();
                         line.setStyle("-fx-stroke: red;");
@@ -485,21 +490,75 @@ public class FXApplicationController implements Initializable {
             }
         });
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        choiceBox.getSelectionModel().selectedItemProperty().addListener(
+                new ChangeListener<String>() {
 
-            @Override
-            public void handle(WindowEvent event) {
-                try {
-                    System.out.println("RandomAccessFile closed");
-                    dataPointsModel.getDataFile().close();
-                } catch (IOException ex) {
-                    Logger.getLogger(FXApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                    @Override
+                    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                        System.out.println(newValue);
+                        if (newValue!=null) {
+                            
+                            featureExtractionModel.setFeatureChannel(
+                                    Arrays.asList(channelNames)
+                                    .indexOf(newValue)
+                            );
+                            System.out.println(featureExtractionModel.getFeatureChannel());
+
+                            featureExtractionModel.setTsneComputed(false);
+                            featureExtractionModel.setFeaturesComputed(false);
+                            featureExtractionModel.setClassificationDone(false);
+                            featureExtractionModel.setReadinDone(false);
+                            classifyButton.setDisable(false);
+                            recompute = true;
+
+                            if (viewModel.isKcMarkersActive()) {
+                                computeKCfeatures();
+                            } else {
+                                overlay4.getChildren().clear();
+                            }
+                        }
+                    }
                 }
-                Platform.exit();
-            }
-        });
+        );
+
+        choiceBoxModel.getSelectionModel()
+                .selectedItemProperty().addListener(
+                        new ChangeListener<String>() {
+
+                            @Override
+                            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue
+                            ) {
+                                classifier = newValue;
+                                System.out.println(classifier);
+
+                                featureExtractionModel.setClassificationDone(false);
+                                featureExtractionModel.setReadinDone(false);
+                                classifyButton.setDisable(false);
+                                recompute = true;
+                            }
+
+                        }
+                );
+
+        primaryStage.setOnCloseRequest(
+                new EventHandler<WindowEvent>() {
+
+                    @Override
+                    public void handle(WindowEvent event
+                    ) {
+                        try {
+                            System.out.println("RandomAccessFile closed");
+                            dataPointsModel.getDataFile().close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(FXApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        Platform.exit();
+                    }
+                }
+        );
 
         kComplexOnAction();
+
         help1OnAction();
 
     }
@@ -773,7 +832,7 @@ public class FXApplicationController implements Initializable {
     }
 
     final public void showEpoch() {
-        
+
         lineChart.getData().clear();
 
         double[] epoch;
@@ -825,7 +884,6 @@ public class FXApplicationController implements Initializable {
     }
 
     public void updateEpoch() {
-
 
         // works on list of XYChart.series
         returnActiveChannels();
@@ -1086,7 +1144,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+            // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void openFile(File file) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(file));
@@ -1169,7 +1227,7 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+            // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void saveFile(File file) {
         FileWriter fileWriter = null;
@@ -1348,19 +1406,18 @@ public class FXApplicationController implements Initializable {
 
     public void classify() {
 
-        for (int i = 0; i < channelNames.length; i++) {
-            String channel = channelNames[i];
-
-            switch (channel) {
-                case "Fz":
-                    featureExtractionModel.setChannelName(ChannelNames.Fz);
-                    break;
-                default:
-                    featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
-                    break;
-            }
-        }
-
+//        for (int i = 0; i < channelNames.length; i++) {
+//            String channel = channelNames[i];
+//
+//            switch (channel) {
+//                case "Fz":
+//                    featureExtractionModel.setChannelName(ChannelNames.Fz);
+//                    break;
+//                default:
+//                    featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
+//                    break;
+//            }
+//        }
 //        // Check whether the the SVM Model is trained for one of the given channels
 //        File folder = new File(".").getAbsoluteFile();
 //        for (File file : folder.listFiles()) {
@@ -1371,7 +1428,7 @@ public class FXApplicationController implements Initializable {
 //                }
 //            }
 //        }
-        NeuralNetworks nn = new NeuralNetworks("annDefinition1");
+        NeuralNetworks nn = new NeuralNetworks(classifier);
 
         double[] output;
         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
@@ -1467,15 +1524,14 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void showScatterPlot() {
-        System.out.println("showScatterPlot called");
-//        if (viewModel.isScatterPlotActive()) {
-//            if (scatterPlot.isPainted) {
-//                scatterPlot.changeCurrentEpochMarker();
-//                scatterPlot.show();
-//            }
-//        } else {
-//            scatterPlot.hide();
-//        }
+        if (viewModel.isScatterPlotActive()) {
+            if (scatterPlot.isPainted) {
+                scatterPlot.changeCurrentEpochMarker();
+                scatterPlot.show();
+            }
+        } else {
+            scatterPlot.hide();
+        }
     }
 
     @FXML
@@ -1709,6 +1765,8 @@ public class FXApplicationController implements Initializable {
         stimulationButton.setTooltip(new Tooltip("Stimulation (S)"));
         clearButton.setTooltip(new Tooltip("Clear (C)"));
         hypnogramButton.setTooltip(new Tooltip("Show hypnogram (H)"));
+        choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
+        choiceBoxModel.setTooltip(new Tooltip("Select classifier"));
     }
 
     private void createFilters() {
@@ -1750,7 +1808,7 @@ public class FXApplicationController implements Initializable {
 
         FilterCoefficients coefficients4 = null;
         try {
-            double fstop = 0.01;
+            double fstop = 0.1;
             double fpass = 0.3;
             double fs = 100;
             coefficients4 = IIRDesigner.designDigitalFilter(
@@ -1886,5 +1944,15 @@ public class FXApplicationController implements Initializable {
         }
 
         return decimate(y, factor);
+    }
+
+    public final void updateChoiceBox() {
+        choices.clear();
+        returnActiveChannels();
+        for (TIntIterator it = activeChannels.iterator(); it.hasNext();) {
+            choices.add(channelNames[it.next()]);
+        }
+        choiceBox.setItems(choices);
+        choiceBox.getSelectionModel().select(0);
     }
 }

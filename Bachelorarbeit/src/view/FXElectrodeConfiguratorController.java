@@ -117,6 +117,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
         view.getAppController().loadEpoch(view.getAppController().getCurrentEpoch());
         view.getAppController().showEpoch();
         view.getAppController().showLabelsForEpoch();
+        view.getAppController().updateChoiceBox();
     }
 
     @Override
