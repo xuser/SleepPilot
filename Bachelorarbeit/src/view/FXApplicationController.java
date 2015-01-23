@@ -305,7 +305,7 @@ public class FXApplicationController implements Initializable {
 
         tooltips();
 
-        thisEpoch = dataPointsModel.rawEpoch;
+        thisEpoch = dataPointsModel.rawEpoch.clone();
 
         createFilters();
 
@@ -795,7 +795,7 @@ public class FXApplicationController implements Initializable {
         returnActiveChannels();
         for (int i = 0; i < activeChannels.size(); i++) {
             dataReaderController
-                    .read(activeChannels.get(i), numberOfEpoch, thisEpoch[activeChannels.get(i)]);
+                    .read(activeChannels.get(i), numberOfEpoch, dataPointsModel.rawEpoch[activeChannels.get(i)]);
         }
 
         if (dataPointsModel.getSamplingRateConvertedToHertz() != 100) {
@@ -832,7 +832,7 @@ public class FXApplicationController implements Initializable {
 
     final public void decimateSignal() {
         for (int i = 0; i < activeChannels.size(); i++) {
-            thisEpoch[activeChannels.get(i)] = resample(thisEpoch[activeChannels.get(i)], (int) dataPointsModel.getSamplingRateConvertedToHertz());
+            thisEpoch[activeChannels.get(i)] = resample(dataPointsModel.rawEpoch[activeChannels.get(i)], (int) dataPointsModel.getSamplingRateConvertedToHertz());
         }
     }
 
