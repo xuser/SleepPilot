@@ -98,8 +98,7 @@ public class DataReaderController {
             respectiveModel.setReadingHeaderComplete(true);
 
 //            respectiveModel.setSamplingIntervall(respectiveModel.getUsPerTime()); //seems to be wrong
-//            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-            int tmp = (int) (1e6*respectiveModel.getdTimeBase());
+            int tmp = (int) (respectiveModel.getUsPerTime() * 1e6 * respectiveModel.getdTimeBase());
             respectiveModel.setSamplingIntervall(tmp);
 
             int numberOfDataPoints = ((respectiveModel.getBlocks(0) - 1) * respectiveModel.getMaxData(0) + respectiveModel.getSizeOfLastBlock(0));
@@ -107,7 +106,6 @@ public class DataReaderController {
 
             numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
             respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
-            
 
             reader = new Reader() {
                 @Override
@@ -335,17 +333,18 @@ public class DataReaderController {
 
             }
 
-//            // Get the number of channels
-//            LinkedList<Integer> kind = respectiveModel.getListOfKind();
-//            int tmp = respectiveModel.getNumberOfChannels();
-//
-//            for (int i = 0; i < kind.size(); i++) {
+            // Get the number of channels
+            LinkedList<Integer> kind = respectiveModel.getListOfKind();
+            int tmp = respectiveModel.getNumberOfChannels();
+
+            for (int i = 0; i < kind.size(); i++) {
 //                if (kind.get(i) == 1) {
-//                    tmp++;
-//                }
-//            }
-//            respectiveModel.setNumberOfChannels(tmp);
-            respectiveModel.setNumberOfChannels(respectiveModel.getChannels());
+                if (kind.get(i) != 0) {
+                    tmp++;
+                }
+            }
+            respectiveModel.setNumberOfChannels(tmp);
+//            respectiveModel.setNumberOfChannels(respectiveModel.getChannels());
 
 //			dataFile.close();
         } catch (FileNotFoundException e) {
