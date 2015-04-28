@@ -496,8 +496,8 @@ public class FXApplicationController implements Initializable {
                     @Override
                     public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                         System.out.println(newValue);
-                        if (newValue!=null) {
-                            
+                        if (newValue != null) {
+
                             featureExtractionModel.setFeatureChannel(
                                     Arrays.asList(channelNames)
                                     .indexOf(newValue)
@@ -766,14 +766,14 @@ public class FXApplicationController implements Initializable {
         updateProbabilities();
         toolBarGoto.setText((currentEpoch + 1) + "");
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
-        
+
         //TODO
         if (viewModel.isScatterPlotActive()) {
             if (scatterPlot.isPainted) {
                 scatterPlot.changeCurrentEpochMarker();
             }
         }
-        
+
         if (viewModel.isHypnogrammActive()) {
             hypnogram.changeCurrentEpochMarker(currentEpoch);
         }
@@ -800,6 +800,10 @@ public class FXApplicationController implements Initializable {
 
         if (dataPointsModel.getSamplingRateConvertedToHertz() != 100) {
             decimateSignal();
+        } else {
+            for (int i = 0; i < activeChannels.size(); i++) {
+                thisEpoch[activeChannels.get(i)] = dataPointsModel.rawEpoch[activeChannels.get(i)];
+            }
         }
 
         if (viewModel.isKcMarkersActive()) {
@@ -1127,7 +1131,7 @@ public class FXApplicationController implements Initializable {
                 updateStage();
 
                 if (viewModel.isHypnogrammActive()) {
-                   //TODO hypnogram.updateHypnogram();
+                    //TODO hypnogram.updateHypnogram();
                 }
 
                 if (viewModel.isEvaluationWindowActive()) {
@@ -1149,7 +1153,7 @@ public class FXApplicationController implements Initializable {
 
     }
 
-            // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void openFile(File file) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(file));
@@ -1232,7 +1236,7 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-            // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
     // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
     private void saveFile(File file) {
         FileWriter fileWriter = null;
@@ -1381,13 +1385,13 @@ public class FXApplicationController implements Initializable {
         featureExtractionModel.clearProperties(currentEpoch);
         updateWindows();
     }
-    
+
     @FXML
     protected void classifyButtonAction() {
         computeFeatures();
 
         if (!featureExtractionModel.isClassificationDone()) {
-        	System.out.println("Classifiy!");
+            System.out.println("Classifiy!");
             classify();
             featureExtractionModel.setClassificationDone(true);
         }
@@ -1574,14 +1578,14 @@ public class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.RIGHT) {
             goToEpoch(currentEpoch + 1);
             if (hypnogram != null) {
-            	hypnogram.changeCurrentEpochMarker(currentEpoch);
+                hypnogram.changeCurrentEpochMarker(currentEpoch);
             }
         }
 
         if (ke.getCode() == KeyCode.LEFT) {
             goToEpoch(currentEpoch - 1);
             if (hypnogram != null) {
-            	hypnogram.changeCurrentEpochMarker(currentEpoch);
+                hypnogram.changeCurrentEpochMarker(currentEpoch);
             }
         }
 
@@ -1905,7 +1909,7 @@ public class FXApplicationController implements Initializable {
     public IirFilterCoefficients getDecimationCoefficients() {
         return decimationCoefficients;
     }
-    
+
     private void computeFeatures() {
         if (!featureExtractionModel.isReadinDone()) {
             dataReaderController.readAll(featureExtractionModel.getFeatureChannel());

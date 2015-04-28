@@ -96,11 +96,24 @@ public class DataReaderController {
 
             readHeaderFromSMR();
             respectiveModel.setReadingHeaderComplete(true);
+
+//            respectiveModel.setSamplingIntervall(respectiveModel.getUsPerTime()); //seems to be wrong
+//            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+            int tmp = (int) (1e6*respectiveModel.getdTimeBase());
+            respectiveModel.setSamplingIntervall(tmp);
+
+            int numberOfDataPoints = ((respectiveModel.getBlocks(0) - 1) * respectiveModel.getMaxData(0) + respectiveModel.getSizeOfLastBlock(0));
+            respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+
+            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+            respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
             
+
             reader = new Reader() {
                 @Override
                 public double[] read(int channel, int epoch, double[] target) {
-                    int tmp = (int) (respectiveModel.getlChanDvd(channel) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
+//                    int tmp = (int) (respectiveModel.getlChanDvd(channel) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
+                    int tmp = (int) (1 * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
                     respectiveModel.setSamplingIntervall(tmp);
 
                     int numberOfDataPoints = ((respectiveModel.getBlocks(channel) - 1) * respectiveModel.getMaxData(channel) + respectiveModel.getSizeOfLastBlock(channel));
@@ -111,21 +124,20 @@ public class DataReaderController {
                 }
             };
 
-            System.out.println(
-                    "numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
-            System.out.println(
-                    "MaxData for one block: " + respectiveModel.getMaxData(16));
-            System.out.println(
-                    "#30s Epochs: " + respectiveModel.getNumberOf30sEpochs());
-
+//            System.out.println(
+//                    "numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
+//            System.out.println(
+//                    "MaxData for one block: " + respectiveModel.getMaxData(16));
+//            System.out.println(
+//                    "#30s Epochs: " + respectiveModel.getNumberOf30sEpochs());
             printPropertiesSMR();
 
-            printChannelInformationSMR(
-                    16);
-
+//            printChannelInformationSMR(16);
         } else if (file.getName().toLowerCase().endsWith(".vhdr")) {
 
             readHeaderFromVHDR();
+            respectiveModel.setReadingHeaderComplete(true);
+
             numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
             respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
 
@@ -323,16 +335,17 @@ public class DataReaderController {
 
             }
 
-            // Get the number of channels
-            LinkedList<Integer> kind = respectiveModel.getListOfKind();
-            int tmp = respectiveModel.getNumberOfChannels();
-
-            for (int i = 0; i < kind.size(); i++) {
-                if (kind.get(i) == 1) {
-                    tmp++;
-                }
-            }
-            respectiveModel.setNumberOfChannels(tmp);
+//            // Get the number of channels
+//            LinkedList<Integer> kind = respectiveModel.getListOfKind();
+//            int tmp = respectiveModel.getNumberOfChannels();
+//
+//            for (int i = 0; i < kind.size(); i++) {
+//                if (kind.get(i) == 1) {
+//                    tmp++;
+//                }
+//            }
+//            respectiveModel.setNumberOfChannels(tmp);
+            respectiveModel.setNumberOfChannels(respectiveModel.getChannels());
 
 //			dataFile.close();
         } catch (FileNotFoundException e) {
@@ -353,12 +366,12 @@ public class DataReaderController {
 
     public double[] readSMRChannel(RandomAccessFile dataFile, int channel, int epoch, double[] target) {
 
-        int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channelsToRead.get(0));
+        int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channel);
 
         int sampleNumberInBlock = 0;
         if (epoch != 0) {
             sampleNumberInBlock = (epoch - 1) * numberOfSamplesForOneEpoch;
-            sampleNumberInBlock = sampleNumberInBlock - (block * respectiveModel.getMaxData(channelsToRead.get(0)));
+            sampleNumberInBlock = sampleNumberInBlock - (block * respectiveModel.getMaxData(channel));
             sampleNumberInBlock = sampleNumberInBlock + numberOfSamplesForOneEpoch;
         }
 
@@ -383,8 +396,8 @@ public class DataReaderController {
 
             FileChannel inChannel = dataFile.getChannel();
             inChannel = inChannel.position(channelPosition);
-            
-            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channelsToRead.get(0)) * 4);// * 2 because we have two bytes for each sample
+
+            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channel) * 4);// * 2 because we have two bytes for each sample
             buf.order(ByteOrder.LITTLE_ENDIAN);
             inChannel.read(buf);
             buf.flip();
@@ -393,7 +406,7 @@ public class DataReaderController {
             channelPosition = buf.getInt();
             buf.position(buf.position() + 12 + (sampleNumberInBlock * 2));				// + 12 because we skip channelNumbers and ItemsInBlock elements
 
-            int runIndex = (respectiveModel.getMaxData(channelsToRead.get(0)) - sampleNumberInBlock);
+            int runIndex = (respectiveModel.getMaxData(channel) - sampleNumberInBlock);
 
             if (runIndex > numberOfSamplesForOneEpoch) {
                 runIndex = numberOfSamplesForOneEpoch;
@@ -436,10 +449,10 @@ public class DataReaderController {
         double value;
 
         int i = 0;
-        while ((i < itemsInBlock) && (target.length < (numberOfSamplesForOneEpoch + 1))) {
-            value = (double) (buf.getShort() * respectiveModel.getScale(channelsToRead.get(0)));
+        while ((i < itemsInBlock) && (target.length < (numberOfSamplesForOneEpoch))) {
+            value = (double) (buf.getShort() * respectiveModel.getScale(channel));
             value = value / 6553.6;
-            value = value + respectiveModel.getOffset(channelsToRead.get(0));
+            value = value + respectiveModel.getOffset(channel);
 
             // Rounded a mantisse with value 3
             value = Math.round(value * 1000.);
@@ -449,7 +462,7 @@ public class DataReaderController {
             i++;
         }
 
-        if (target.length == (numberOfSamplesForOneEpoch + 1)) {
+        if (target.length == (numberOfSamplesForOneEpoch)) {
             nextBlock = -1;
         }
 
@@ -650,7 +663,7 @@ public class DataReaderController {
 
                 target[i] = value;
 
-                // This is the next sample in this epoch for the given channel
+                // This is the next sample in this epoch for the given channel  
                 if (buf.hasRemaining()) {
                     buf.position(buf.position() + increment);
                 }
