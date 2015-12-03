@@ -344,7 +344,6 @@ public class DataReaderController {
                 }
             }
             respectiveModel.setNumberOfChannels(tmp);
-//            respectiveModel.setNumberOfChannels(respectiveModel.getChannels());
 
 //			dataFile.close();
         } catch (FileNotFoundException e) {
@@ -385,7 +384,7 @@ public class DataReaderController {
                 inChannel = inChannel.position(channelPosition + 4);
                 ByteBuffer buf = ByteBuffer.allocate(4);
                 buf.order(ByteOrder.LITTLE_ENDIAN);
-                inChannel.read(buf);
+                int bytesRead = inChannel.read(buf);
                 buf.flip();
 
                 channelPosition = buf.getInt();
@@ -398,7 +397,7 @@ public class DataReaderController {
 
             ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channel) * 4);// * 2 because we have two bytes for each sample
             buf.order(ByteOrder.LITTLE_ENDIAN);
-            inChannel.read(buf);
+            int bytesRead = inChannel.read(buf);
             buf.flip();
 
             buf.position(buf.position() + 4);											// + 4 because we skip lastBlock element
@@ -406,22 +405,43 @@ public class DataReaderController {
             buf.position(buf.position() + 12 + (sampleNumberInBlock * 2));				// + 12 because we skip channelNumbers and ItemsInBlock elements
 
             int runIndex = (respectiveModel.getMaxData(channel) - sampleNumberInBlock);
-
+            System.out.println("runIndex: "+runIndex);
+            System.out.println("sampleNumberInBlock: " + sampleNumberInBlock);
+            System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
+            
+            double value=0;
+            
             if (runIndex > numberOfSamplesForOneEpoch) {
                 runIndex = numberOfSamplesForOneEpoch;
 
                 for (int i = 0; i < runIndex; i++) {
-                    target[i] = (double) buf.getShort();
+                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
+                    value = value / 6553.6;
+                    value = value + respectiveModel.getOffset(channel);
+
+                    // Rounded a mantisse with value 3
+                    value = Math.round(value * 1000.);
+                    value = value / 1000.;
+                    target[i] = value;
                 }
 
             } else {
                 for (int i = 0; i < runIndex; i++) {
-                    target[i] = (double) buf.getShort();
-                }
+                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
+                    value = value / 6553.6;
+                    value = value + respectiveModel.getOffset(channel);
 
+                    // Rounded a mantisse with value 3
+                    value = Math.round(value * 1000.);
+                    value = value / 1000.;
+                    target[i] = value;
+                }  
+                
+                int itemsRead = runIndex;
+                
                 int nextBlock = channelPosition;
                 while (nextBlock != -1) {
-                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock, target);
+                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock, target, itemsRead);
                 }
 
             }
@@ -435,20 +455,23 @@ public class DataReaderController {
 
     }
 
-    private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock, double[] target) throws IOException {
-
+    private int getWholeDataFromOneSMRChannel(ByteBuffer buf, int channel, int succBlock, double[] target, int itemsRead) throws IOException {
+        
+        System.out.println("succBlock: " + succBlock);
+        
         FileChannel inChannel = dataFile.getChannel();
         inChannel = inChannel.position(succBlock);
+        int lastBlock = buf.getInt();
         int nextBlock = buf.getInt();
 
         buf.position(buf.position() + 8);
-
+        int channelNumber = buf.getShort();
         int itemsInBlock = buf.getShort();
 
         double value;
 
         int i = 0;
-        while ((i < itemsInBlock) && (target.length < (numberOfSamplesForOneEpoch))) {
+        while ((i < itemsInBlock) && (itemsRead < (numberOfSamplesForOneEpoch))) {
             value = (double) (buf.getShort() * respectiveModel.getScale(channel));
             value = value / 6553.6;
             value = value + respectiveModel.getOffset(channel);
@@ -456,12 +479,13 @@ public class DataReaderController {
             // Rounded a mantisse with value 3
             value = Math.round(value * 1000.);
             value = value / 1000.;
-            target[i] = value;
+            target[itemsRead] = value;
 
             i++;
+            itemsRead++;
         }
 
-        if (target.length == (numberOfSamplesForOneEpoch)) {
+        if (itemsRead == numberOfSamplesForOneEpoch) {
             nextBlock = -1;
         }
 

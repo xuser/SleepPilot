@@ -76,7 +76,7 @@ public class RawDataModel implements Serializable {
     private int channels;
     private int chanSize;
     private int extraData;
-    private int bufferSize;
+    private long bufferSize;
     private int osFormat;
     private int maxFTime;
     private double dTimeBase;
@@ -433,14 +433,14 @@ public class RawDataModel implements Serializable {
     /**
      * @return the bufferSize
      */
-    public int getBufferSize() {
+    public long getBufferSize() {
         return bufferSize;
     }
 
     /**
      * @param bufferSize the bufferSize to set
      */
-    public void setBufferSize(int bufferSize) {
+    public void setBufferSize(long bufferSize) {
         this.bufferSize = bufferSize;
     }
 
