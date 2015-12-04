@@ -3,6 +3,7 @@ build/
 dist/
 FilesInProcess/
 MatlabScripts/
+ColorTables/
 testData/
 nbproject/
 .settings/
