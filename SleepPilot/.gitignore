@@ -1,7 +1,8 @@
 bin/
 build/
-Files in Process/
-Matlab Scripts/
+dist/
+FilesInProcess/
+MatlabScripts/
 testData/
 nbproject/
 .settings/
