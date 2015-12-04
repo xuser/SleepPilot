@@ -6,5 +6,5 @@ MatlabScripts/
 ColorTables/
 testData/
 nbproject/
-.settings/
+/.settings/
 test

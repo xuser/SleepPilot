@@ -28,10 +28,8 @@ import controller.ModelReaderWriterController;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
-import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,6 +102,7 @@ public class FXApplicationController implements Initializable {
     private IirFilterCoefficients decimationCoefficients;
 
     private String classifier;
+    private ArrayList<String> classifierList=new ArrayList();
 
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
@@ -236,7 +235,7 @@ public class FXApplicationController implements Initializable {
     ChoiceBox<String> choiceBoxModel;
 
     public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean recreateModelMode) {
-        modulo = 2; //take every value for display
+        modulo = 1; //take every value for display
 
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
@@ -277,7 +276,7 @@ public class FXApplicationController implements Initializable {
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
 
         //Configure lineChart
-        lineChart.setSnapToPixel(true);
+        lineChart.setSnapToPixel(false);
         lineChart.requestFocus();
 
         // Set Choice Box for the channels
@@ -327,11 +326,12 @@ public class FXApplicationController implements Initializable {
         choiceBox.getSelectionModel().select(0);
 
         ObservableList<String> choicesModel = FXCollections.observableArrayList();
-
-        File folder = new File(".").getAbsoluteFile();
+        
+        File folder = new File("./Classifiers").getAbsoluteFile();
         for (File file : folder.listFiles()) {
             if (file.getName().contains("model")) {
                 choicesModel.add(file.getName());
+                classifierList.add(file.getAbsolutePath());
             }
         }
 
@@ -522,13 +522,11 @@ public class FXApplicationController implements Initializable {
         );
 
         choiceBoxModel.getSelectionModel()
-                .selectedItemProperty().addListener(
-                        new ChangeListener<String>() {
-
+                .selectedIndexProperty().addListener(
+                        new ChangeListener<Number>() {
                             @Override
-                            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue
-                            ) {
-                                classifier = newValue;
+                            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                                classifier = classifierList.get(newValue.intValue());
                                 System.out.println(classifier);
 
                                 featureExtractionModel.setClassificationDone(false);
@@ -539,6 +537,23 @@ public class FXApplicationController implements Initializable {
 
                         }
                 );
+//                selectedItemProperty().addListener(
+//                        new ChangeListener<String>() {
+//
+//                            @Override
+//                            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue
+//                            ) {
+//                                classifier = classifierList.get(newValue);
+//                                System.out.println(classifier);
+//
+//                                featureExtractionModel.setClassificationDone(false);
+//                                featureExtractionModel.setReadinDone(false);
+//                                classifyButton.setDisable(false);
+//                                recompute = true;
+//                            }
+//
+//                        }
+//                );
 
         primaryStage.setOnCloseRequest(
                 new EventHandler<WindowEvent>() {
@@ -876,7 +891,7 @@ public class FXApplicationController implements Initializable {
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
-
+                    
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
                     series.getData().add(dataItem);
 
@@ -1808,8 +1823,8 @@ public class FXApplicationController implements Initializable {
 
         FilterCoefficients coefficients2 = null;
         try {
-            double fstop = 35;
-            double fpass = 25;
+            double fstop = 20;
+            double fpass = 15;
             double fs = 100;
             coefficients2 = IIRDesigner.designDigitalFilter(
                     ApproximationFunctionType.CHEBYSHEV2,
