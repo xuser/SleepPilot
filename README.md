@@ -2,8 +2,9 @@
 
 ### What is this repository for? ###
 
-In diesem Repository entsteht eine Software zu automatischen Schlafstadienklassifikation basierend auf EEG Daten. Dazu werden Schlafdaten kanalweise eingelesen, hochpassgefiltert, eine Feature Extraction durchgeführt und anschließend durch eine Support Vector Maschine klassifiziert. Für die Feature Vectoren werden Permutationsentropien und LPC Koeffizienten bzw. Line Spectral Pairs berechnet.
+SleepPilot is a software for automated sleep stage classification. 
+The classifier has been trained on EEG data of 100+ healthy subjects and achieves an accuracy of 88.2% (Cohen's kappa: 0.81, 10-fold cross-validation). 
+It should be used for research only. 
 
 ### Who do I talk to? ###
 
-Ich bin der Administrator dieses Projekts. Bei Fragen können Sie mir gerne über mail@nils-finke.com schreiben.
