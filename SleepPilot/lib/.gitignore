@@ -1,3 +1,3 @@
-/CopyLibs
-/junit
-/junit_4
+CopyLibs/
+junit/
+junit_4/

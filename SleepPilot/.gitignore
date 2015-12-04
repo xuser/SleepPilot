@@ -1,8 +1,8 @@
-/bin
-/build
-/SleepExplorer
-/Files in Process
-/Matlab Scripts
-/testData
-/nbproject
-/.settings
+bin/
+build/
+Files in Process/
+Matlab Scripts/
+testData/
+nbproject/
+.settings/
+test
