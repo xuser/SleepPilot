@@ -7,4 +7,4 @@ The classifier has been trained on EEG data of 100+ healthy subjects and achieve
 It should be used for research only. 
 
 ### Who do I talk to? ###
-
+weigenand@inb.uni-luebeck.de
