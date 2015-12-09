@@ -9,6 +9,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import son32java.son32Exceptions.NoChannelException;
+import son32java.son32reader.Son32Channel;
+
+import son32java.son32reader.Son32Reader;
 
 /**
  * This class holds the data, that has been read by the DataReaderController.
@@ -66,7 +70,8 @@ public class RawDataModel implements Serializable {
 	// *** Brainvision Format ***
     private int samplingRateConvertedToHertz;
 
-	// *** Spike2 Format ***
+    private Son32Reader son32reader;
+    // *** Spike2 Format ***
     // Information from File Header
     private int systemId;
     private int usPerTime;
@@ -107,6 +112,41 @@ public class RawDataModel implements Serializable {
     private LinkedList<Integer> divide = new LinkedList<Integer>();
     private LinkedList<Integer> interleave = new LinkedList<Integer>();
     private LinkedList<Integer> sizeOfLastBlock = new LinkedList<Integer>();
+    
+    /**
+     * @author Matthias Steffen
+     * Returns the Son32Reader instance of this data model
+     * @return 
+     */
+    public Son32Reader getSon32Reader(){
+        return this.son32reader;
+    }
+    
+    /**
+     * @author Matthias Steffen
+     * Sets a new instance of the Son32Reader for this data model
+     * @param newReader 
+     */
+    public void setSon32Reader(Son32Reader newReader){
+        this.son32reader = newReader;
+    }
+    
+    /**
+     * @author Matthias Steffen
+     * Reads the header information for the given .smr file and stores them
+     * in an instacne of Son32Reader..
+     */
+    public void readSMRFileHeader(){
+        this.usPerTime = this.son32reader.getUsPerTime();
+        this.dTimeBase = this.son32reader.getTimeBase();
+        this.numberOfChannels = this.son32reader.getNumberOfChannels();
+        try{
+            Son32Channel channel = this.son32reader.getChannel(0);
+            this.samplingIntervall = (int)channel.getSamplingIntervallMs();
+        }catch(NoChannelException ex){
+            System.out.println(ex);
+        }
+    }
 
     /**
      * The position in the list corresponds to the epoch. The entry is the
@@ -547,11 +587,18 @@ public class RawDataModel implements Serializable {
     }
 
     /**
+     * @author Matthias Steffen
      * @return the blocks element at the specified pos
      * @param pos the position in LinkedList
      */
-    public int getBlocks(int pos) {
-        return blocks.get(pos);
+    public int getBlocks(int channel) {
+        try{
+            return this.son32reader.getChannel(channel).getBlocks();
+        } catch(NoChannelException e){
+            System.out.println(e + "\nFaield to load blocks for"
+                    + " channel " + channel);
+            return 0;
+        }
     }
 
     /**
@@ -682,11 +729,17 @@ public class RawDataModel implements Serializable {
     }
 
     /**
+     * @author Matthias Steffen
      * @return the titel element at the specified pos
      * @param pos the position in LinkedList
      */
-    public String getTitel(int pos) {
-        return titel.get(pos);
+    public String getTitel(int channel) {
+        try{
+            return this.son32reader.getChannel(channel).getChannelTitle();
+        } catch(NoChannelException e){
+            System.out.println(e+"\nFailed to load title for channel " + channel);
+            return "Failed to load title for channel " + channel;
+        }
     }
 
     /**

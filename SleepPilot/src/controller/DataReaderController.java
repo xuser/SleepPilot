@@ -19,7 +19,11 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import son32java.son32reader.Son32Reader;
+
 import model.RawDataModel;
+import model.SMRDataModel;
+import son32java.son32Exceptions.NoChannelException;
 
 public class DataReaderController {
 
@@ -94,12 +98,20 @@ public class DataReaderController {
     public final void init() {
         if (file.getName().toLowerCase().endsWith(".smr")) {
 
+            System.out.println("************"+this.respectiveModel);
             readHeaderFromSMR();
             respectiveModel.setReadingHeaderComplete(true);
 
 //            respectiveModel.setSamplingIntervall(respectiveModel.getUsPerTime()); //seems to be wrong
-            int tmp = (int) (respectiveModel.getUsPerTime() * 1e6 * respectiveModel.getdTimeBase());
-            respectiveModel.setSamplingIntervall(tmp);
+            //int tmp = (int) (respectiveModel.getUsPerTime() * 1e6 * respectiveModel.getdTimeBase());
+            try{
+                int tmp = (int)respectiveModel.getSon32Reader().getChannel(0).getSamplingIntervallMs();
+                respectiveModel.setSamplingIntervall(tmp);
+            } catch(NoChannelException e){
+                System.out.println(e);
+                System.out.println("Failed to set Samplinginterval, set to 1!");
+                respectiveModel.setSamplingIntervall(1);
+            }
 
             int numberOfDataPoints = ((respectiveModel.getBlocks(0) - 1) * respectiveModel.getMaxData(0) + respectiveModel.getSizeOfLastBlock(0));
             respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
@@ -217,133 +229,140 @@ public class DataReaderController {
     private void readHeaderFromSMR() {
         try {
             dataFile = new RandomAccessFile(file, "r");
+                     
+            //this.respectiveModel = new SMRDataModel(file.getPath(), 1);
+            
+            respectiveModel.setSon32Reader(new Son32Reader(file.getPath(), 1));
+
             respectiveModel.setDataFile(dataFile);
+            
+            respectiveModel.readSMRFileHeader();
 
-            FileChannel inChannel = dataFile.getChannel();
-
-            // Saves the first 512 byte for the file header
-            ByteBuffer buf = ByteBuffer.allocate(60);
-            buf.order(ByteOrder.LITTLE_ENDIAN);
-
-            int bytesRead = inChannel.read(buf);
-
-            //Make buffer ready for read
-            buf.flip();
-
-            // ************** Get File Header Information **************
-            respectiveModel.setSystemId(buf.getShort());
-
-            // We skip copyright and creator information
-            buf.position(buf.position() + 18);
-
-            respectiveModel.setUsPerTime(buf.getShort());
-            respectiveModel.setTimePerADC(buf.getShort());
-            respectiveModel.setFileState(buf.getShort());
-            respectiveModel.setFirstData(buf.getInt());
-            respectiveModel.setChannels(buf.getShort());
-            respectiveModel.setChanSize(buf.getShort());
-            respectiveModel.setExtraData(buf.getShort());
-            respectiveModel.setBufferSize(buf.getShort());
-            respectiveModel.setOsFormat(buf.getShort());
-            respectiveModel.setMaxFTime(buf.getInt());
-            respectiveModel.setdTimeBase(buf.getDouble());
-
-            if (respectiveModel.getSystemId() < 6) {
-                respectiveModel.setdTimeBase(1e-6);
-            }
-
-            // ************** Get Channel Header Information **************
-            for (int i = 0; i < respectiveModel.getChannels(); i++) {
-
-                // Offset due to file header and preceding channel headers
-                int offset = 512 + (140 * (i));
-
-                inChannel.position(offset);
-                buf = ByteBuffer.allocate(160);
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                bytesRead = inChannel.read(buf);
-                buf.flip();
-
-                respectiveModel.addDelSize((int) buf.getShort());
-                respectiveModel.addNextDelBlock(buf.getInt());
-                respectiveModel.addFirstBlock(buf.getInt());
-                respectiveModel.addLastBlock(buf.getInt());
-                respectiveModel.addBlocks((int) buf.getShort());
-                respectiveModel.addnExtra((int) buf.getShort());
-                respectiveModel.addPreTrig((int) buf.getShort());
-                respectiveModel.addFree0((int) buf.getShort());
-                respectiveModel.addPhySz((int) buf.getShort());
-                respectiveModel.addMaxData((int) buf.getShort()); // 26
-
-                // Set new position, because we skip reading the comment
-                buf.position(buf.position() + (1 + 71)); // 98
-
-                respectiveModel.addMaxChanTime(buf.getInt());
-                respectiveModel.addlChanDvd(buf.getInt());
-                respectiveModel.addPhyChan((int) buf.getShort()); // 108
-
-                int actPos = buf.position();
-                byte[] bytes = new byte[9];
-                buf.get(bytes, 0, 9);
-
-                String fileString = new String(bytes, StandardCharsets.UTF_8);
-                fileString = fileString.trim();
-
-                String tmp = "untitled";
-                int diff = 0;
-                for (int y = tmp.length() - 1; y > 0; y--) {
-                    if ((tmp.charAt(y) == fileString.charAt(y))) {
-                        diff = y;
-                    }
-                }
-                fileString = fileString.substring(0, diff);
-
-                respectiveModel.addTitel(fileString);
-                buf.position(actPos + (1 + 9));
-
-                respectiveModel.addIdealRate(buf.getFloat());
-                respectiveModel.addKind((int) buf.get());
-                respectiveModel.addPad((int) buf.get());
-
-                if (respectiveModel.getKind(i) == 1) {
-                    respectiveModel.addScale(buf.getFloat());
-                    respectiveModel.addOffset(buf.getFloat());
-
-                    // Set new position, because we skip reading units
-                    buf.position(buf.position() + (1 + 5));
-
-                    if (respectiveModel.getSystemId() < 6) {
-                        respectiveModel.addDivide((int) buf.getShort());
-                    } else {
-                        respectiveModel.addInterleave((int) buf.getShort());
-                    }
-                } else {
-                    respectiveModel.addScale(1);
-                    respectiveModel.addOffset(0);
-                }
-
-                inChannel.position(respectiveModel.getLastBlock(i) + 18);
-                buf = ByteBuffer.allocate(4);
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                bytesRead = inChannel.read(buf);
-                buf.flip();
-
-                int sizeOfLastBlock = buf.getShort();
-                respectiveModel.addSizeOfLastBlock(sizeOfLastBlock);
-
-            }
-
-            // Get the number of channels
-            LinkedList<Integer> kind = respectiveModel.getListOfKind();
-            int tmp = respectiveModel.getNumberOfChannels();
-
-            for (int i = 0; i < kind.size(); i++) {
-//                if (kind.get(i) == 1) {
-                if (kind.get(i) != 0) {
-                    tmp++;
-                }
-            }
-            respectiveModel.setNumberOfChannels(tmp);
+//            FileChannel inChannel = dataFile.getChannel();
+//
+//            // Saves the first 512 byte for the file header
+//            ByteBuffer buf = ByteBuffer.allocate(60);
+//            buf.order(ByteOrder.LITTLE_ENDIAN);
+//
+//            int bytesRead = inChannel.read(buf);
+//
+//            //Make buffer ready for read
+//            buf.flip();
+//
+//            // ************** Get File Header Information **************
+//            respectiveModel.setSystemId(buf.getShort());
+//
+//            // We skip copyright and creator information
+//            buf.position(buf.position() + 18);
+//
+//            respectiveModel.setUsPerTime(buf.getShort());
+//            respectiveModel.setTimePerADC(buf.getShort());
+//            respectiveModel.setFileState(buf.getShort());
+//            respectiveModel.setFirstData(buf.getInt());
+//            respectiveModel.setChannels(buf.getShort());
+//            respectiveModel.setChanSize(buf.getShort());
+//            respectiveModel.setExtraData(buf.getShort());
+//            respectiveModel.setBufferSize(buf.getShort());
+//            respectiveModel.setOsFormat(buf.getShort());
+//            respectiveModel.setMaxFTime(buf.getInt());
+//            respectiveModel.setdTimeBase(buf.getDouble());
+//
+//            if (respectiveModel.getSystemId() < 6) {
+//                respectiveModel.setdTimeBase(1e-6);
+//            }
+//
+//            // ************** Get Channel Header Information **************
+//            for (int i = 0; i < respectiveModel.getChannels(); i++) {
+//
+//                // Offset due to file header and preceding channel headers
+//                int offset = 512 + (140 * (i));
+//
+//                inChannel.position(offset);
+//                buf = ByteBuffer.allocate(160);
+//                buf.order(ByteOrder.LITTLE_ENDIAN);
+//                bytesRead = inChannel.read(buf);
+//                buf.flip();
+//
+//                respectiveModel.addDelSize((int) buf.getShort());
+//                respectiveModel.addNextDelBlock(buf.getInt());
+//                respectiveModel.addFirstBlock(buf.getInt());
+//                respectiveModel.addLastBlock(buf.getInt());
+//                respectiveModel.addBlocks((int) buf.getShort());
+//                respectiveModel.addnExtra((int) buf.getShort());
+//                respectiveModel.addPreTrig((int) buf.getShort());
+//                respectiveModel.addFree0((int) buf.getShort());
+//                respectiveModel.addPhySz((int) buf.getShort());
+//                respectiveModel.addMaxData((int) buf.getShort()); // 26
+//
+//                // Set new position, because we skip reading the comment
+//                buf.position(buf.position() + (1 + 71)); // 98
+//
+//                respectiveModel.addMaxChanTime(buf.getInt());
+//                respectiveModel.addlChanDvd(buf.getInt());
+//                respectiveModel.addPhyChan((int) buf.getShort()); // 108
+//
+//                int actPos = buf.position();
+//                byte[] bytes = new byte[9];
+//                buf.get(bytes, 0, 9);
+//
+//                String fileString = new String(bytes, StandardCharsets.UTF_8);
+//                fileString = fileString.trim();
+//
+//                String tmp = "untitled";
+//                int diff = 0;
+//                for (int y = tmp.length() - 1; y > 0; y--) {
+//                    if ((tmp.charAt(y) == fileString.charAt(y))) {
+//                        diff = y;
+//                    }
+//                }
+//                fileString = fileString.substring(0, diff);
+//
+//                respectiveModel.addTitel(fileString);
+//                buf.position(actPos + (1 + 9));
+//
+//                respectiveModel.addIdealRate(buf.getFloat());
+//                respectiveModel.addKind((int) buf.get());
+//                respectiveModel.addPad((int) buf.get());
+//
+//                if (respectiveModel.getKind(i) == 1) {
+//                    respectiveModel.addScale(buf.getFloat());
+//                    respectiveModel.addOffset(buf.getFloat());
+//
+//                    // Set new position, because we skip reading units
+//                    buf.position(buf.position() + (1 + 5));
+//
+//                    if (respectiveModel.getSystemId() < 6) {
+//                        respectiveModel.addDivide((int) buf.getShort());
+//                    } else {
+//                        respectiveModel.addInterleave((int) buf.getShort());
+//                    }
+//                } else {
+//                    respectiveModel.addScale(1);
+//                    respectiveModel.addOffset(0);
+//                }
+//
+//                inChannel.position(respectiveModel.getLastBlock(i) + 18);
+//                buf = ByteBuffer.allocate(4);
+//                buf.order(ByteOrder.LITTLE_ENDIAN);
+//                bytesRead = inChannel.read(buf);
+//                buf.flip();
+//
+//                int sizeOfLastBlock = buf.getShort();
+//                respectiveModel.addSizeOfLastBlock(sizeOfLastBlock);
+//
+//            }
+//
+//            // Get the number of channels
+//            LinkedList<Integer> kind = respectiveModel.getListOfKind();
+//            int tmp = respectiveModel.getNumberOfChannels();
+//
+//            for (int i = 0; i < kind.size(); i++) {
+////                if (kind.get(i) == 1) {
+//                if (kind.get(i) != 0) {
+//                    tmp++;
+//                }
+//            }
+//            respectiveModel.setNumberOfChannels(tmp);
 
 //			dataFile.close();
         } catch (FileNotFoundException e) {
