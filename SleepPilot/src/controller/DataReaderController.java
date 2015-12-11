@@ -24,6 +24,7 @@ import son32java.son32reader.Son32Reader;
 import model.RawDataModel;
 import model.SMRDataModel;
 import son32java.son32Exceptions.NoChannelException;
+import son32java.son32reader.Son32Channel;
 
 public class DataReaderController {
 
@@ -98,38 +99,50 @@ public class DataReaderController {
     public final void init() {
         if (file.getName().toLowerCase().endsWith(".smr")) {
 
-            System.out.println("************"+this.respectiveModel);
             readHeaderFromSMR();
             respectiveModel.setReadingHeaderComplete(true);
 
 //            respectiveModel.setSamplingIntervall(respectiveModel.getUsPerTime()); //seems to be wrong
             //int tmp = (int) (respectiveModel.getUsPerTime() * 1e6 * respectiveModel.getdTimeBase());
             try{
-                int tmp = (int)respectiveModel.getSon32Reader().getChannel(0).getSamplingIntervallMs();
-                respectiveModel.setSamplingIntervall(tmp);
+                int samplingIntervall = (int)respectiveModel.getSon32Reader().
+                        getChannel(0).getSamplingIntervallMs();
+                double samplingRate = respectiveModel.getSon32Reader().
+                        getChannel(0).getSamplingRateHz();
+                //get the last time for the channel in clock ticks
+                long maxTime = respectiveModel.getSon32Reader().
+                        getChannel(0).getChanMaxTime();
+                //convert the max time from clock ticks to sec
+                maxTime = (long)respectiveModel.getSon32Reader().getSecFromCT(maxTime);
+                int numberOfDataPoints = (int)(maxTime*samplingRate);
+                respectiveModel.setSamplingIntervall(samplingIntervall);
+                respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+                numberOfSamplesForOneEpoch = (int) (samplingRate * 30);
+                respectiveModel.rawEpoch = new double[respectiveModel.
+                        getSon32Reader().getNumberOfChannels()][numberOfSamplesForOneEpoch];
             } catch(NoChannelException e){
                 System.out.println(e);
                 System.out.println("Failed to set Samplinginterval, set to 1!");
                 respectiveModel.setSamplingIntervall(1);
             }
 
-            int numberOfDataPoints = ((respectiveModel.getBlocks(0) - 1) * respectiveModel.getMaxData(0) + respectiveModel.getSizeOfLastBlock(0));
-            respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+//            int numberOfDataPoints = ((respectiveModel.getBlocks(0) - 1) * respectiveModel.getMaxData(0) + respectiveModel.getSizeOfLastBlock(0));
+//            respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
 
-            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
-            respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
+//            numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+//            respectiveModel.rawEpoch = new double[respectiveModel.getNumberOfChannels()][numberOfSamplesForOneEpoch];
 
             reader = new Reader() {
                 @Override
                 public double[] read(int channel, int epoch, double[] target) {
 //                    int tmp = (int) (respectiveModel.getlChanDvd(channel) * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
-                    int tmp = (int) (1 * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
-                    respectiveModel.setSamplingIntervall(tmp);
-
-                    int numberOfDataPoints = ((respectiveModel.getBlocks(channel) - 1) * respectiveModel.getMaxData(channel) + respectiveModel.getSizeOfLastBlock(channel));
-                    respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
-
-                    numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
+//                    int tmp = (int) (1 * respectiveModel.getUsPerTime() * (1e6 * respectiveModel.getdTimeBase()));
+//                    respectiveModel.setSamplingIntervall(tmp);
+//
+//                    int numberOfDataPoints = ((respectiveModel.getBlocks(channel) - 1) * respectiveModel.getMaxData(channel) + respectiveModel.getSizeOfLastBlock(channel));
+//                    respectiveModel.setNumberOfDataPoints(numberOfDataPoints);
+//
+//                    numberOfSamplesForOneEpoch = (int) (respectiveModel.getSamplingRateConvertedToHertz() * 30);
                     return readSMRChannel(dataFile, channel, epoch, target);
                 }
             };
@@ -381,96 +394,115 @@ public class DataReaderController {
 
     }
 
-    public double[] readSMRChannel(RandomAccessFile dataFile, int channel, int epoch, double[] target) {
-
-        int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channel);
-
-        int sampleNumberInBlock = 0;
-        if (epoch != 0) {
-            sampleNumberInBlock = (epoch - 1) * numberOfSamplesForOneEpoch;
-            sampleNumberInBlock = sampleNumberInBlock - (block * respectiveModel.getMaxData(channel));
-            sampleNumberInBlock = sampleNumberInBlock + numberOfSamplesForOneEpoch;
+    public double[] readSMRChannel(RandomAccessFile dataFile, int chan, int epoch, double[] target) {
+        try{
+            System.out.println(epoch);
+            Son32Reader sonReader = respectiveModel.getSon32Reader();
+            Son32Channel channel = sonReader.getChannel(chan);
+            int sTime = (int)sonReader.getCTFromSec(epoch*30);
+            System.out.println("sTime: "+sTime);
+            int eTime = (int)sonReader.getCTFromSec((epoch+1)*30);
+            System.out.println("eTime: "+eTime);
+            int arraySize = channel.calculateArraySizeByTime(30);
+            double[] newTarget = new double[arraySize];
+            channel.getRealDataByTime(sTime, eTime, target);
+            for(int x=0;x<newTarget.length;x++){
+                //System.out.println(newTarget[x]);
+            }
+            return target;
+        } catch(NoChannelException e){
+            System.out.println(e);
+            return target;
         }
 
-        int countBlock = 0;
-        int channelPosition = respectiveModel.getFirstBlock(channel);
-
-        try {
-
-            while (block != countBlock) {
-
-                FileChannel inChannel = dataFile.getChannel();
-                inChannel = inChannel.position(channelPosition + 4);
-                ByteBuffer buf = ByteBuffer.allocate(4);
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                int bytesRead = inChannel.read(buf);
-                buf.flip();
-
-                channelPosition = buf.getInt();
-                countBlock++;
-
-            }
-
-            FileChannel inChannel = dataFile.getChannel();
-            inChannel = inChannel.position(channelPosition);
-
-            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channel) * 4);// * 2 because we have two bytes for each sample
-            buf.order(ByteOrder.LITTLE_ENDIAN);
-            int bytesRead = inChannel.read(buf);
-            buf.flip();
-
-            buf.position(buf.position() + 4);											// + 4 because we skip lastBlock element
-            channelPosition = buf.getInt();
-            buf.position(buf.position() + 12 + (sampleNumberInBlock * 2));				// + 12 because we skip channelNumbers and ItemsInBlock elements
-
-            int runIndex = (respectiveModel.getMaxData(channel) - sampleNumberInBlock);
-            System.out.println("runIndex: "+runIndex);
-            System.out.println("sampleNumberInBlock: " + sampleNumberInBlock);
-            System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
-            
-            double value=0;
-            
-            if (runIndex > numberOfSamplesForOneEpoch) {
-                runIndex = numberOfSamplesForOneEpoch;
-
-                for (int i = 0; i < runIndex; i++) {
-                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
-                    value = value / 6553.6;
-                    value = value + respectiveModel.getOffset(channel);
-
-                    // Rounded a mantisse with value 3
-                    value = Math.round(value * 1000.);
-                    value = value / 1000.;
-                    target[i] = value;
-                }
-
-            } else {
-                for (int i = 0; i < runIndex; i++) {
-                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
-                    value = value / 6553.6;
-                    value = value + respectiveModel.getOffset(channel);
-
-                    // Rounded a mantisse with value 3
-                    value = Math.round(value * 1000.);
-                    value = value / 1000.;
-                    target[i] = value;
-                }  
-                
-                int itemsRead = runIndex;
-                
-                int nextBlock = channelPosition;
-                while (nextBlock != -1) {
-                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock, target, itemsRead);
-                }
-
-            }
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return target;
+//        int block = (epoch * numberOfSamplesForOneEpoch) / respectiveModel.getMaxData(channel);
+//
+//        int sampleNumberInBlock = 0;
+//        if (epoch != 0) {
+//            sampleNumberInBlock = (epoch - 1) * numberOfSamplesForOneEpoch;
+//            sampleNumberInBlock = sampleNumberInBlock - (block * respectiveModel.getMaxData(channel));
+//            sampleNumberInBlock = sampleNumberInBlock + numberOfSamplesForOneEpoch;
+//        }
+//
+//        int countBlock = 0;
+//        int channelPosition = respectiveModel.getFirstBlock(channel);
+//
+//        try {
+//
+//            while (block != countBlock) {
+//
+//                FileChannel inChannel = dataFile.getChannel();
+//                inChannel = inChannel.position(channelPosition + 4);
+//                ByteBuffer buf = ByteBuffer.allocate(4);
+//                buf.order(ByteOrder.LITTLE_ENDIAN);
+//                int bytesRead = inChannel.read(buf);
+//                buf.flip();
+//
+//                channelPosition = buf.getInt();
+//                countBlock++;
+//
+//            }
+//
+//            FileChannel inChannel = dataFile.getChannel();
+//            inChannel = inChannel.position(channelPosition);
+//
+//            ByteBuffer buf = ByteBuffer.allocate(respectiveModel.getMaxData(channel) * 4);// * 2 because we have two bytes for each sample
+//            buf.order(ByteOrder.LITTLE_ENDIAN);
+//            int bytesRead = inChannel.read(buf);
+//            buf.flip();
+//
+//            buf.position(buf.position() + 4);											// + 4 because we skip lastBlock element
+//            channelPosition = buf.getInt();
+//            buf.position(buf.position() + 12 + (sampleNumberInBlock * 2));				// + 12 because we skip channelNumbers and ItemsInBlock elements
+//
+//            int runIndex = (respectiveModel.getMaxData(channel) - sampleNumberInBlock);
+//            System.out.println("runIndex: "+runIndex);
+//            System.out.println("sampleNumberInBlock: " + sampleNumberInBlock);
+//            System.out.println("numberOfSamplesForOneEpoch: " + numberOfSamplesForOneEpoch);
+//            
+//            double value=0;
+//            
+//            if (runIndex > numberOfSamplesForOneEpoch) {
+//                runIndex = numberOfSamplesForOneEpoch;
+//
+//                for (int i = 0; i < runIndex; i++) {
+//                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
+//                    value = value / 6553.6;
+//                    value = value + respectiveModel.getOffset(channel);
+//
+//                    // Rounded a mantisse with value 3
+//                    value = Math.round(value * 1000.);
+//                    value = value / 1000.;
+//                    target[i] = value;
+//                }
+//
+//            } else {
+//                for (int i = 0; i < runIndex; i++) {
+//                    value = (double) (buf.getShort() * respectiveModel.getScale(channel));
+//                    value = value / 6553.6;
+//                    value = value + respectiveModel.getOffset(channel);
+//
+//                    // Rounded a mantisse with value 3
+//                    value = Math.round(value * 1000.);
+//                    value = value / 1000.;
+//                    target[i] = value;
+//                }  
+//                
+//                int itemsRead = runIndex;
+//                
+//                int nextBlock = channelPosition;
+//                while (nextBlock != -1) {
+//                    nextBlock = getWholeDataFromOneSMRChannel(buf, channel, nextBlock, target, itemsRead);
+//                }
+//
+//            }
+//
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//
+//        return target;
 
     }
 

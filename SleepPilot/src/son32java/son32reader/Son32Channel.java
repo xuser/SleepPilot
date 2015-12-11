@@ -128,7 +128,7 @@ public class Son32Channel {
      * @param eTime The end time in clock ticks.
      * @param target he target array for the data.
      */
-    private void getRealData(long max, long sTime, long eTime, double[] target){
+    private void getRealData(long max, int sTime, int eTime, double[] target){
         this.parentReader.SONGetRealData((short)this.channelNumber, max,
                 sTime, eTime, target);
     }
@@ -141,12 +141,12 @@ public class Son32Channel {
      * @param target The target array for the data.
      */
     public void getRealDataByDP(double sTime, double target[]){
-        long sTimeInCT = this.parentReader.getCTFromSec(sTime);
+        int sTimeInCT = (int)this.parentReader.getCTFromSec(sTime);
         double timePerConversionInSec = channelDivide
                 *this.parentReader.getTimeBase()
                 *this.parentReader.getUsPerTime();
-        long eTimeInCT = sTimeInCT + 
-                this.parentReader.getCTFromSec(timePerConversionInSec*target.length);
+        int eTimeInCT = (int)(sTimeInCT + 
+                this.parentReader.getCTFromSec(timePerConversionInSec*target.length));
         this.getRealData(target.length, sTimeInCT, eTimeInCT, target);
         
     }
@@ -161,8 +161,8 @@ public class Son32Channel {
      * @param target The target array for the data.
      */
     public void getRealDataByTime(double sTime, double eTime, double[] target){
-        long sTimeInCT = this.parentReader.getCTFromSec(sTime);
-        long eTimeInCT = this.parentReader.getCTFromSec(eTime);
+        int sTimeInCT = (int)this.parentReader.getCTFromSec(sTime);
+        int eTimeInCT = (int)this.parentReader.getCTFromSec(eTime);
         this.getRealData(target.length, sTimeInCT, eTimeInCT, target);
     }
     

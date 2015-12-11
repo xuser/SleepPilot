@@ -205,8 +205,8 @@ public class Son32Reader {
      * @param eTime The end time in clock ticks.
      * @param target The target array for the data
      */
-     public void SONGetRealData(short chan, long max, long sTime,
-             long eTime, double[] target) throws ArrayIndexOutOfBoundsException{
+     public void SONGetRealData(short chan, long max, int sTime,
+             int eTime, double[] target) throws ArrayIndexOutOfBoundsException{
         if(target.length < max){
             throw new ArrayIndexOutOfBoundsException("Error reading data from"
                     + " the file into the target array! Make sure the array"
@@ -230,6 +230,7 @@ public class Son32Reader {
         //convert NativeLong type back to Java long
         long pbTime = pbTimeMem.getInt((long)0);
         long numberOfDataPoints = numberOfDataPointsNL.longValue();
+        System.out.println("number of datapoints: "+numberOfDataPoints);
         long channelDivide = this.channels[chan].getChannelDivide();
         //calculate the base unit of the x axis scale, every x value is a
         //multiple of this value
@@ -237,6 +238,7 @@ public class Son32Reader {
         for(int i=0;i<numberOfDataPoints;i++){
             double time = timePerConversion*i;
             float dataValue = pFloatMem.getFloat((long)4*i);
+            //System.out.println(dataValue);
             target[i] = (double)dataValue;
         }
      }

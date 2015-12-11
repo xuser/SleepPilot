@@ -502,6 +502,10 @@ public class FXApplicationController implements Initializable {
                                     Arrays.asList(channelNames)
                                     .indexOf(newValue)
                             );
+                            
+                            System.out.println("########"+Arrays.asList(channelNames)
+                                    .indexOf(newValue));
+                            
                             System.out.println(featureExtractionModel.getFeatureChannel());
 
                             featureExtractionModel.setTsneComputed(false);
@@ -949,6 +953,7 @@ public class FXApplicationController implements Initializable {
         double[] epoch2 = null;
 
         epoch2 = thisEpoch[featureExtractionModel.getFeatureChannel()].clone();
+        System.out.println("getFeatureChannel: "+featureExtractionModel.getFeatureChannel());
         filtfilt(epoch2, getLowpassCoefficients());
         filtfilt(epoch2, getDisplayHighpassCoefficients());
         KCdetection.KC[] kcs = getKCs(epoch2);
