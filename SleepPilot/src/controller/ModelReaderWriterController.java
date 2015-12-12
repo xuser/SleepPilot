@@ -92,8 +92,6 @@ public class ModelReaderWriterController extends Thread {
 
                     FeatureExtractionModel fem = (FeatureExtractionModel) obj;
                     MainController.setFeatureExtractionModel(fem);
-                    MainController.setFeatureExtractionModel(fem);
-
                     MainController.recreateSystemState(file);
 
                 }

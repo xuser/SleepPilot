@@ -87,7 +87,6 @@ public class FXViewModel {
         this.electrodeConfigurator = electrodeConfiguratorActive;
     }
 
-    
     public void setKcMarkersActive(boolean kcMarkersActive) {
         this.kcMarkersActive = kcMarkersActive;
     }

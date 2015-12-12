@@ -25,6 +25,7 @@ import model.FeatureExtractionModel;
 import controller.DataReaderController;
 import controller.FeatureExtractionController;
 import controller.ModelReaderWriterController;
+import controller.SupportVectorMaschineController;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
@@ -72,44 +73,26 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import kcdetection.KCdetection;
-import static kcdetection.KCdetection.filterKCs;
-import static kcdetection.KCdetection.getKCs;
-import static kcdetection.KCdetection.mergeKCs;
 import org.apache.commons.math.stat.StatUtils;
 import tools.NeuralNetworks;
 import tools.Signal;
 import tools.Util;
-import org.jdsp.iirfilterdesigner.IIRDesigner;
-import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
-import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
-import org.jdsp.iirfilterdesigner.model.FilterType;
+import tools.KCdetection;
 
 import static tools.Signal.filtfilt;
-import static tools.Signal.upsample;
 
 public class FXApplicationController implements Initializable {
 
-    private FilterCoefficients displayHighpassCoefficients;
-
-    private FilterCoefficients displayLowpasCoefficients;
-
-    private FilterCoefficients highpassCoefficients;
-
-    private FilterCoefficients lowpassCoefficients;
-
-    private IirFilterCoefficients decimationCoefficients;
-
     private String classifier;
-    private ArrayList<String> classifierList=new ArrayList();
+    private ArrayList<String> classifierList = new ArrayList();
+    private KCdetection kcDetector;
 
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
 
     final private double[][] thisEpoch;
-    TDoubleArrayList epoch;
+    private double[] epoch;
 
     private FXPopUp popUp = new FXPopUp();
     private FXViewModel viewModel;
@@ -241,7 +224,7 @@ public class FXApplicationController implements Initializable {
         this.dataReaderController = dataReaderController;
         this.dataPointsModel = dataReaderController.getDataModel();
         this.featureExtractionModel = featureExtractionModel;
-        this.featureExtractionController = new FeatureExtractionController(dataPointsModel, featureExtractionModel);
+        this.featureExtractionController = new FeatureExtractionController(featureExtractionModel);
         this.viewModel = viewModel;
 
         this.recreateModelMode = recreateModelMode;
@@ -276,7 +259,7 @@ public class FXApplicationController implements Initializable {
         statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
 
         //Configure lineChart
-        lineChart.setSnapToPixel(false);
+        lineChart.setSnapToPixel(true);
         lineChart.requestFocus();
 
         // Set Choice Box for the channels
@@ -305,8 +288,9 @@ public class FXApplicationController implements Initializable {
         tooltips();
 
         thisEpoch = dataPointsModel.rawEpoch.clone();
-
-        createFilters();
+        kcDetector = featureExtractionModel.getKCdetector();
+        kcDetector.setHighpassCoefficients(featureExtractionModel.getDisplayHighpassCoefficients());
+        kcDetector.setLowpassCoefficients(featureExtractionModel.getLowpassCoefficients());
 
         loadEpoch(currentEpoch);
 
@@ -326,7 +310,7 @@ public class FXApplicationController implements Initializable {
         choiceBox.getSelectionModel().select(0);
 
         ObservableList<String> choicesModel = FXCollections.observableArrayList();
-        
+
         File folder = new File("./Classifiers").getAbsoluteFile();
         for (File file : folder.listFiles()) {
             if (file.getName().contains("model")) {
@@ -838,8 +822,7 @@ public class FXApplicationController implements Initializable {
 
     final public void filterEpoch() {
         for (int i = 0; i < activeChannels.size(); i++) {
-            Signal.filtfilt(thisEpoch[activeChannels.get(i)], getDisplayHighpassCoefficients());
-//            Signal.filtfilt(thisEpoch[activeChannel], getDisplayLowpasCoefficients());
+            Signal.filtfilt(thisEpoch[activeChannels.get(i)], featureExtractionModel.getDisplayHighpassCoefficients());
         }
     }
 
@@ -851,7 +834,8 @@ public class FXApplicationController implements Initializable {
 
     final public void decimateSignal() {
         for (int i = 0; i < activeChannels.size(); i++) {
-            thisEpoch[activeChannels.get(i)] = resample(dataPointsModel.rawEpoch[activeChannels.get(i)], (int) dataPointsModel.getSamplingRateConvertedToHertz());
+            thisEpoch[activeChannels.get(i)] = featureExtractionController.resample(dataPointsModel.rawEpoch[activeChannels.get(i)],
+                    (int) dataPointsModel.getSamplingRateConvertedToHertz());
         }
     }
 
@@ -859,8 +843,7 @@ public class FXApplicationController implements Initializable {
 
         lineChart.getData().clear();
 
-        double[] epoch;
-
+//        double[] epoch;
         double offsetSize = 0;
         if (activeChannels.size() != 0) {
             offsetSize = 1. / (activeChannels.size() + 1.);
@@ -891,7 +874,7 @@ public class FXApplicationController implements Initializable {
 
                     value = value * zoom * scale.get();
                     value = value + realOffset;
-                    
+
                     XYChart.Data dataItem = new XYChart.Data(tmp, value);
                     series.getData().add(dataItem);
 
@@ -918,7 +901,7 @@ public class FXApplicationController implements Initializable {
             offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
-        double[] epoch;
+//        double[] epoch;
         double zoom;
         double realOffset;
         for (int i = 0; i < activeChannels.size(); i++) {
@@ -944,26 +927,13 @@ public class FXApplicationController implements Initializable {
 
         overlay4.getChildren().clear();
 
-        Set<Range<Integer>> kcPlotRanges = null;
-        ArrayList<KCdetection.KC> kcList = new ArrayList();
-        double[] epoch2 = null;
-
-        epoch2 = thisEpoch[featureExtractionModel.getFeatureChannel()].clone();
-        filtfilt(epoch2, getLowpassCoefficients());
-        filtfilt(epoch2, getDisplayHighpassCoefficients());
-        KCdetection.KC[] kcs = getKCs(epoch2);
-        kcs = filterKCs(kcs, 15, 100, 0, 65);
-        if (kcs != null) {
-            kcList.addAll(Arrays.asList(kcs));
-        }
-
-        kcPlotRanges = mergeKCs(kcList.toArray(new KCdetection.KC[0]));
-
-        double percentageSum = 0;
-        for (Range<Integer> e : kcPlotRanges) {
-            percentageSum += (e.upperEndpoint() - e.lowerEndpoint()) / (double) thisEpoch[0].length;
-        }
-        percentageSum *= 100;
+        kcDetector.setMaxWidth(100);
+        kcDetector.setMinWidth(15);
+        kcDetector.setNegAmplitude(75);
+        kcDetector.setPeakToPeak(75);
+        kcDetector.detect(thisEpoch[featureExtractionModel.getFeatureChannel()]);
+        double percentageSum = kcDetector.getPercentageSum();
+        Set< Range< Integer>> kcPlotRanges = kcDetector.getKcRanges();
 
         kComplexLabel.setVisible(
                 true);
@@ -981,14 +951,14 @@ public class FXApplicationController implements Initializable {
             Rectangle r = new Rectangle();
             r.layoutXProperty()
                     .bind(this.xAxis.widthProperty()
-                            .multiply((start + 1.) / (double) epoch2.length)
+                            .multiply((start + 1.) / (double) this.thisEpoch[0].length)
                             .add(this.xAxis.layoutXProperty())
                     );
 
             r.setLayoutY(0);
             r.widthProperty()
                     .bind(xAxis.widthProperty()
-                            .multiply((stop - start) / (double) epoch2.length));
+                            .multiply((stop - start) / (double) this.thisEpoch[0].length));
 
             r.heightProperty()
                     .bind(overlay4.heightProperty());
@@ -1431,36 +1401,15 @@ public class FXApplicationController implements Initializable {
     }
 
     public void classify() {
-
-//        for (int i = 0; i < channelNames.length; i++) {
-//            String channel = channelNames[i];
-//
-//            switch (channel) {
-//                case "Fz":
-//                    featureExtractionModel.setChannelName(ChannelNames.Fz);
-//                    break;
-//                default:
-//                    featureExtractionModel.setChannelName(ChannelNames.UNKNOWN);
-//                    break;
-//            }
-//        }
-//        // Check whether the the SVM Model is trained for one of the given channels
-//        File folder = new File(".").getAbsoluteFile();
-//        for (File file : folder.listFiles()) {
-//            for (int i = 0; i < channelNames.length; i++) {
-//                if (file.getName().contains(channelNames[i]) && file.getName().contains("model")) {
-//                    flag = true;
-//                    channelNumbersToRead.add(i);
-//                }
-//            }
-//        }
-        NeuralNetworks nn = new NeuralNetworks(classifier);
+//        NeuralNetworks nn = new NeuralNetworks(classifier);
+        SupportVectorMaschineController svm = new SupportVectorMaschineController();
+        svm.svmLoadModel(classifier);
 
         double[] output;
         for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
 
-            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
-
+//            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
+            output = svm.svmPredict(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
             int classLabel = Doubles.indexOf(output, Doubles.max(output));
             if (classLabel == 4) {
                 classLabel = 5;
@@ -1802,129 +1751,6 @@ public class FXApplicationController implements Initializable {
         choiceBoxModel.setTooltip(new Tooltip("Select classifier"));
     }
 
-    private void createFilters() {
-        FilterCoefficients coefficients = null;
-        try {
-            double fstop = 0.1;
-            double fpass = 0.5;
-            double fs = 100;
-            coefficients = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.BUTTERWORTH,
-                    FilterType.HIGHPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 20.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        setDisplayHighpassCoefficients(coefficients);
-
-        FilterCoefficients coefficients2 = null;
-        try {
-            double fstop = 20;
-            double fpass = 15;
-            double fs = 100;
-            coefficients2 = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.CHEBYSHEV2,
-                    FilterType.LOWPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 40.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        setDisplayLowpasCoefficients(coefficients2);
-
-        FilterCoefficients coefficients4 = null;
-        try {
-            double fstop = 0.1;
-            double fpass = 0.3;
-            double fs = 100;
-            coefficients4 = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.BUTTERWORTH,
-                    FilterType.HIGHPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 20.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        setHighpassCoefficients(coefficients4);
-
-        FilterCoefficients coefficients3 = null;
-        try {
-            double fstop = 7.;
-            double fpass = 4.;
-            double fs = 100;
-            coefficients3 = IIRDesigner.designDigitalFilter(
-                    ApproximationFunctionType.CHEBYSHEV2,
-                    FilterType.LOWPASS,
-                    new double[]{fpass},
-                    new double[]{fstop},
-                    1.0, 40.0, fs);
-
-        } catch (BadFilterParametersException ex) {
-            ex.printStackTrace();
-        }
-
-        setLowpassCoefficients(coefficients3);
-
-        IirFilterCoefficients coeffs
-                = biz.source_code.dsp.filter.IirFilterDesignFisher.design(
-                        FilterPassType.lowpass,
-                        FilterCharacteristicsType.chebyshev,
-                        8, -1, 0.4, 0.);
-
-        setDecimationCoefficients(coeffs);
-
-    }
-
-    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
-        this.displayHighpassCoefficients = displayHighpassCoefficients;
-    }
-
-    public void setDisplayLowpasCoefficients(FilterCoefficients displayLowpasCoefficients) {
-        this.displayLowpasCoefficients = displayLowpasCoefficients;
-    }
-
-    public FilterCoefficients getDisplayHighpassCoefficients() {
-        return displayHighpassCoefficients;
-    }
-
-    public FilterCoefficients getDisplayLowpasCoefficients() {
-        return displayLowpasCoefficients;
-    }
-
-    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
-        this.highpassCoefficients = highpassCoefficients;
-    }
-
-    public FilterCoefficients getHighpassCoefficients() {
-        return highpassCoefficients;
-    }
-
-    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
-        this.lowpassCoefficients = lowpassCoefficients;
-    }
-
-    public FilterCoefficients getLowpassCoefficients() {
-        return lowpassCoefficients;
-    }
-
-    public void setDecimationCoefficients(IirFilterCoefficients decimationCoefficients) {
-        this.decimationCoefficients = decimationCoefficients;
-    }
-
-    public IirFilterCoefficients getDecimationCoefficients() {
-        return decimationCoefficients;
-    }
-
     private void computeFeatures() {
         if (!featureExtractionModel.isReadinDone()) {
             dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
@@ -1935,48 +1761,13 @@ public class FXApplicationController implements Initializable {
                             dataPointsModel.rawEpochs,
                             dataPointsModel.getNumberOf30sEpochs() * 3000)
             );
-
-            filtfilt(dataPointsModel.getFeatureChannelData(),
-                    getHighpassCoefficients());
         }
 
         if (!featureExtractionModel.isFeaturesComputed()) {
+            featureExtractionModel.setData(dataPointsModel.getFeatureChannelData());
             featureExtractionController.start();
             featureExtractionModel.setFeaturesComputed(true);
         }
-    }
-
-    private double[] decimate(double[] x, int r) {
-        /*
-         modifies the input signal (inplace operation of filter step)
-         */
-
-        filtfilt(x, decimationCoefficients);
-
-        double[] y = new double[x.length / r];
-
-        for (int i = 0; i < y.length; i++) {
-            y[i] = x[i * r];
-        }
-        return y;
-    }
-
-    private double[] resample(double[] x, int fs) {
-        /*
-         downsample to 100 Hz, fs must be > 100 Hz; no input checking!
-         */
-
-        int factor = (int) Math.round(Math.ceil(fs / 100.));
-        double scale = Math.round(Math.ceil(fs / 100.)) / (fs / 100.);
-
-        double[] y = null;
-        if (scale != 1.) {
-            y = upsample(x, scale);
-        } else {
-            y = x;
-        }
-
-        return decimate(y, factor);
     }
 
     public final void updateChoiceBox() {

@@ -1,5 +1,6 @@
 package model;
 
+import biz.source_code.dsp.filter.IirFilterCoefficients;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -7,6 +8,8 @@ import java.util.LinkedList;
 
 import help.ChannelNames;
 import java.util.Arrays;
+import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
+import tools.KCdetection;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -31,6 +34,12 @@ public class FeatureExtractionModel implements Serializable {
     private int[] arousals;
     private int[] stimulation;
     private double[][] tsneFeatures;
+
+    /**
+     * Data holds reference to feature channel data (usually in a RawDataModel), for use in instance of
+     * FeatureExtractioController.
+     */
+    private double[] data;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -59,12 +68,6 @@ public class FeatureExtractionModel implements Serializable {
      * with the probabilities for the epoch with the rowindex.
      */
     private double[][] predictProbabilities;
-
-    /**
-     * This variable keeps the number of the epoch to which the calculation of
-     * the PE has been done.
-     */
-    private int numberOfcalculatedEpoch;
 
     /**
      * If automode is true, then the classification automation was used.
@@ -135,8 +138,15 @@ public class FeatureExtractionModel implements Serializable {
     private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
 
     private int featureChannel;
-    
+
     private int currentEpoch;
+    private FilterCoefficients displayLowpassCoefficients;
+    private FilterCoefficients highpassCoefficients;
+    private FilterCoefficients displayHighpassCoefficients;
+    private FilterCoefficients lowpassCoefficients;
+    private IirFilterCoefficients decimationCoefficients;
+
+    private KCdetection KCdetector;
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -189,39 +199,45 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     public void clearProperties(int epoch) {
-        
-    	int oldLabel = labels[epoch];
-    	
-		switch (oldLabel) {
-		case 0: countWake--;
-			break;
-		case 1: countS1--;
-			break;
-		case 2: countS2--;
-			break;
-		case 3: countN--;
-			break;
-		case 5: countREM--;
-			break;
-		default: System.err.println("Could not decrement epoch label. Incorrect Value!");
-			break;
-		}
-		
-		labels[epoch] = -1;
-    	
+
+        int oldLabel = labels[epoch];
+
+        switch (oldLabel) {
+            case 0:
+                countWake--;
+                break;
+            case 1:
+                countS1--;
+                break;
+            case 2:
+                countS2--;
+                break;
+            case 3:
+                countN--;
+                break;
+            case 5:
+                countREM--;
+                break;
+            default:
+                System.err.println("Could not decrement epoch label. Incorrect Value!");
+                break;
+        }
+
+        labels[epoch] = -1;
+
         if (stimulation[epoch] == 1) {
-        	stimulation[epoch] = 0;
-        	countS--;
+            stimulation[epoch] = 0;
+            countS--;
         }
-		
+
         if (arousals[epoch] == 1) {
-        	arousals[epoch] = 0;
-        	countMA--;
+            arousals[epoch] = 0;
+            countMA--;
         }
-        
+
         if (artefacts[epoch] == 1) {
-        	artefacts[epoch] = 0;
-        	countA--;
+            artefacts[epoch] = 0;
+            countA--;
         }
     }
 
@@ -294,59 +310,77 @@ public class FeatureExtractionModel implements Serializable {
      * @param row the number of scored feature value.
      * @param label the class label to set.
      */
-    public void setLabel(int row, int label) {  
-        
-    	int oldLabel = labels[row];
-    	
-    	if (oldLabel == -1) {
-    		switch (label) {
-			case 0: countWake++;
-				break;
-			case 1: countS1++;
-				break;
-			case 2: countS2++;
-				break;
-			case 3: countN++;
-				break;
-			case 5: countREM++;
-				break;
-			default: System.err.println("Could not set epoch label. Incorrect Value!");
-				break;
-			}
-    	} else if (oldLabel != label) {
-    		switch (oldLabel) {
-			case 0: countWake--;
-				break;
-			case 1: countS1--;
-				break;
-			case 2: countS2--;
-				break;
-			case 3: countN--;
-				break;
-			case 5: countREM--;
-				break;
-			default: System.err.println("Could not decrement epoch label. Incorrect Value!");
-				break;
-			}
-    		
-    		switch (label) {
-			case 0: countWake++;
-				break;
-			case 1: countS1++;
-				break;
-			case 2: countS2++;
-				break;
-			case 3: countN++;
-				break;
-			case 5: countREM++;
-				break;
-			default: System.err.println("Could not set epoch label. Incorrect Value!");
-				break;
-			}
-    	}
-    	
-    	labels[row] = label;
-        
+    public void setLabel(int row, int label) {
+
+        int oldLabel = labels[row];
+
+        if (oldLabel == -1) {
+            switch (label) {
+                case 0:
+                    countWake++;
+                    break;
+                case 1:
+                    countS1++;
+                    break;
+                case 2:
+                    countS2++;
+                    break;
+                case 3:
+                    countN++;
+                    break;
+                case 5:
+                    countREM++;
+                    break;
+                default:
+                    System.err.println("Could not set epoch label. Incorrect Value!");
+                    break;
+            }
+        } else if (oldLabel != label) {
+            switch (oldLabel) {
+                case 0:
+                    countWake--;
+                    break;
+                case 1:
+                    countS1--;
+                    break;
+                case 2:
+                    countS2--;
+                    break;
+                case 3:
+                    countN--;
+                    break;
+                case 5:
+                    countREM--;
+                    break;
+                default:
+                    System.err.println("Could not decrement epoch label. Incorrect Value!");
+                    break;
+            }
+
+            switch (label) {
+                case 0:
+                    countWake++;
+                    break;
+                case 1:
+                    countS1++;
+                    break;
+                case 2:
+                    countS2++;
+                    break;
+                case 3:
+                    countN++;
+                    break;
+                case 5:
+                    countREM++;
+                    break;
+                default:
+                    System.err.println("Could not set epoch label. Incorrect Value!");
+                    break;
+            }
+        }
+
+        labels[row] = label;
+
     }
 
     public void setLabels(int[] labels) {
@@ -397,20 +431,6 @@ public class FeatureExtractionModel implements Serializable {
         rowPosition = 0;
     }
 
-    /**
-     * Set the number of the epoch from which the PE has been calculated.
-     *
-     * @param value number of the epoch
-     */
-//    public void setNumberOfcalculatedEpoch(int value) {
-//        numberOfcalculatedEpoch.;
-//    }
-    /**
-     * @return	the number of the epoch from which the PE has been calculated.
-     */
-//    public int getNumberOfcalculatedEpoch() {
-//        return numberOfcalculatedEpoch;
-//    }
     /**
      * @return	the number of feature vectors in the matrix.
      */
@@ -804,5 +824,61 @@ public class FeatureExtractionModel implements Serializable {
         return currentEpoch;
     }
 
+    public FilterCoefficients getLowpassCoefficients() {
+        return lowpassCoefficients;
+    }
+
+    public FilterCoefficients getHighpassCoefficients() {
+        return highpassCoefficients;
+    }
+
+    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
+        this.highpassCoefficients = highpassCoefficients;
+    }
+
+    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
+        this.lowpassCoefficients = lowpassCoefficients;
+    }
+
+    public FilterCoefficients getDisplayHighpassCoefficients() {
+        return displayHighpassCoefficients;
+    }
+
+    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
+        this.displayHighpassCoefficients = displayHighpassCoefficients;
+    }
+
+    public FilterCoefficients getDisplayLowpasCoefficients() {
+        return displayLowpassCoefficients;
+    }
+
+    public void setDisplayLowpasCoefficients(FilterCoefficients displayLowpasCoefficients) {
+        this.displayLowpassCoefficients = displayLowpasCoefficients;
+    }
+
+    public void setDecimationCoefficients(IirFilterCoefficients decimationCoefficients) {
+        this.decimationCoefficients = decimationCoefficients;
+    }
+
+    public IirFilterCoefficients getDecimationCoefficients() {
+        return decimationCoefficients;
+    }
+
+    public KCdetection getKCdetector() {
+        return KCdetector;
+    }
+
+    public void setKCdetector(KCdetection KCdetector) {
+        this.KCdetector = KCdetector;
+    }
+
+    public void setData(double[] data) {
+        this.data = data;
+    }
+
+    public double[] getData() {
+        return data;
+    }
+    
     
 }

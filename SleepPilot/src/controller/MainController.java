@@ -1,10 +1,11 @@
 package controller;
 
-import help.ChannelNames;
+import java.io.BufferedOutputStream;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.io.PrintStream;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -14,7 +15,6 @@ import javafx.stage.Stage;
 import model.FXViewModel;
 import model.RawDataModel;
 import model.FeatureExtractionModel;
-import model.TrainDataModel;
 
 /**
  * Starts the application and creates necessary initial controllers.
@@ -26,22 +26,10 @@ public class MainController extends Application {
     /**
      * Filepath of .vhdr header file.
      */
-    private static String fileLocation;
-
-    private static boolean trainMode;
-
     private static Stage primaryStage;
-
     private static RawDataModel dataPointsModel;
-    private static TrainDataModel trainDataPointsModel;
-
     private static FeatureExtractionModel featureExtractionModel;
     private static FXStartController startController;
-
-    private static boolean filterThreadStartedFlag = false;
-    private static boolean featureExtractionThreadStartedFlag = false;
-    private static boolean supportVectorMaschineThreadStartedFlag = false;
-    private static boolean finishedClassificationFlag = false;
 
     /**
      * The main entry point for all JavaFX applications. The start method is
@@ -51,6 +39,15 @@ public class MainController extends Application {
     @Override
     public void start(final Stage stage) throws Exception {
 
+        if (false) {
+            PrintStream outPS
+                    = new PrintStream(
+                            new BufferedOutputStream(
+                                    new FileOutputStream("./SleepPilot.log")));  // append is false
+            System.setErr(outPS);    // redirect System.err
+            System.setOut(outPS);    // and System.out
+        }
+
         primaryStage = stage;
 
         //Create start controller
@@ -58,37 +55,6 @@ public class MainController extends Application {
         featureExtractionModel = new FeatureExtractionModel();
         startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
 
-    }
-
-    public static void startClassifier(File fileLocation, boolean trainMode, LinkedList<Integer> channelNumbersToRead, String[] channelNames, final boolean autoMode) {
-
-        if (trainMode == false) {
-            //removed
-        } else {
-
-            FeatureExtractionModel featureExtractionModel = new FeatureExtractionModel();
-
-            // Start/ Create Train Data Reader Controller
-            TrainController trainController = new TrainController(
-                    trainDataPointsModel, fileLocation.getAbsolutePath(),
-                    featureExtractionModel);
-            trainController.setPriority(10);
-            trainController.start();
-
-            // Start Support Vector Maschine Controller
-            SupportVectorMaschineController svmController = new SupportVectorMaschineController(
-                    featureExtractionModel, true);
-//            svmController.setPriority(9);
-
-            while (supportVectorMaschineThreadStartedFlag == false) {
-                if (featureExtractionModel.getReadingAndCalculatingDone() == true) {
-
-                    svmController.start();
-                    supportVectorMaschineThreadStartedFlag = true;
-                }
-            }
-
-        }
     }
 
     public static void recreateSystemState(File file) throws IllegalArgumentException {
@@ -131,10 +97,10 @@ public class MainController extends Application {
         }
     }
 
-    public static void setFeatureExtractionModel(FeatureExtractionModel model){
+    public static void setFeatureExtractionModel(FeatureExtractionModel model) {
         featureExtractionModel = model;
     }
-            
+
     /**
      * Starts the application with the needed parameters.
      *
