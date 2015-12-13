@@ -64,6 +64,11 @@ public class BrainVisionReader {
         init();
     }
 
+    public void close() throws IOException{
+        dataFile.close();
+        
+    }
+    
     /**
      * Testfunction: Proof manually, if properties are correct.
      */
@@ -336,7 +341,7 @@ public class BrainVisionReader {
             try {
                 pnts = (int) (dataFile.length() / bytes / (long) nbchan);
             } catch (IOException ex) {
-                Logger.getLogger(DataReaderController.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -372,7 +377,7 @@ public class BrainVisionReader {
     }
  
 }
-//    reader = new DataReaderController.Reader() {
+//    reader = new DataController.Reader() {
 //                    @Override
 //                    public double[] read(int channel, int epoch, double[] data) {
 //                        return readDataFile(dataFile, channel, epoch, data, binaryFormat);

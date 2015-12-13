@@ -1,6 +1,6 @@
 package view;
 
-import controller.DataReaderController;
+import controller.DataController;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
 
 import model.FXStartModel;
 import model.FXViewModel;
-import model.RawDataModel;
+import model.DataModel;
 import model.FeatureExtractionModel;
 import controller.MainController;
 import controller.ModelReaderWriterController;
@@ -45,8 +45,8 @@ import tools.Util;
 /**
  * ANNOTATION: We have to read Header information here, because we want to show
  * PopUp Messages, if there are not valid channels. It is only possible to show
- * these messages from the FX Thread. This is the reason, why we cant print
- * messages later on during reading teh file in the DataReaderController.
+ these messages from the FX Thread. This is the reason, why we cant print
+ messages later on during reading teh file in the DataController.
  *
  *
  * @author Nils Finke
@@ -67,7 +67,7 @@ public class FXStartController implements Initializable {
     private static LinkedList<String> titel = new LinkedList<String>();
     private static LinkedList<Integer> kind = new LinkedList<Integer>();
 
-    private RawDataModel dataPointsModel;
+    private DataModel dataPointsModel;
     private FeatureExtractionModel featureExtractionModel;
 
     FXViewModel viewModel = new FXViewModel();
@@ -112,7 +112,7 @@ public class FXStartController implements Initializable {
     @FXML
     Label text3;
 
-    public FXStartController(Stage stage, RawDataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
+    public FXStartController(Stage stage, DataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
 
         primaryStage = stage;
         this.dataPointsModel = dataPointsModel;
@@ -212,18 +212,14 @@ public class FXStartController implements Initializable {
                 );
 
                 if (file != null) {
-                    DataReaderController dataReaderController;
+                    DataController dataReaderController;
                     try {
-                        dataReaderController = new DataReaderController(file);
+                        dataReaderController = new DataController(file);
 
                         Runtime.getRuntime().addShutdownHook(new Thread() {
                             public void run() {
-                                try {
-                                    if (dataPointsModel.getDataFile()!=null) {
-                                        dataPointsModel.getDataFile().close();
-                                    }
-                                } catch (IOException ex) {
-                                    Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
+                                if (dataPointsModel.getReader()!=null) {
+                                    dataPointsModel.getReader().close();
                                 }
                             }
                         });

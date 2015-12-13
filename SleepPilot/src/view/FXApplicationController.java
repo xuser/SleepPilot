@@ -17,9 +17,9 @@ import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import model.FXViewModel;
-import model.RawDataModel;
+import model.DataModel;
 import model.FeatureExtractionModel;
-import controller.DataReaderController;
+import controller.DataController;
 import controller.FeatureExtractionController;
 import controller.ModelReaderWriterController;
 import controller.SupportVectorMaschineController;
@@ -74,7 +74,6 @@ import tools.Signal;
 import tools.Util;
 import tools.KCdetection;
 
-
 public class FXApplicationController implements Initializable {
 
     private String classifier;
@@ -91,8 +90,8 @@ public class FXApplicationController implements Initializable {
     private FXPopUp popUp = new FXPopUp();
     private FXViewModel viewModel;
 
-    private DataReaderController dataReaderController;
-    private RawDataModel dataPointsModel;
+    private DataController dataReaderController;
+    private DataModel dataModel;
     private FeatureExtractionModel featureExtractionModel;
     private FeatureExtractionController featureExtractionController;
     private FXElectrodeConfiguratorController electrodeConfigurator;
@@ -211,12 +210,12 @@ public class FXApplicationController implements Initializable {
     @FXML
     ChoiceBox<String> choiceBoxModel;
 
-    public FXApplicationController(DataReaderController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean recreateModelMode) {
+    public FXApplicationController(DataController dataReaderController, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel, boolean recreateModelMode) {
         modulo = 1; //take every value for display
 
         primaryStage = new Stage();
         this.dataReaderController = dataReaderController;
-        this.dataPointsModel = dataReaderController.getDataModel();
+        this.dataModel = dataReaderController.getDataModel();
         this.featureExtractionModel = featureExtractionModel;
         this.featureExtractionController = new FeatureExtractionController(featureExtractionModel);
         this.viewModel = viewModel;
@@ -224,7 +223,7 @@ public class FXApplicationController implements Initializable {
         this.recreateModelMode = recreateModelMode;
 
         if (!recreateModelMode) {
-            featureExtractionModel.init(dataPointsModel.getNumberOf30sEpochs());
+            featureExtractionModel.init(dataModel.getNumberOf30sEpochs());
         } else {
             currentEpoch = featureExtractionModel.getCurrentEpoch();
         }
@@ -248,16 +247,16 @@ public class FXApplicationController implements Initializable {
         //Properties for stage
         primaryStage.setResizable(true);
         primaryStage.show();
-        primaryStage.setTitle(dataPointsModel.getOrgFile().getName());
+        primaryStage.setTitle(dataModel.getFile().getName());
 
-        statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
+        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         //Configure lineChart
         lineChart.setSnapToPixel(true);
         lineChart.requestFocus();
 
         // Set Choice Box for the channels
-        channelNames = dataPointsModel.getChannelNames();
+        channelNames = dataModel.getChannelNames();
 
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
@@ -281,7 +280,7 @@ public class FXApplicationController implements Initializable {
 
         tooltips();
 
-        thisEpoch = dataPointsModel.rawEpoch.clone();
+        thisEpoch = dataModel.rawEpoch.clone();
         kcDetector = featureExtractionModel.getKCdetector();
         kcDetector.setHighpassCoefficients(featureExtractionModel.getDisplayHighpassCoefficients());
         kcDetector.setLowpassCoefficients(featureExtractionModel.getLowpassCoefficients());
@@ -294,7 +293,7 @@ public class FXApplicationController implements Initializable {
 
         updateWindows();
 
-        featureExtractionModel.setFileLocation(dataPointsModel.getOrgFile());
+        featureExtractionModel.setFileLocation(dataModel.getFile());
 
         paintSpacing();
 
@@ -321,7 +320,7 @@ public class FXApplicationController implements Initializable {
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
         System.out.println("initialize called");
-        scatterPlot = new FXScatterPlot(this, dataReaderController, dataPointsModel, featureExtractionModel, featureExtractionController, viewModel);
+        scatterPlot = new FXScatterPlot(this, dataReaderController, dataModel, featureExtractionModel, featureExtractionController, viewModel);
         overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
             @Override
@@ -427,15 +426,15 @@ public class FXApplicationController implements Initializable {
                         valueTextField = currentEpoch + 1;
                     }
 
-                    if (valueTextField > dataPointsModel.getNumberOf30sEpochs()) {
-                        valueTextField = dataPointsModel.getNumberOf30sEpochs();
+                    if (valueTextField > dataModel.getNumberOf30sEpochs()) {
+                        valueTextField = dataModel.getNumberOf30sEpochs();
                     }
 
                     if (valueTextField < 1) {
                         valueTextField = 1;
                     }
 
-                    if ((valueTextField <= dataPointsModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
+                    if ((valueTextField <= dataModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
 
                         currentEpoch = valueTextField - 1;
 
@@ -443,7 +442,7 @@ public class FXApplicationController implements Initializable {
                         updateEpoch();
 
                         toolBarGoto.setText((currentEpoch + 1) + "");
-                        statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
+                        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
                         lineChart.requestFocus();
                         updateStage();
@@ -480,6 +479,10 @@ public class FXApplicationController implements Initializable {
                                     Arrays.asList(channelNames)
                                     .indexOf(newValue)
                             );
+
+                            System.out.println("########" + Arrays.asList(channelNames)
+                                    .indexOf(newValue));
+
                             System.out.println(featureExtractionModel.getFeatureChannel());
 
                             featureExtractionModel.setTsneComputed(false);
@@ -537,14 +540,9 @@ public class FXApplicationController implements Initializable {
                 new EventHandler<WindowEvent>() {
 
                     @Override
-                    public void handle(WindowEvent event
-                    ) {
-                        try {
-                            System.out.println("RandomAccessFile closed");
-                            dataPointsModel.getDataFile().close();
-                        } catch (IOException ex) {
-                            Logger.getLogger(FXApplicationController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    public void handle(WindowEvent event) {
+                        System.out.println("RandomAccessFile closed");
+                        dataModel.getReader().close();
                         Platform.exit();
                     }
                 }
@@ -743,8 +741,8 @@ public class FXApplicationController implements Initializable {
             epoch = 0;
         }
 
-        if (epoch > (dataPointsModel.getNumberOf30sEpochs() - 1)) {
-            epoch = dataPointsModel.getNumberOf30sEpochs() - 1;
+        if (epoch > (dataModel.getNumberOf30sEpochs() - 1)) {
+            epoch = dataModel.getNumberOf30sEpochs() - 1;
         }
 
         currentEpoch = epoch;
@@ -758,7 +756,7 @@ public class FXApplicationController implements Initializable {
         updateStage();
         updateProbabilities();
         toolBarGoto.setText((currentEpoch + 1) + "");
-        statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
+        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         //TODO
         if (viewModel.isScatterPlotActive()) {
@@ -788,14 +786,14 @@ public class FXApplicationController implements Initializable {
         returnActiveChannels();
         for (int i = 0; i < activeChannels.size(); i++) {
             dataReaderController
-                    .read(activeChannels.get(i), numberOfEpoch, dataPointsModel.rawEpoch[activeChannels.get(i)]);
+                    .read(activeChannels.get(i), numberOfEpoch, dataModel.rawEpoch[activeChannels.get(i)]);
         }
 
-        if (dataPointsModel.getSamplingRateConvertedToHertz() != 100) {
+        if (dataModel.getSrate() != 100) {
             decimateSignal();
         } else {
             for (int i = 0; i < activeChannels.size(); i++) {
-                thisEpoch[activeChannels.get(i)] = dataPointsModel.rawEpoch[activeChannels.get(i)];
+                thisEpoch[activeChannels.get(i)] = dataModel.rawEpoch[activeChannels.get(i)];
             }
         }
 
@@ -828,8 +826,8 @@ public class FXApplicationController implements Initializable {
 
     final public void decimateSignal() {
         for (int i = 0; i < activeChannels.size(); i++) {
-            thisEpoch[activeChannels.get(i)] = featureExtractionController.resample(dataPointsModel.rawEpoch[activeChannels.get(i)],
-                    (int) dataPointsModel.getSamplingRateConvertedToHertz());
+            thisEpoch[activeChannels.get(i)] = featureExtractionController.resample(dataModel.rawEpoch[activeChannels.get(i)],
+                    (int) dataModel.getSrate());
         }
     }
 
@@ -1139,7 +1137,7 @@ public class FXApplicationController implements Initializable {
         String row = null;
         int epoch = 0;
 
-        while (((row = in.readLine()) != null) && (epoch < dataPointsModel.getNumberOf30sEpochs() - 1)) {
+        while (((row = in.readLine()) != null) && (epoch < dataModel.getNumberOf30sEpochs() - 1)) {
             String[] rowArray = row.split(" ");
 
             if (Integer.parseInt(rowArray[0]) == 5) {
@@ -1229,7 +1227,7 @@ public class FXApplicationController implements Initializable {
                     + "\n";
             fileWriter.write(content);
 
-            for (int i = 0; i < dataPointsModel.getNumberOf30sEpochs(); i++) {
+            for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
                 featureExtractionModel.getLabel(i);
 
                 content = featureExtractionModel.getLabel(i) + " "
@@ -1299,7 +1297,7 @@ public class FXApplicationController implements Initializable {
         );
 
         if (file != null) {
-            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file, true);
+            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataModel, featureExtractionModel, file, true);
             modelReaderWriter.start();
 
         }
@@ -1453,7 +1451,7 @@ public class FXApplicationController implements Initializable {
     private void showElectrodeConfigurator() {
         if (viewModel.isElectrodeConfiguratorActive()) {
             if (electrodeConfigurator == null) {
-                electrodeConfigurator = new FXElectrodeConfiguratorController(this.dataPointsModel, this.allChannels, this.viewModel);
+                electrodeConfigurator = new FXElectrodeConfiguratorController(this.dataModel, this.allChannels, this.viewModel);
             }
             electrodeConfigurator.show();
         } else {
@@ -1481,7 +1479,7 @@ public class FXApplicationController implements Initializable {
         System.out.println("showEvaluationWindow called");
         if (viewModel.isEvaluationWindowActive()) {
             if (evaluationWindow == null) {
-                evaluationWindow = new FXEvaluationWindowController(dataPointsModel, featureExtractionModel, viewModel);
+                evaluationWindow = new FXEvaluationWindowController(dataModel, featureExtractionModel, viewModel);
             }
             evaluationWindow.reloadEvaluationWindow();
             evaluationWindow.show();
@@ -1520,7 +1518,7 @@ public class FXApplicationController implements Initializable {
     private void showHypnogram() {
         if (viewModel.isHypnogrammActive()) {
             if (hypnogram == null) {
-                hypnogram = new FXHypnogrammController(dataPointsModel, featureExtractionModel, viewModel);
+                hypnogram = new FXHypnogrammController(dataModel, featureExtractionModel, viewModel);
             }
             //TODO hypnogram.updateHypnogram();
             hypnogram.changeCurrentEpochMarker(currentEpoch);
@@ -1632,7 +1630,7 @@ public class FXApplicationController implements Initializable {
         }
 
         if (ke.getCode() == KeyCode.END) {
-            goToEpoch(dataPointsModel.getNumberOf30sEpochs() - 1);
+            goToEpoch(dataModel.getNumberOf30sEpochs() - 1);
         }
 
         if (ke.getCode() == KeyCode.HOME) {
@@ -1664,7 +1662,7 @@ public class FXApplicationController implements Initializable {
         updateProbabilities();
 
         toolBarGoto.setText((currentEpoch + 1) + "");
-        statusBarLabel1.setText("/" + (dataPointsModel.getNumberOf30sEpochs()));
+        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         showHypnogram();
         showScatterPlot();
@@ -1750,15 +1748,15 @@ public class FXApplicationController implements Initializable {
             dataReaderController.readAll(featureExtractionModel.getFeatureChannel());
             featureExtractionModel.setReadinDone(true);
 
-            dataPointsModel.setFeatureChannelData(
+            dataModel.setFeatureChannelData(
                     FeatureExtractionController.assembleData(
-                            dataPointsModel.rawEpochs,
-                            dataPointsModel.getNumberOf30sEpochs() * 3000)
+                            dataModel.rawEpochs,
+                            dataModel.getNumberOf30sEpochs() * 3000)
             );
         }
 
         if (!featureExtractionModel.isFeaturesComputed()) {
-            featureExtractionModel.setData(dataPointsModel.getFeatureChannelData());
+            featureExtractionModel.setData(dataModel.getFeatureChannelData());
             featureExtractionController.start();
             featureExtractionModel.setFeaturesComputed(true);
         }

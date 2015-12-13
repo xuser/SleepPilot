@@ -13,7 +13,7 @@ import view.FXApplicationController;
 import view.FXStartController;
 import javafx.stage.Stage;
 import model.FXViewModel;
-import model.RawDataModel;
+import model.DataModel;
 import model.FeatureExtractionModel;
 
 /**
@@ -27,7 +27,7 @@ public class MainController extends Application {
      * Filepath of .vhdr header file.
      */
     private static Stage primaryStage;
-    private static RawDataModel dataPointsModel;
+    private static DataModel dataPointsModel;
     private static FeatureExtractionModel featureExtractionModel;
     private static FXStartController startController;
 
@@ -51,7 +51,7 @@ public class MainController extends Application {
         primaryStage = stage;
 
         //Create start controller
-        dataPointsModel = new RawDataModel();
+        dataPointsModel = new DataModel();
         featureExtractionModel = new FeatureExtractionModel();
         startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
 
@@ -67,7 +67,7 @@ public class MainController extends Application {
 
             if (relativeFile.canRead()) {
 
-                final DataReaderController dataReaderController = new DataReaderController(relativeFile);
+                final DataController dataReaderController = new DataController(relativeFile);
 
                 //Create application controller
                 System.out.println("AppController starting!");

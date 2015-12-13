@@ -33,7 +33,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import model.FXViewModel;
-import model.RawDataModel;
+import model.DataModel;
 import view.FXElectrodeConfiguratorController.Channel;
 
 /**
@@ -142,7 +142,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
         });
     }
 
-    public FXElectrodeConfiguratorController(RawDataModel dataPointsModel, HashMap<String, Double[]> allChannels, FXViewModel view) {
+    public FXElectrodeConfiguratorController(DataModel dataPointsModel, HashMap<String, Double[]> allChannels, FXViewModel view) {
         this.allChannels = allChannels;
         this.view = view;
         this.appController = view.getAppController();

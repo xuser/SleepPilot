@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import model.FeatureExtractionModel;
-import model.RawDataModel;
+import model.DataModel;
 
 /**
  * This controller is used to write the current system state to hard disk.
@@ -19,7 +19,7 @@ public class ModelReaderWriterController extends Thread {
 
     private Thread t;
 
-    private RawDataModel rawDataModel;
+    private DataModel rawDataModel;
     private FeatureExtractionModel featureExtractionModel;
     private File file;
 
@@ -34,7 +34,7 @@ public class ModelReaderWriterController extends Thread {
     private ObjectInputStream ois = null;
     private FileInputStream fis = null;
 
-    public ModelReaderWriterController(RawDataModel rawDataModel, FeatureExtractionModel featureExtractionModel, File file, boolean readWriteFlag) {
+    public ModelReaderWriterController(DataModel rawDataModel, FeatureExtractionModel featureExtractionModel, File file, boolean readWriteFlag) {
 
         this.rawDataModel = rawDataModel;
         this.featureExtractionModel = featureExtractionModel;
