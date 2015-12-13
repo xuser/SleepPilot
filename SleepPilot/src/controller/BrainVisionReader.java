@@ -33,25 +33,24 @@ public class BrainVisionReader {
     private RandomAccessFile dataFile;
     private DataFormat dataFormat;
     private DataOrientation dataOrientation;
-    private DataType dataType;
-    private String[] channelNames;
-
-    private int numberOfChannels;
-    private int numberOfDataPoints;
+    private DataType dataType;    
     private int samplingIntervall;
     private BinaryFormat binaryFormat;
     private boolean useBigEndianOrder;
     private int skipLines;
     private int skipColumns;
-    private int countChannels;
     private double channelResolution;
-    private boolean readingHeaderComplete;
+    
+    private int nbchan;
+    private int pnts;
     private double srate;
+    private double[] data;
+    private String[] channelNames;
 
     private ByteBuffer buf;
     private long nSamples;
     private int bytes;
-    private double[] target;
+    
 
     public BrainVisionReader(File file) {
         this.file = file;
@@ -61,7 +60,7 @@ public class BrainVisionReader {
         /**
          * Has to be set to 0 initially, reflects changes in buffer size
          */
-        nSamples=0;
+        nSamples=1;
         init();
     }
 
@@ -73,22 +72,19 @@ public class BrainVisionReader {
         System.out.println("DataFormat: " + dataFormat);
         System.out.println("DataOrientation: " + dataOrientation);
         System.out.println("DataType: " + dataType);
-        System.out.println("NumberOfChannels: " + numberOfChannels);
-        System.out.println("DataPoints: " + numberOfDataPoints);
+        System.out.println("NumberOfChannels: " + nbchan);
+        System.out.println("DataPoints: " + pnts);
         System.out.println("SamplingIntervall: " + samplingIntervall);
         System.out.println("BinaryFormat: " + binaryFormat);
         System.out.println("SkipLines: " + skipLines);
         System.out.println("SkipColumns: " + skipColumns);
         System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
         System.out.println("ChannelResolution: " + channelResolution);
-
         String[] tmp = channelNames;
         System.out.print("ChannelNames:");
         for (int i = 0; i < tmp.length; i++) {
             System.out.print(" " + tmp[i]);
         }
-        System.out.println();
-
         System.out.println("SamplingRate in Hertz: " + srate);
 
     }
@@ -101,8 +97,10 @@ public class BrainVisionReader {
      * @param epochToRead the epoch which have to be read.
      * @return
      */
-    public double[] readDataFile(RandomAccessFile dataFile, int channel, int from, int to) {
+    public final double[] readDataFile(int channel, int from, int to) {
 
+        //TODO: check bounds!
+        
         int nSamples = to - from;
         if (this.nSamples != nSamples) {
             prepareBuffers(nSamples);
@@ -112,13 +110,13 @@ public class BrainVisionReader {
         try {
             FileChannel inChannel = dataFile.getChannel();
             // Set the start position in the file
-            inChannel.position((from * bytes * numberOfChannels) + (channel * bytes));
+            inChannel.position((from * bytes * nbchan) + (channel * bytes));
             buf.order(ByteOrder.LITTLE_ENDIAN);
             inChannel.read(buf);
             // Make buffer ready for read
             buf.flip();
 
-            final int increment = (numberOfChannels * bytes) - bytes;
+            final int increment = (nbchan * bytes) - bytes;
 
             double value;
             int i = 0;
@@ -129,7 +127,7 @@ public class BrainVisionReader {
                 value = Math.round(value * 1000.);
                 value /= 1000.;
 
-                target[i] = value;
+                data[i] = value;
 
                 // This is the next sample in this epoch for the given channel  
                 if (buf.hasRemaining()) {
@@ -145,10 +143,12 @@ public class BrainVisionReader {
             e.printStackTrace();
         }
 
-        return target;
+        return data;
     }
 
     private void readHeaderFromVHDR() {
+        int countChannels=0;
+        
         try {
             try (BufferedReader in = new BufferedReader(new FileReader(file))) {
                 String zeile = null;
@@ -210,13 +210,13 @@ public class BrainVisionReader {
 
                     // Read number of channels
                     if (zeile.startsWith("NumberOfChannels=")) {
-                        numberOfChannels = Integer.parseInt(zeile.substring(17));
-                        channelNames = new String[numberOfChannels];
+                        nbchan = Integer.parseInt(zeile.substring(17));
+                        channelNames = new String[nbchan];
                     }
 
                     // Read number of data points
                     if (zeile.startsWith("DataPoints=")) {
-                        numberOfDataPoints = Integer.parseInt(zeile.substring(11));
+                        pnts = Integer.parseInt(zeile.substring(11));
                     }
 
                     // Read sampling intervall
@@ -282,8 +282,6 @@ public class BrainVisionReader {
                     }
 
                 }
-
-                readingHeaderComplete = true;
             }
 
         } catch (FileNotFoundException e) {
@@ -291,23 +289,24 @@ public class BrainVisionReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
+        srate = 1e6/samplingIntervall;
     }
 
-    public final void prepareBuffers(int nSamples) {
+    private void prepareBuffers(int nSamples) {
         this.nSamples = nSamples;
         
-        target = new double[nSamples];
+        data = new double[nSamples];
         
         if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 
             if (dataFormat.equals(DataFormat.BINARY)) {
                 switch (binaryFormat) {
                     case INT_16:
-                        buf = ByteBuffer.allocate(bytes * nSamples * numberOfChannels);
+                        buf = ByteBuffer.allocate(bytes * nSamples * nbchan);
                         break;
                     case IEEE_FLOAT_32:
-                        buf = ByteBuffer.allocate(bytes * nSamples * numberOfChannels);
+                        buf = ByteBuffer.allocate(bytes * nSamples * nbchan);
                         break;
                     default:
                         System.err.println("No compatible binary format!");
@@ -322,7 +321,7 @@ public class BrainVisionReader {
         }
     }
 
-    public final void init() {
+    private void init() {
         bytes = 2;
         if (dataFormat.equals(DataFormat.BINARY)) {
             if (binaryFormat == BinaryFormat.INT_16) {
@@ -333,9 +332,9 @@ public class BrainVisionReader {
             }
         }
 
-        if (numberOfDataPoints == 0) {
+        if (pnts == 0) {
             try {
-                numberOfDataPoints = (int) (dataFile.length() / bytes / (long) numberOfChannels);
+                pnts = (int) (dataFile.length() / bytes / (long) nbchan);
             } catch (IOException ex) {
                 Logger.getLogger(DataReaderController.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -347,10 +346,35 @@ public class BrainVisionReader {
 
         printPropertiesVHDR();
     }
+    
+    public double getSrate() {
+        return srate;
+    }
+
+    public int getNbchan() {
+        return nbchan;
+    }
+
+    public double[] getData() {
+        return data;
+    }
+
+    public int getPnts() {
+        return pnts;
+    }
+
+    public String[] getChannelNames() {
+        return channelNames;
+    }
+
+    public int getSamplingIntervall() {
+        return samplingIntervall;
+    }
+ 
 }
 //    reader = new DataReaderController.Reader() {
 //                    @Override
-//                    public double[] read(int channel, int epoch, double[] target) {
-//                        return readDataFile(dataFile, channel, epoch, target, binaryFormat);
+//                    public double[] read(int channel, int epoch, double[] data) {
+//                        return readDataFile(dataFile, channel, epoch, data, binaryFormat);
 //                    }
 //    };

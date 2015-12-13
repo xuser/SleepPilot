@@ -167,6 +167,12 @@ public class RawDataModel implements Serializable {
 
     }
 
+    public void setSamplingRateConvertedToHertz(int samplingRateConvertedToHertz) {
+        this.samplingRateConvertedToHertz = samplingRateConvertedToHertz;
+        this.samplingIntervall = 1000000 / samplingRateConvertedToHertz;
+    }
+    
+
     /**
      * @return the samplingRateConvertedToHertz
      */

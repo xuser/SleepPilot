@@ -41,7 +41,10 @@ public class FeatureExtractionController {
 
     public void start() {
         double[] data = featureExtractionModel.getData();
-
+//        ArrayList<double[]> testl = new ArrayList();
+//        testl.stream()
+//                .parallel();
+        
         float[][] features = computeFeatures(data, featureExtractionModel.getNumberOfEpochs());
 
         featureExtractionModel.setFeatures(features);

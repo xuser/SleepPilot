@@ -1757,7 +1757,7 @@ public class FXApplicationController implements Initializable {
             featureExtractionModel.setReadinDone(true);
 
             dataPointsModel.setFeatureChannelData(
-                    featureExtractionController.assembleData(
+                    FeatureExtractionController.assembleData(
                             dataPointsModel.rawEpochs,
                             dataPointsModel.getNumberOf30sEpochs() * 3000)
             );
