@@ -86,7 +86,7 @@ public class FeatureExtractionController {
         int nOutput = 100, windowSize = 200;
         float[][] stft = new float[nOutput][windowSize];
 
-        filtfilt(x, featureExtractionModel.getHighpassCoefficients());
+        filtfilt(x, featureExtractionModel.getDisplayHighpassCoefficients());
 
         Signal.removeDC(x);
         features.add(Signal.lineSpectralPairs(x, 10));

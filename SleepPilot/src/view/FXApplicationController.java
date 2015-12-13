@@ -1,8 +1,5 @@
 package view;
 
-import biz.source_code.dsp.filter.FilterCharacteristicsType;
-import biz.source_code.dsp.filter.FilterPassType;
-import biz.source_code.dsp.filter.IirFilterCoefficients;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -27,7 +24,6 @@ import controller.FeatureExtractionController;
 import controller.ModelReaderWriterController;
 import controller.SupportVectorMaschineController;
 import gnu.trove.iterator.TIntIterator;
-import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,12 +70,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.math.stat.StatUtils;
-import tools.NeuralNetworks;
 import tools.Signal;
 import tools.Util;
 import tools.KCdetection;
 
-import static tools.Signal.filtfilt;
 
 public class FXApplicationController implements Initializable {
 
