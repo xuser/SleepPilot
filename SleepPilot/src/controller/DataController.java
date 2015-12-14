@@ -89,10 +89,8 @@ public class DataController {
                 public double[] read(int channel, int epoch, double[] target) {
                     try {
                         son32Channel = smr.getChannel(channel);
-                        int sTime = (int) smr.getCTFromSec(epoch * 30);
-                        System.out.println("sTime: " + sTime);
-                        int eTime = (int) smr.getCTFromSec((epoch + 1) * 30);
-                        System.out.println("eTime: " + eTime);
+                        double sTime = epoch*30;
+                        double eTime = (epoch+1)*30;
                         son32Channel.getRealDataByTime(sTime, eTime, buffer);
 //                for (int x = 0; x < newTarget.length; x++) {
 //                    //System.out.println(newTarget[x]);

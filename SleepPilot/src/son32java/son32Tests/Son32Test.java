@@ -19,32 +19,19 @@ import son32java.son32Exceptions.*;
 public class Son32Test {
     public static void main(String args[]){
         //String path = System.getProperty("user.dir") + "\\test_data\\chan1_1sec.smr";
-        String path = System.getProperty("user.dir") + "\\test_data\\sample01.smr";
+        String path = "C:\\Users\\matthias\\Documents\\NetBeansProjects\\Son32Java\\test_data\\sample01.smr";
         Son32Reader reader = new Son32Reader(path, 2);
         try{
             Son32Channel channel = reader.getChannel(3);
-            System.out.println("Blocks: "+channel.getBlocks());
-            int x = channel.calculateArraySizeByTime(0.01);
+            int x = channel.calculateArraySizeByTime(30);
             double[] target = new double[x];
-            channel.getRealDataByTime(30, 30.01, target);
-            for(int i=0;i<x;i++){
-                System.out.println(target[i]);
-            }            
+            channel.getRealDataByTime(0, 30, target);
+            channel.getRealDataByTime(90, 120, target);
+                     
         } catch(Exception e){
             System.out.println(e);
         }
         reader.SONCloseFile();
-
-        try{
-            Son32Channel chan = reader.getChannel(0);
-            double[] targetByTime = new double[chan.calculateArraySizeByTime(1)];
-            double[] targetByDP = new double[chan.calculateArraySizeByTime(1)];
-            chan.getRealDataByTime(0, 1, targetByTime);
-            chan.getRealDataByDP(0, targetByDP);
-            reader.SONCloseFile();
-        } catch(Exception e){
-            System.out.println(e);
-        }
       
 //        long  duration = timeEpochLoading(reader);
 //        System.out.format("It took %d ms to fetch ~30sec of data.%n",duration);

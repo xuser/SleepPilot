@@ -22,10 +22,10 @@ public interface Son32JavaInterface extends Library{
      * Create a Singelton instance of the interface. This instance will be used
      * to make all function calls.
      */
-    public Son32JavaInterface INSTANCE = (Son32JavaInterface)Native.loadLibrary(
-            "D:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
 //    public Son32JavaInterface INSTANCE = (Son32JavaInterface)Native.loadLibrary(
-//            "C:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
+//            "D:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
+    public Son32JavaInterface INSTANCE = (Son32JavaInterface)Native.loadLibrary(
+            "C:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
     
      /**
      * Opens a .smr file.
