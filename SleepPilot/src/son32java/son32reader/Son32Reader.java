@@ -235,7 +235,7 @@ public class Son32Reader {
         //convert NativeLong type back to Java long
         long pbTime = pbTimeMem.getInt((long)0);
         long numberOfDataPoints = numberOfDataPointsNL.longValue();
-        System.out.println("number of datapoints: "+numberOfDataPoints);
+        
         long channelDivide = this.channels[chan].getChannelDivide();
         //calculate the base unit of the x axis scale, every x value is a
         //multiple of this value
