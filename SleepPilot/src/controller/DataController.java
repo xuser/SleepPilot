@@ -24,19 +24,18 @@ public class DataController {
      * @throws IOException
      */
     public DataController(File file) throws IOException {
-        this.file=file;
+        this.file = file;
         dataModel = new DataModel();
         dataModel.setFile(file);
 
         init();
     }
 
-
     public void readAll(int channel) {
-        dataModel.rawEpochs.clear();
+        dataModel.epochList.clear();
         for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
             double[] target = new double[dataModel.numberOfSamplesForOneEpoch];
-            dataModel.addRawEpoch(read(channel, i, target));
+            dataModel.addEpoch(read(channel, i, target));
         }
     }
 
@@ -46,12 +45,12 @@ public class DataController {
 
     public final void init() {
         if (file.getName().toLowerCase().endsWith(".smr")) {
-
             Son32Reader smr = new Son32Reader(file.getPath(), 1);
+            Son32Channel son32Channel;
             /**
              * Read necessary information from SMR reader
              */
-            Son32Channel son32Channel = null;
+
             dataModel.setNbchan(smr.getNumberOfChannels());
             try {
                 String[] channelNames = new String[dataModel.getNbchan()];
@@ -61,22 +60,23 @@ public class DataController {
                 dataModel.setChannelNames(channelNames);
 
                 son32Channel = smr.getChannel(0);
-                dataModel.setSrate((int) son32Channel.getSamplingRateHz());
+                dataModel.setSrate(son32Channel.getSamplingRateHz());
 
                 //get the last time for the channel in clock ticks
                 long maxTime = son32Channel.getChanMaxTime();
                 //convert the max time from clock ticks to sec
                 maxTime = (long) smr.getSecFromCT(maxTime);
-                dataModel.setPnts((int) (maxTime * dataModel.getSrate()));
+                dataModel.setPnts((int) (maxTime * dataModel.getSrate())); //gibt es hier eine andere Art (mit ticks) um auf Pnts zu kommen? 
 
                 dataModel.numberOfSamplesForOneEpoch = son32Channel.calculateArraySizeByTime(30);
-                dataModel.rawEpoch = new double[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
+                dataModel.data = new double[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
 
             } catch (NoChannelException ex) {
                 System.out.println(ex);
             }
 
             reader = new DataModel.Reader() {
+
                 Son32Channel son32Channel;
                 double[] buffer = new double[dataModel.numberOfSamplesForOneEpoch];
 
@@ -87,7 +87,9 @@ public class DataController {
 
                 @Override
                 public double[] read(int channel, int epoch, double[] target) {
+
                     try {
+                        System.out.println("Epoch: " + epoch);
                         son32Channel = smr.getChannel(channel);
                         int sTime = (int) smr.getCTFromSec(epoch * 30);
                         System.out.println("sTime: " + sTime);
@@ -106,6 +108,7 @@ public class DataController {
                     return target;
                 }
             };
+            dataModel.setReader(reader);
 
         } else if (file.getName().toLowerCase().endsWith(".vhdr")) {
             /**
@@ -118,7 +121,7 @@ public class DataController {
             dataModel.setSrate(bv.getSrate());
 
             dataModel.numberOfSamplesForOneEpoch = (int) (30 * bv.getSrate());
-            dataModel.rawEpoch = new double[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
+            dataModel.data = new double[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
 
             /**
              * Implement interface so that SleepPilot can use generic "read"

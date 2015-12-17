@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import model.FXViewModel;
 import model.DataModel;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,7 +31,7 @@ public class FXHypnogrammController implements Initializable {
 
     private FXApplicationController appController;
     private FXViewModel viewModel;
-    private FeatureExtractionModel featureExtractionModel;
+    private FeatureModel featureExtractionModel;
     private DataModel dataPointsModel;
 
     private Stage stage;
@@ -50,7 +50,7 @@ public class FXHypnogrammController implements Initializable {
      * @param viewModel initial instance of view model
      *
      */
-    public FXHypnogrammController(DataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
+    public FXHypnogrammController(DataModel dataPointsModel, FeatureModel featureExtractionModel, FXViewModel viewModel) {
 
         this.featureExtractionModel = featureExtractionModel;
         this.viewModel = viewModel;

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 import model.DataModel;
 
 /**
@@ -20,7 +20,7 @@ public class ModelReaderWriterController extends Thread {
     private Thread t;
 
     private DataModel rawDataModel;
-    private FeatureExtractionModel featureExtractionModel;
+    private FeatureModel featureExtractionModel;
     private File file;
 
     /**
@@ -34,7 +34,7 @@ public class ModelReaderWriterController extends Thread {
     private ObjectInputStream ois = null;
     private FileInputStream fis = null;
 
-    public ModelReaderWriterController(DataModel rawDataModel, FeatureExtractionModel featureExtractionModel, File file, boolean readWriteFlag) {
+    public ModelReaderWriterController(DataModel rawDataModel, FeatureModel featureExtractionModel, File file, boolean readWriteFlag) {
 
         this.rawDataModel = rawDataModel;
         this.featureExtractionModel = featureExtractionModel;
@@ -88,9 +88,9 @@ public class ModelReaderWriterController extends Thread {
                 ois = new ObjectInputStream(fis);
                 Object obj = ois.readObject();
 
-                if (obj instanceof FeatureExtractionModel) {
+                if (obj instanceof FeatureModel) {
 
-                    FeatureExtractionModel fem = (FeatureExtractionModel) obj;
+                    FeatureModel fem = (FeatureModel) obj;
                     MainController.setFeatureExtractionModel(fem);
                     MainController.recreateSystemState(file);
 

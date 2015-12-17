@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import help.ChannelNames;
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 import tools.KCdetection;
+import tools.sincWindowDecimator;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -17,7 +19,7 @@ import tools.KCdetection;
  * @author Nils Finke
  *
  */
-public class FeatureExtractionModel implements Serializable {
+public class FeatureModel implements Serializable {
 
     /**
      * This matrix saves continuously for each epoch their permutation
@@ -34,12 +36,13 @@ public class FeatureExtractionModel implements Serializable {
     private int[] arousals;
     private int[] stimulation;
     private double[][] tsneFeatures;
+    private sincWindowDecimator decimator;
 
     /**
-     * Data holds reference to feature channel data (usually in a RawDataModel), for use in instance of
-     * FeatureExtractioController.
+     * Data holds reference to feature channel epochList (usually in a RawDataModel), for use in instance of
+ FeatureExtractioController.
      */
-    private double[] data;
+    private ArrayList<double[]> epochList;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -77,7 +80,7 @@ public class FeatureExtractionModel implements Serializable {
     private String selectedModel;
 
     /**
-     * The path to the eeg data.
+     * The path to the eeg epochList.
      */
     private File fileLocation;
 
@@ -87,16 +90,11 @@ public class FeatureExtractionModel implements Serializable {
     private int numberOfFeatures;
 
     /**
-     * Keeps the number of channels from input data.
+     * Keeps the number of channels from input epochList.
      */
     private int numberOfChannels;
 
-    /**
-     * This variable holds the actual positon in the PE matrix.
-     */
-    private int rowPosition = 0;
-
-    /**
+     /**
      * Keeps the status, if the TrainController has finished reading and
      * calculating.
      */
@@ -108,7 +106,7 @@ public class FeatureExtractionModel implements Serializable {
     private boolean classificationDone = false;
 
     /**
-     * Tells whether channel data has been read
+     * Tells whether channel epochList has been read
      */
     private boolean readinDone = false;
 
@@ -145,6 +143,8 @@ public class FeatureExtractionModel implements Serializable {
     private FilterCoefficients displayHighpassCoefficients;
     private FilterCoefficients lowpassCoefficients;
     private IirFilterCoefficients decimationCoefficients;
+    
+    private double srate;
 
     private KCdetection KCdetector;
 
@@ -238,35 +238,6 @@ public class FeatureExtractionModel implements Serializable {
         if (artefacts[epoch] == 1) {
             artefacts[epoch] = 0;
             countA--;
-        }
-    }
-
-    /**
-     * This method builds the needed string for using the svm_scale method.
-     *
-     * @return the features for one epoch (values for training)
-     */
-    public String getFeatureValuePE() {
-
-        StringBuilder featureVector = new StringBuilder();
-
-        if (rowPosition < numberOfFeatures) {
-
-            // Get class label.
-            featureVector.append((int) (features[rowPosition][0]));
-
-            // Get feature values.
-            for (int i = 1; i <= numberOfChannels; i++) {
-                featureVector.append(" " + i + ":" + features[rowPosition][i]);
-            }
-
-            rowPosition = rowPosition + 1;
-
-            String featureVectorString = featureVector.toString();
-            return featureVectorString;
-
-        } else {
-            return null;
         }
     }
 
@@ -425,13 +396,6 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     /**
-     * Rewind the row in data matrics. This is needed in scaling of the data.
-     */
-    public void rewindRowPosition() {
-        rowPosition = 0;
-    }
-
-    /**
      * @return	the number of feature vectors in the matrix.
      */
     public int getNumberOfFeatures() {
@@ -439,7 +403,7 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     /**
-     * @return	the number of channels for the input data.
+     * @return	the number of channels for the input epochList.
      */
     public int getNumberOfChannels() {
         return numberOfChannels;
@@ -848,11 +812,11 @@ public class FeatureExtractionModel implements Serializable {
         this.displayHighpassCoefficients = displayHighpassCoefficients;
     }
 
-    public FilterCoefficients getDisplayLowpasCoefficients() {
+    public FilterCoefficients getDisplayLowpassCoefficients() {
         return displayLowpassCoefficients;
     }
 
-    public void setDisplayLowpasCoefficients(FilterCoefficients displayLowpasCoefficients) {
+    public void setDisplayLowpassCoefficients(FilterCoefficients displayLowpasCoefficients) {
         this.displayLowpassCoefficients = displayLowpasCoefficients;
     }
 
@@ -872,12 +836,28 @@ public class FeatureExtractionModel implements Serializable {
         this.KCdetector = KCdetector;
     }
 
-    public void setData(double[] data) {
-        this.data = data;
+    public void setEpochList(ArrayList<double[]> data) {
+        this.epochList = data;
     }
 
-    public double[] getData() {
-        return data;
+    public ArrayList<double[]> getEpochList() {
+        return epochList;
+    }
+
+    public void setSrate(double srate) {
+        this.srate = srate;
+    }
+
+    public double getSrate() {
+        return srate;
+    }
+
+    public void setDecimator(sincWindowDecimator decimator) {
+        this.decimator = decimator;
+    }
+
+    public sincWindowDecimator getDecimator() {
+        return decimator;
     }
     
     

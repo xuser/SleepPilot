@@ -4,13 +4,13 @@ import biz.source_code.dsp.filter.FilterCharacteristicsType;
 import biz.source_code.dsp.filter.FilterPassType;
 import biz.source_code.dsp.filter.IirFilterCoefficients;
 import biz.source_code.dsp.filter.IirFilterDesignFisher;
-import com.google.common.primitives.Doubles;
 import gnu.trove.list.array.TDoubleArrayList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
+import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.jdsp.iirfilterdesigner.IIRDesigner;
 import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
 import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
@@ -20,6 +20,7 @@ import tools.KCdetection;
 import tools.Signal;
 import static tools.Signal.filtfilt;
 import tools.Util;
+import tools.sincWindowDecimator;
 
 /**
  * This class calls the feature extraction methods for extracting relevant
@@ -29,48 +30,42 @@ import tools.Util;
  * @author Nils Finke
  *
  */
-public class FeatureExtractionController {
-    private FeatureExtractionModel featureExtractionModel;
+public class FeatureController {
 
-    public FeatureExtractionController(FeatureExtractionModel featureExtractionModel) {
-        this.featureExtractionModel = featureExtractionModel;
+    private FeatureModel featureModel;
 
-        createFilters();
-        featureExtractionModel.setKCdetector(new KCdetection());
+    public FeatureController(FeatureModel featureModel) {
+        this.featureModel = featureModel;
+
+        createFilters(featureModel.getSrate());
+        featureModel.setDecimator(new sincWindowDecimator());
+        sincWindowDecimator decimator = featureModel.getDecimator();
+        decimator.designFilter((int)FastMath.round(featureModel.getSrate() / 100.), 31);
+        featureModel.setKCdetector(new KCdetection());
     }
 
     public void start() {
-        double[] data = featureExtractionModel.getData();
-//        ArrayList<double[]> testl = new ArrayList();
-//        testl.stream()
-//                .parallel();
-        
-        float[][] features = computeFeatures(data, featureExtractionModel.getNumberOfEpochs());
+        ArrayList<double[]> data = featureModel.getEpochList();
+        float[][] features = computeFeatures(data);
 
-        featureExtractionModel.setFeatures(features);
-        featureExtractionModel.setFeaturesComputed(true);
+        featureModel.setFeatures(features);
+        featureModel.setFeaturesComputed(true);
     }
 
     /**
      *
      * @param data
-     * @param epochLength length of epochs in data points (i.e. samples, not
-     * seconds)
      * @return
      */
-    public float[][] computeFeatures(double[] data, int epochLength) {
+    public float[][] computeFeatures(ArrayList<double[]> data) {
         /**
          * generate sublists from data array (which contains all data of a
          * channel. This way data can stay in array form and efficiently be
          * processed in parallel without copying.
          */
-        List<float[]> featureList = IntStream.range(0, epochLength)
+        List<float[]> featureList = data.stream()
                 .parallel()
-                .mapToObj(i
-                        -> Doubles.asList(data).subList(
-                                (int) i * 3000, (int) (i + 1) * 3000)
-                )
-                .map(e -> Util.doubleToFloat(computeFeatures(Doubles.toArray(e))))
+                .map(e -> Util.doubleToFloat(computeFeatures(e)))
                 .collect(Collectors.toList());
 
         float[][] features = new float[featureList.size()][];
@@ -86,7 +81,11 @@ public class FeatureExtractionController {
         int nOutput = 100, windowSize = 200;
         float[][] stft = new float[nOutput][windowSize];
 
-        filtfilt(x, featureExtractionModel.getDisplayHighpassCoefficients());
+        if (featureModel.getSrate()!= 100) {
+            x=featureModel.getDecimator().decimate(x);
+        }
+        
+        filtfilt(x, featureModel.getHighpassCoefficients());
 
         Signal.removeDC(x);
         features.add(Signal.lineSpectralPairs(x, 10));
@@ -106,71 +105,47 @@ public class FeatureExtractionController {
         return dataList.toArray();
     }
 
-    public double[] decimate(double[] x, int r) {
-        Signal.filtfilt(x, featureExtractionModel.getDecimationCoefficients());
-        double[] y = new double[x.length / r];
-        for (int i = 0; i < y.length; i++) {
-            y[i] = x[i * r];
-        }
-        return y;
-    }
-
-    private void createFilters() {
+    private void createFilters(double fs) {
         FilterCoefficients coefficients = null;
         try {
             double fstop = 0.1;
             double fpass = 0.5;
-            double fs = 100;
             coefficients = IIRDesigner.designDigitalFilter(ApproximationFunctionType.BUTTERWORTH, FilterType.HIGHPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 20.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureExtractionModel.setDisplayHighpassCoefficients(coefficients);
+        featureModel.setDisplayHighpassCoefficients(coefficients);
+        
         FilterCoefficients coefficients2 = null;
         try {
-            double fstop = 45;
-            double fpass = 40;
-            double fs = 100;
-            coefficients2 = IIRDesigner.designDigitalFilter(ApproximationFunctionType.CHEBYSHEV2, FilterType.LOWPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 40.0, fs);
+            double fstop = 49;
+            double fpass = 30;
+            coefficients2 = IIRDesigner.designDigitalFilter(ApproximationFunctionType.CHEBYSHEV2, FilterType.LOWPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 20.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureExtractionModel.setDisplayLowpasCoefficients(coefficients2);
+        featureModel.setDisplayLowpassCoefficients(coefficients2);
+        
         FilterCoefficients coefficients4 = null;
         try {
             double fstop = 0.1;
-            double fpass = 0.3;
-            double fs = 100;
+            double fpass = 0.5;
             coefficients4 = IIRDesigner.designDigitalFilter(ApproximationFunctionType.BUTTERWORTH, FilterType.HIGHPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 20.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureExtractionModel.setHighpassCoefficients(coefficients4);
+        featureModel.setHighpassCoefficients(coefficients4);
+        
         FilterCoefficients coefficients3 = null;
         try {
             double fstop = 7.0;
             double fpass = 4.0;
-            double fs = 100;
             coefficients3 = IIRDesigner.designDigitalFilter(ApproximationFunctionType.CHEBYSHEV2, FilterType.LOWPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 40.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureExtractionModel.setLowpassCoefficients(coefficients3);
-
-        IirFilterCoefficients coeffs = IirFilterDesignFisher.design(FilterPassType.lowpass, FilterCharacteristicsType.chebyshev, 8, -1, 0.4, 0.0);
-        featureExtractionModel.setDecimationCoefficients(coeffs);
+        featureModel.setLowpassCoefficients(coefficients3);
     }
 
-    public double[] resample(double[] x, int fs) {
-        int factor = (int) Math.round(Math.ceil(fs / 100.0));
-        double scale = Math.round(Math.ceil(fs / 100.0)) / (fs / 100.0);
-        double[] y = null;
-        if (scale != 1.0) {
-            y = Signal.upsample(x, scale);
-        } else {
-            y = x;
-        }
-        return decimate(y, factor);
-    }
-
+    
 }

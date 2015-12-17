@@ -14,7 +14,7 @@ import view.FXStartController;
 import javafx.stage.Stage;
 import model.FXViewModel;
 import model.DataModel;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 
 /**
  * Starts the application and creates necessary initial controllers.
@@ -27,8 +27,8 @@ public class MainController extends Application {
      * Filepath of .vhdr header file.
      */
     private static Stage primaryStage;
-    private static DataModel dataPointsModel;
-    private static FeatureExtractionModel featureExtractionModel;
+    private static DataModel dataModel;
+    private static FeatureModel featureModel;
     private static FXStartController startController;
 
     /**
@@ -51,16 +51,16 @@ public class MainController extends Application {
         primaryStage = stage;
 
         //Create start controller
-        dataPointsModel = new DataModel();
-        featureExtractionModel = new FeatureExtractionModel();
-        startController = new FXStartController(primaryStage, dataPointsModel, featureExtractionModel);
+        dataModel = new DataModel();
+        featureModel = new FeatureModel();
+        startController = new FXStartController(primaryStage, dataModel, featureModel);
 
     }
 
     public static void recreateSystemState(File file) throws IllegalArgumentException {
 
         try {
-            String filePath = file.getParent() + File.separator + featureExtractionModel.getFileLocation().getName();
+            String filePath = file.getParent() + File.separator + featureModel.getFileLocation().getName();
             System.out.println(filePath);
 
             File relativeFile = new File(filePath);
@@ -75,7 +75,7 @@ public class MainController extends Application {
                     @Override
                     public void run() {
                         FXViewModel viewModel = new FXViewModel();
-                        FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, true);
+                        FXApplicationController appController = new FXApplicationController(dataReaderController, featureModel, viewModel, true);
                         viewModel.setAppController(appController);
                         primaryStage.close();
                     }
@@ -97,8 +97,8 @@ public class MainController extends Application {
         }
     }
 
-    public static void setFeatureExtractionModel(FeatureExtractionModel model) {
-        featureExtractionModel = model;
+    public static void setFeatureExtractionModel(FeatureModel model) {
+        featureModel = model;
     }
 
     /**

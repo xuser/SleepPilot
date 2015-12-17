@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import model.FXViewModel;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 import model.DataModel;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -23,7 +23,7 @@ public class FXEvaluationWindowController implements Initializable {
 
     private FXApplicationController appController;
     private FXViewModel viewModel;
-    private FeatureExtractionModel featureExtractionModel;
+    private FeatureModel featureExtractionModel;
     private DataModel dataPointsModel;
 
     private Stage stage;
@@ -68,7 +68,7 @@ public class FXEvaluationWindowController implements Initializable {
     @FXML
     private Label totalCount;
 
-    public FXEvaluationWindowController(DataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FXViewModel viewModel) {
+    public FXEvaluationWindowController(DataModel dataPointsModel, FeatureModel featureExtractionModel, FXViewModel viewModel) {
 
         this.featureExtractionModel = featureExtractionModel;
         this.viewModel = viewModel;

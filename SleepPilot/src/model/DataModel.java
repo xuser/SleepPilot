@@ -5,25 +5,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * This class holds the data, that has been read by the DataReaderController.
+ * This class holds the epochList, that has been read by the DataReaderController.
  * Model for the DataReaderController and the FilterController.
  *
  * @author Nils Finke
  */
 public class DataModel implements Serializable {
 
-    private double[] featureChannelData;
-
     private File file;
 
     private Reader reader;
 
     /**
-     * This list keeps lists with the epochs (raw data). IMPORTANT: The head of
+     * This list keeps lists with the epochs (raw epochList). IMPORTANT: The head of
      * the inter list keeps the assosiated epoch.
      */
-    public ArrayList<double[]> rawEpochs = new ArrayList();
-    public double[][] rawEpoch;
+    public ArrayList<double[]> epochList = new ArrayList();
+    public double[][] data;
 
     // *** Brainvision Format ***
     // [Common Infos]
@@ -33,7 +31,7 @@ public class DataModel implements Serializable {
     private String[] channelNames;
     public int numberOfSamplesForOneEpoch;
 
-        /**
+    /**
      * @return the pnts
      */
     public int getPnts() {
@@ -92,8 +90,8 @@ public class DataModel implements Serializable {
         return (int) (pnts / (30 * srate));
     }
 
-    public void addRawEpoch(double[] rawEpoch) {
-        rawEpochs.add(rawEpoch);
+    public void addEpoch(double[] data) {
+        this.epochList.add(data);
     }
 
     /**
@@ -110,14 +108,6 @@ public class DataModel implements Serializable {
         this.file = file;
     }
 
-    public double[] getFeatureChannelData() {
-        return featureChannelData;
-    }
-
-    public void setFeatureChannelData(double[] featureChannelData) {
-        this.featureChannelData = featureChannelData;
-    }
-
     public void setReader(Reader reader) {
         this.reader = reader;
     }
@@ -126,8 +116,16 @@ public class DataModel implements Serializable {
         return reader;
     }
 
+    public ArrayList<double[]> getEpochList() {
+        return epochList;
+    }
+
     public interface Reader {
+
         public double[] read(int channel, int epoch, double[] target);
+
         public void close();
     }
+
+    
 }
