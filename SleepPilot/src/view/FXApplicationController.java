@@ -257,6 +257,7 @@ public class FXApplicationController implements Initializable {
 
         // Set Choice Box for the channels
         channelNames = dataModel.getChannelNames();
+        
 
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {

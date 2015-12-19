@@ -184,14 +184,18 @@ public class FXStartController implements Initializable {
                 }
 
                 // Set extension filter
-                FileChooser.ExtensionFilter extFilter0 = new FileChooser.ExtensionFilter("All Files", "*.vhdr", "*.smr", "*.VHDR", "*.SMR");
+                FileChooser.ExtensionFilter extFilter0 = new FileChooser.ExtensionFilter("All Files",
+                        "*.vhdr", "*.smr", "*.VHDR", "*.SMR", "*.edf", "*.EDF");
                 FileChooser.ExtensionFilter extFilter1 = new FileChooser.ExtensionFilter(
                         "BrainVision files (*.vhdr)", "*.vhdr", "*.VHDR");
 
                 FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter(
                         "Spike2 files (*.smr)", "*.smr", "*.SMR");
+                
+                FileChooser.ExtensionFilter extFilter3 = new FileChooser.ExtensionFilter(
+                        "EDF and EDF+ Files (*.edf)", "*.EDF");
 
-                fileChooser.getExtensionFilters().addAll(extFilter0, extFilter1, extFilter2);
+                fileChooser.getExtensionFilters().addAll(extFilter0, extFilter1, extFilter2, extFilter3);
 
 //				fileChooser.getExtensionFilters().add(extFilter1);
 //				fileChooser.getExtensionFilters().add(extFilter2);

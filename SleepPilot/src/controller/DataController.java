@@ -1,12 +1,20 @@
 package controller;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import model.DataModel;
 import model.DataModel.Reader;
+import ru.mipt.edf.EDFParser;
+import ru.mipt.edf.EDFParserException;
+import ru.mipt.edf.EDFParserResult;
 
 import son32java.son32reader.Son32Reader;
 import son32java.son32Exceptions.NoChannelException;
@@ -45,7 +53,98 @@ public class DataController {
     }
 
     public final void init() {
-        if (file.getName().toLowerCase().endsWith(".smr")) {
+        if(file.getName().toLowerCase().endsWith(".edf")){
+            EDFParserResult edfResult = null;
+            try{
+                String path = file.getPath();
+                InputStream is = new BufferedInputStream(
+                        new FileInputStream(new File(path)));
+                 edfResult = EDFParser.parseEDF(is);          
+            }catch(FileNotFoundException|EDFParserException e){
+                System.out.println(e);
+                //return due to failed file open
+                return;
+            }
+            int numberOfChannels = edfResult.getHeader().getNumberOfChannels();
+            /*
+            Subtract 1 from the number of channels, because the edf parser
+            adds an extra channel for annotation, which does not contain
+            actual data.
+            */
+            dataModel.setNbchan(numberOfChannels - 1);
+            
+            String[] channelNames = edfResult.getHeader().getChannelLabels();
+            //remove the annotation channel
+            Arrays.copyOf(channelNames, channelNames.length-1);
+            dataModel.setChannelNames(channelNames);
+            
+            int numberOfSamples = edfResult.getHeader().getNumberOfSamples()[0];
+            double duration = edfResult.getHeader().getDurationOfRecords();
+            
+            double samplingRate = numberOfSamples/duration;
+            dataModel.setSrate(samplingRate);
+            dataModel.setPnts(numberOfSamples);
+            
+            int numberOfSamplesForOneEpoch = (int)(samplingRate*30);
+            dataModel.numberOfSamplesForOneEpoch = numberOfSamplesForOneEpoch;
+            dataModel.rawEpoch = new double[numberOfChannels-1][numberOfSamplesForOneEpoch];
+            
+            reader = new DataModel.Reader() {
+                EDFParserResult edfResult = setEDFParserResult();
+                double[] buffer = new double[dataModel.numberOfSamplesForOneEpoch];
+
+                private EDFParserResult setEDFParserResult(){
+                    EDFParserResult edfResult = null;
+                    try{
+                        String path = file.getPath();
+                        InputStream is = new BufferedInputStream(
+                                new FileInputStream(new File(path)));
+                         edfResult = EDFParser.parseEDF(is); 
+                         return edfResult;
+                    }catch(FileNotFoundException|EDFParserException e){
+                        System.out.println(e);
+                        //return due to failed file open
+                        return null;
+                    }
+                }
+                @Override
+                public void close() {
+                   return;
+                }
+                
+                @Override
+                public double[] read(int channel, int epoch, double[] target) {
+                    double sTime = epoch*30;
+                    double eTime = (epoch+1)*30;                 
+                    
+                    double intervall = eTime - sTime;
+                    if(target.length < (int)Math.floor(intervall*samplingRate)){
+                        System.out.println("Target array is to small!");
+                        return target;
+                    }
+                    int lowerBound = (int)Math.floor(sTime*samplingRate);
+                    int upperBound = (int)Math.floor(eTime*samplingRate);
+                    short[] data = edfResult.getSignal().getDigitalValues()[channel];
+                    
+                    /*
+                    Here we got an error. The epoch number 0 just loads fine.
+                    However if we want to skip to the next epoch usin the right
+                    arrow key in the gui, the parameter "epoch" is -1. This
+                    causes an array index out of bounds exception.
+                    */
+                    System.out.println("epoch: "+epoch);
+                    
+                    
+                    for(int i=0;i<(upperBound-lowerBound);i++){
+                        //just return the requested data
+                        target[i] = (double)data[lowerBound+i];
+                    }
+
+                    return target;
+                }
+            };
+        }
+        else if (file.getName().toLowerCase().endsWith(".smr")) {
 
             Son32Reader smr = new Son32Reader(file.getPath(), 1);
             /**
@@ -88,6 +187,7 @@ public class DataController {
                 @Override
                 public double[] read(int channel, int epoch, double[] target) {
                     try {
+                        System.out.println("epoch: "+epoch);
                         son32Channel = smr.getChannel(channel);
                         double sTime = epoch*30;
                         double eTime = (epoch+1)*30;
