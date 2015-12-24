@@ -21,6 +21,7 @@ import model.DataModel;
 import model.FeatureModel;
 import controller.DataController;
 import controller.FeatureController;
+import controller.MainController;
 import controller.ModelReaderWriterController;
 import controller.SupportVectorMaschineController;
 import gnu.trove.iterator.TIntIterator;
@@ -28,9 +29,6 @@ import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -55,6 +53,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -77,6 +77,7 @@ import tools.KCdetection;
 
 public class FXApplicationController implements Initializable {
 
+    private File projectFile = null;
     private String classifier;
     private ArrayList<String> classifierList = new ArrayList();
     private KCdetection kcDetector;
@@ -116,7 +117,6 @@ public class FXApplicationController implements Initializable {
     private DoubleProperty mouseX = new SimpleDoubleProperty(0.);
     private DoubleProperty mouseY = new SimpleDoubleProperty(0.);
 
-    int modulo;
     private boolean recompute = false;
     private boolean help1Flag = false;
     private boolean kComplexFlag = false;
@@ -212,7 +212,6 @@ public class FXApplicationController implements Initializable {
     ChoiceBox<String> choiceBoxModel;
 
     public FXApplicationController(DataController dataController, FeatureModel featureModel, FXViewModel viewModel, boolean recreateModelMode) {
-        modulo = 1; //take every value for display
 
         primaryStage = new Stage();
         this.dataController = dataController;
@@ -285,9 +284,9 @@ public class FXApplicationController implements Initializable {
         tooltips();
 
         displayBuffer = dataModel.data.clone();
-        kcDetector = featureModel.getKCdetector();
-        kcDetector.setHighpassCoefficients(featureModel.getDisplayHighpassCoefficients());
-        kcDetector.setLowpassCoefficients(featureModel.getLowpassCoefficients());
+        kcDetector = featureController.kcDetector;
+        kcDetector.setHighpassCoefficients(featureController.getDisplayHighpassCoefficients());
+        kcDetector.setLowpassCoefficients(featureController.getLowpassCoefficients());
 
         loadEpoch(currentEpoch);
 
@@ -297,7 +296,7 @@ public class FXApplicationController implements Initializable {
 
         updateWindows();
 
-        featureModel.setFileLocation(dataModel.getFile());
+        featureModel.setDataFileLocation(dataModel.getFile());
 
         paintSpacing();
 
@@ -311,7 +310,7 @@ public class FXApplicationController implements Initializable {
         File folder = new File("./Classifiers").getAbsoluteFile();
         for (File file : folder.listFiles()) {
             if (file.getName().contains("model")) {
-                choicesModel.add(file.getName());
+                choicesModel.add(file.getName().replace("[model]", "").replace(".jo", ""));
                 classifierList.add(file.getAbsolutePath());
             }
         }
@@ -579,7 +578,7 @@ public class FXApplicationController implements Initializable {
 
     @SuppressWarnings("static-access")
     private void updateProbabilities() {
-        if (featureModel.isFeaturesComputed()) {
+        if (featureModel.isClassificationDone()) {
             double[] probabilities = featureModel.getPredictProbabilities(currentEpoch);
 
             double total = StatUtils.sum(probabilities);
@@ -705,12 +704,6 @@ public class FXApplicationController implements Initializable {
 
     }
 
-    private String getNameFromChannel(int channelNumber) {
-
-        String channel = channelNames[channelNumber];
-        return channel;
-    }
-
     public void showLabelsForEpoch() {
 
         overlay.getChildren().clear();
@@ -793,13 +786,15 @@ public class FXApplicationController implements Initializable {
                     .read(activeChannels.get(i), numberOfEpoch, dataModel.data[activeChannels.get(i)]);
         }
 
-//        if (dataModel.getSrate() != 100) {
-//            decimateSignal();
-//        } else {
-        for (int i = 0; i < activeChannels.size(); i++) {
-            displayBuffer[activeChannels.get(i)] = dataModel.data[activeChannels.get(i)];
+        if (dataModel.getSrate() != 100) {
+            for (int i = 0; i < activeChannels.size(); i++) {
+                displayBuffer[activeChannels.get(i)] = featureController.getDecimator().decimate(dataModel.data[activeChannels.get(i)]);
+            }
+        } else {
+            for (int i = 0; i < activeChannels.size(); i++) {
+                displayBuffer[activeChannels.get(i)] = dataModel.data[activeChannels.get(i)];
+            }
         }
-//        }
 
         if (viewModel.isKcMarkersActive()) {
             computeKCfeatures();
@@ -818,7 +813,7 @@ public class FXApplicationController implements Initializable {
 
     final public void filterEpoch() {
         for (int i = 0; i < activeChannels.size(); i++) {
-            Signal.filtfilt(displayBuffer[activeChannels.get(i)], featureModel.getDisplayHighpassCoefficients());
+            Signal.filtfilt(displayBuffer[activeChannels.get(i)], featureController.getDisplayHighpassCoefficients());
         }
     }
 
@@ -828,19 +823,13 @@ public class FXApplicationController implements Initializable {
         }
     }
 
-    final public void decimateSignal() {
-        for (int i = 0; i < activeChannels.size(); i++) {
-            displayBuffer[activeChannels.get(i)] = featureModel.getDecimator().decimate(dataModel.data[activeChannels.get(i)]);
-        }
-    }
-
     final public void showEpoch() {
 
         lineChart.getData().clear();
 
 //        double[] epoch;
         double offsetSize = 0;
-        if (activeChannels.size() != 0) {
+        if (!activeChannels.isEmpty()) {
             offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
@@ -856,25 +845,24 @@ public class FXApplicationController implements Initializable {
             @SuppressWarnings("rawtypes")
             XYChart.Series series = new XYChart.Series();
 
-            double epochSize = epoch.length / modulo;
+            double epochSize = epoch.length;
             double xAxis = 0;
 
             for (int j = 0; j < epoch.length; j++) {
-                if (j % modulo == 0) {
-                    double tmp = xAxis / epochSize;
-                    tmp = tmp * this.xAxis.getUpperBound();
+                double tmp = xAxis / epochSize;
+                tmp = tmp * this.xAxis.getUpperBound();
 
-                    double value = epoch[j];
-//                    double value = Math.sin(2 * Math.PI * i / 100.) * 75 / 2.; //test signal
+                double value = epoch[j];
+//                double value = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
 
-                    value = value * zoom * scale.get();
-                    value = value + realOffset;
+                value = value * zoom * scale.get();
+                value = value + realOffset;
 
-                    XYChart.Data dataItem = new XYChart.Data(tmp, value);
-                    series.getData().add(dataItem);
+                XYChart.Data dataItem = new XYChart.Data(tmp, value);
+                series.getData().add(dataItem);
 
-                    xAxis++;
-                }
+                xAxis++;
+
             }
 
             lineChart.getData().add(series);
@@ -892,7 +880,7 @@ public class FXApplicationController implements Initializable {
 
         double offsetSize = 0;
 
-        if (activeChannels.size() != 0) {
+        if (!activeChannels.isEmpty()) {
             offsetSize = 1. / (activeChannels.size() + 1.);
         }
 
@@ -907,12 +895,11 @@ public class FXApplicationController implements Initializable {
 
             int k = 0;
             for (int j = 0; j < epoch.length; j++) {
-                if (j % modulo == 0) {
-                    lineChart.getData().get(i).getData().get(k).setYValue(
-                            epoch[j] * zoom * scale.get() + realOffset
-                    );
-                    k++;
-                }
+//                epoch[j] = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
+                lineChart.getData().get(i).getData().get(k).setYValue(
+                        epoch[j] * zoom * scale.get() + realOffset
+                );
+                k++;
             }
 
         }
@@ -922,10 +909,6 @@ public class FXApplicationController implements Initializable {
 
         overlay4.getChildren().clear();
 
-        kcDetector.setMaxWidth(100);
-        kcDetector.setMinWidth(15);
-        kcDetector.setNegAmplitude(75);
-        kcDetector.setPeakToPeak(75);
         kcDetector.detect(displayBuffer[featureModel.getFeatureChannel()]);
         double percentageSum = kcDetector.getPercentageSum();
         Set< Range< Integer>> kcPlotRanges = kcDetector.getKcRanges();
@@ -1300,9 +1283,9 @@ public class FXApplicationController implements Initializable {
         );
 
         if (file != null) {
-            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataModel, featureModel, file, true);
+            featureModel.setProjectFile(file);
+            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, file, true);
             modelReaderWriter.start();
-
         }
 
     }
@@ -1368,6 +1351,8 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void classifyButtonAction() {
+
+        final long startTime = System.nanoTime();
         computeFeatures();
 
         if (!featureModel.isClassificationDone()) {
@@ -1375,8 +1360,10 @@ public class FXApplicationController implements Initializable {
             classify();
             featureModel.setClassificationDone(true);
         }
+        System.out.println("Elapsed time: " + (System.nanoTime() - startTime) / 1e6);
 
         updateWindows();
+        hypnogramAction();
 
         classifyButton.setDisable(true);
     }
@@ -1387,12 +1374,15 @@ public class FXApplicationController implements Initializable {
             viewModel.setScatterPlotActive(false);
         } else {
             viewModel.setScatterPlotActive(true);
-            classifyButtonAction();
+            if (!featureModel.isFeaturesComputed()) {
+                computeFeatures();
+            }
+
             scatterPlot.paintScatterChart();
             scatterPlot.show();
         }
 
-        updateWindows();
+        showScatterPlot();
     }
 
     public void classify() {
@@ -1400,15 +1390,59 @@ public class FXApplicationController implements Initializable {
         SupportVectorMaschineController svm = new SupportVectorMaschineController();
         svm.svmLoadModel(classifier);
 
+        float[] kcPercentage = featureModel.getKcPercentage();
+        float[] standardDeviation = featureModel.getStandardDeviation();
+        float[] diffStandardDeviation = featureModel.getDiffStandardDeviation();
+        float[] largeJumps = featureModel.getLargeJumps();
+
+        double diff_thresh = 100;
+        double std_thresh = 150;
+        double diffStd_thresh = 15;
+
         double[] output;
         for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
 
 //            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
             output = svm.svmPredict(Util.floatToDouble(featureModel.getFeatureVector(i)));
             int classLabel = Doubles.indexOf(output, Doubles.max(output));
+
+            //convert SVM labels to SleepPilot labels (4 is REM)
             if (classLabel == 4) {
                 classLabel = 5;
             }
+
+            //adjust classifier output to be consistent with SleepPilots K-complex detector
+            if (classLabel == 3 & kcPercentage[i] <= 20) {
+                classLabel = 2;
+            }
+            if (classLabel == 2 & kcPercentage[i] > 20) {
+                classLabel = 3;
+            }
+            //if KCs in REM then it is no REM, but N2
+            if (classLabel == 5 & kcPercentage[i] > 0 & output[2] > 0.2) {
+                classLabel = 2;
+            }
+
+//            //tune N1:
+//            if (classLabel != 3 & output[0] > 0.2 & output[1] > 0.1 & output[2] > 0.2 & output[4] > 0.15 & kcPercentage[i] == 0) {
+//                classLabel = 1;
+//            }
+            // sometimes a lot of KCs are equated with MA by classifier
+            if (classLabel == 0 & output[2] > 0.2 & output[3] > 0.1 & kcPercentage[i] > 40) {
+                classLabel = 3;
+            }
+
+            featureModel.setArtefact(i, 0);
+            featureModel.setArousal(i, 0);
+
+            if (classLabel != 0
+                    & (standardDeviation[i] > std_thresh
+                    | largeJumps[i] > diff_thresh
+                    | diffStandardDeviation[i] > diffStd_thresh)) {
+                featureModel.setArtefact(i, 1);
+                featureModel.setArousal(i, 1);
+            }
+
             featureModel.setPredictProbabilities(i, output.clone());
             featureModel.setLabel(i, classLabel);
             System.out.println("Predicted Class Label: " + classLabel);
@@ -1639,25 +1673,24 @@ public class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.HOME) {
             goToEpoch(0);
         }
-        if (ke.getCode() == KeyCode.F7) {
+        if (ke.getCode() == KeyCode.F5) {
             classifyButtonAction();
         }
-        if (ke.getCode() == KeyCode.F8) {
+        if (ke.getCode() == KeyCode.F6) {
             visualizeButtonAction();
         }
-        if (ke.getCode() == KeyCode.F9) {
-            electrodeConfiguratorButtonAction();
-        }
-        if (ke.getCode() == KeyCode.F10) {
+        if (ke.getCode() == KeyCode.F7) {
             filterButtonAction();
         }
-        if (ke.getCode() == KeyCode.F11) {
+        if (ke.getCode() == KeyCode.F8) {
+            dcRemoveButtonAction();
+        }
+        if (ke.getCode() == KeyCode.F9) {
             kcMarkersButtonAction();
         }
         if (ke.getCode() == KeyCode.F12) {
-            dcRemoveButtonAction();
+            electrodeConfiguratorButtonAction();
         }
-
     }
 
     public void updateWindows() {
@@ -1726,12 +1759,12 @@ public class FXApplicationController implements Initializable {
     private void tooltips() {
         help1.setTooltip(new Tooltip("75µV bars (L)"));
         kComplex.setTooltip(new Tooltip("K-complex measurement tool (K)"));
-        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F7)"));
-        visualizeButton.setTooltip(new Tooltip("Show cluster plot (F8)"));
-        electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F9)"));
-        filterButton.setTooltip(new Tooltip("Filters on/off (F10)"));
-        kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F11)"));
-        dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F12)"));
+        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F5)"));
+        visualizeButton.setTooltip(new Tooltip("Show cluster plot (F6)"));
+        electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F12)"));
+        filterButton.setTooltip(new Tooltip("Filters on/off (F7)"));
+        kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F9)"));
+        dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F8)"));
         s1Button.setTooltip(new Tooltip("Sleep stage N1 (1)"));
         s2Button.setTooltip(new Tooltip("Sleep stage N2 (2)"));
         s3Button.setTooltip(new Tooltip("Sleep stage N3 (3)"));
@@ -1753,7 +1786,7 @@ public class FXApplicationController implements Initializable {
         }
 
         if (!featureModel.isFeaturesComputed()) {
-            featureModel.setEpochList(dataModel.getEpochList());
+            featureController.setEpochList(dataModel.getEpochList());
             featureController.start();
             featureModel.setFeaturesComputed(true);
         }
@@ -1768,4 +1801,31 @@ public class FXApplicationController implements Initializable {
         choiceBox.setItems(choices);
         choiceBox.getSelectionModel().select(0);
     }
+
+    @FXML
+    protected void saveAction() {
+        projectFile = featureModel.getProjectFile();
+        if (projectFile == null) {
+            saveAsAction();
+        } else {
+            Util.saveDir(projectFile,
+                    new File(
+                            new File(
+                                    getClass()
+                                    .getProtectionDomain()
+                                    .getCodeSource()
+                                    .getLocation()
+                                    .getPath()
+                            ).getParentFile(),
+                            "LastDirectory.txt"
+                    )
+            );
+
+            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, projectFile, true);
+            modelReaderWriter.start();
+
+        }
+
+    }
+
 }

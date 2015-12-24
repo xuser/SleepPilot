@@ -280,7 +280,7 @@ public class FXStartController implements Initializable {
 
                 //TODO
                 if (file != null) {
-                    ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataModel, featureModel, file, false);
+                    ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, file, false);
                     modelReaderWriter.start();
                 }
 

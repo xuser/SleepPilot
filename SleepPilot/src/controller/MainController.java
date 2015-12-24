@@ -60,7 +60,7 @@ public class MainController extends Application {
     public static void recreateSystemState(File file) throws IllegalArgumentException {
 
         try {
-            String filePath = file.getParent() + File.separator + featureModel.getFileLocation().getName();
+            String filePath = file.getParent() + File.separator + featureModel.getDataFileLocation().getName();
             System.out.println(filePath);
 
             File relativeFile = new File(filePath);
@@ -82,11 +82,11 @@ public class MainController extends Application {
                 });
 
             } else {
-
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        startController.showPopUp("Can't find EEG Data! Put *.as file in the same directory like the EEG Data.");
+                        startController.showPopUp("Cannot find EEG file at " + filePath + ". Move EEG data file to into directory of SleepPilot .as file.");
+                        
                     }
                 });
             }
@@ -97,7 +97,7 @@ public class MainController extends Application {
         }
     }
 
-    public static void setFeatureExtractionModel(FeatureModel model) {
+    public static void setFeatureModel(FeatureModel model) {
         featureModel = model;
     }
 

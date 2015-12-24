@@ -1,15 +1,7 @@
 package controller;
 
-import biz.source_code.dsp.filter.FilterCharacteristicsType;
-import biz.source_code.dsp.filter.FilterPassType;
-import biz.source_code.dsp.filter.IirFilterCoefficients;
-import biz.source_code.dsp.filter.IirFilterDesignFisher;
-import gnu.trove.list.array.TDoubleArrayList;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import model.FeatureModel;
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.jdsp.iirfilterdesigner.IIRDesigner;
 import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
@@ -18,8 +10,6 @@ import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 import org.jdsp.iirfilterdesigner.model.FilterType;
 import tools.KCdetection;
 import tools.Signal;
-import static tools.Signal.filtfilt;
-import tools.Util;
 import tools.sincWindowDecimator;
 
 /**
@@ -27,82 +17,79 @@ import tools.sincWindowDecimator;
  * features to create feature vectors, which can be used for the support vector
  * maschine.
  *
+ * @author Arne Weigenand
  * @author Nils Finke
  *
  */
 public class FeatureController {
 
     private FeatureModel featureModel;
+    public KCdetection kcDetector;
+    private sincWindowDecimator decimator;
+    public FilterCoefficients highpassCoefficients;
+    public FilterCoefficients lowpassCoefficients;
+    public FilterCoefficients displayHighpassCoefficients;
+    public FilterCoefficients displayLowpassCoefficients;
+    /**
+     * Data holds reference to feature channel epochList (usually in a RawDataModel), for use in instance of
+    FeatureExtractioController.
+     */
+    private ArrayList<double[]> epochList;
 
     public FeatureController(FeatureModel featureModel) {
         this.featureModel = featureModel;
 
-        createFilters(featureModel.getSrate());
-        featureModel.setDecimator(new sincWindowDecimator());
-        sincWindowDecimator decimator = featureModel.getDecimator();
-        decimator.designFilter((int)FastMath.round(featureModel.getSrate() / 100.), 31);
-        featureModel.setKCdetector(new KCdetection());
+        createFilters(100.);
+
+        setDecimator(new sincWindowDecimator());
+        sincWindowDecimator decimator = getDecimator();
+        decimator.designFilter((int) FastMath.round(featureModel.getSrate() / 100.), 31);
+
+        kcDetector = new KCdetection();
+        kcDetector.setMaxWidth(100);
+        kcDetector.setMinWidth(20);
+        kcDetector.setNegAmplitude(75);
+        kcDetector.setPeakToPeak(75);
     }
 
     public void start() {
-        ArrayList<double[]> data = featureModel.getEpochList();
-        float[][] features = computeFeatures(data);
+        ArrayList<double[]> data = getEpochList();
+        if ((int) (featureModel.getSrate()) != (int) 100) {
+            for (int i = 0; i < data.size(); i++) {
+                data.set(i, getDecimator().decimate(data.get(i)));
+            }
+        }
+
+        //KCdetection is not thread safe!!!
+        float[] kcPercentage = new float[featureModel.getNumberOfEpochs()];
+        
+        for (int i = 0; i < data.size(); i++) {
+            kcDetector.detect(data.get(i));
+            kcPercentage[i] = (float) kcDetector.getPercentageSum();
+        }
+        featureModel.setKcPercentage(kcPercentage);
+
+        float[][] features = Signal.computeFeatures(data);
+
+        float[] standardDeviation = new float[features.length];
+        for (int i = 0; i < features.length; i++) {
+            standardDeviation[i] = features[i][0];
+        }
+        featureModel.setStandardDeviation(standardDeviation.clone());
+
+        float[] diffStandardDeviation = new float[features.length];
+        for (int i = 0; i < features.length; i++) {
+            diffStandardDeviation[i] = features[i][1];
+        }
+        featureModel.setDiffStandardDeviation(diffStandardDeviation.clone());
+
+        float[] largeJumps = new float[features.length];
+        for (int i = 0; i < features.length; i++) {
+            largeJumps[i] = features[i][2];
+        }
+        featureModel.setLargeJumps(largeJumps.clone());
 
         featureModel.setFeatures(features);
-        featureModel.setFeaturesComputed(true);
-    }
-
-    /**
-     *
-     * @param data
-     * @return
-     */
-    public float[][] computeFeatures(ArrayList<double[]> data) {
-        /**
-         * generate sublists from data array (which contains all data of a
-         * channel. This way data can stay in array form and efficiently be
-         * processed in parallel without copying.
-         */
-        List<float[]> featureList = data.stream()
-                .parallel()
-                .map(e -> Util.doubleToFloat(computeFeatures(e)))
-                .collect(Collectors.toList());
-
-        float[][] features = new float[featureList.size()][];
-        for (int i = 0; i < featureList.size(); i++) {
-            features[i] = featureList.get(i);
-        }
-        return features;
-    }
-
-    public double[] computeFeatures(double[] x) {
-        TDoubleArrayList features = new TDoubleArrayList();
-
-        int nOutput = 100, windowSize = 200;
-        float[][] stft = new float[nOutput][windowSize];
-
-        if (featureModel.getSrate()!= 100) {
-            x=featureModel.getDecimator().decimate(x);
-        }
-        
-        filtfilt(x, featureModel.getHighpassCoefficients());
-
-        Signal.removeDC(x);
-        features.add(Signal.lineSpectralPairs(x, 10));
-        features.add(Util.floatToDouble(tools.Signal.logAbsStft(Util.doubleToFloat(x), windowSize, nOutput, stft)));
-
-        return features.toArray();
-    }
-
-    public static double[] assembleData(ArrayList<double[]> epochedDataList, int capacity) {
-        //assamble data of all epochs of a single channel into one array
-
-        TDoubleArrayList dataList = new TDoubleArrayList(capacity);
-        for (double[] list : epochedDataList) {
-            dataList.addAll(list);
-        }
-
-        return dataList.toArray();
     }
 
     private void createFilters(double fs) {
@@ -114,18 +101,18 @@ public class FeatureController {
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureModel.setDisplayHighpassCoefficients(coefficients);
-        
+        setDisplayHighpassCoefficients(coefficients);
+
         FilterCoefficients coefficients2 = null;
         try {
-            double fstop = 49;
-            double fpass = 30;
+            double fstop = 48;
+            double fpass = 40;
             coefficients2 = IIRDesigner.designDigitalFilter(ApproximationFunctionType.CHEBYSHEV2, FilterType.LOWPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 20.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureModel.setDisplayLowpassCoefficients(coefficients2);
-        
+        setDisplayLowpassCoefficients(coefficients2);
+
         FilterCoefficients coefficients4 = null;
         try {
             double fstop = 0.1;
@@ -134,8 +121,8 @@ public class FeatureController {
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureModel.setHighpassCoefficients(coefficients4);
-        
+        setHighpassCoefficients(coefficients4);
+
         FilterCoefficients coefficients3 = null;
         try {
             double fstop = 7.0;
@@ -144,8 +131,55 @@ public class FeatureController {
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
-        featureModel.setLowpassCoefficients(coefficients3);
+        setLowpassCoefficients(coefficients3);
     }
 
-    
+    public sincWindowDecimator getDecimator() {
+        return decimator;
+    }
+
+    public void setDecimator(sincWindowDecimator decimator) {
+        this.decimator = decimator;
+    }
+
+    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
+        this.lowpassCoefficients = lowpassCoefficients;
+    }
+
+    public void setDisplayLowpassCoefficients(FilterCoefficients displayLowpasCoefficients) {
+        this.displayLowpassCoefficients = displayLowpasCoefficients;
+    }
+
+    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
+        this.highpassCoefficients = highpassCoefficients;
+    }
+
+    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
+        this.displayHighpassCoefficients = displayHighpassCoefficients;
+    }
+
+    public FilterCoefficients getHighpassCoefficients() {
+        return highpassCoefficients;
+    }
+
+    public FilterCoefficients getDisplayLowpassCoefficients() {
+        return displayLowpassCoefficients;
+    }
+
+    public FilterCoefficients getLowpassCoefficients() {
+        return lowpassCoefficients;
+    }
+
+    public FilterCoefficients getDisplayHighpassCoefficients() {
+        return displayHighpassCoefficients;
+    }
+
+    public ArrayList<double[]> getEpochList() {
+        return epochList;
+    }
+
+    public void setEpochList(ArrayList<double[]> data) {
+        this.epochList = data;
+    }
+
 }

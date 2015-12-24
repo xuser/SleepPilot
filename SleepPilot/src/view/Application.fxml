@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.input.*?>
 <?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
@@ -84,10 +85,21 @@
           <menus>
             <Menu mnemonicParsing="false" text="File">
               <items>
+                        <MenuItem mnemonicParsing="false" onAction="#saveAction" text="Save">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                           </accelerator>
+                        </MenuItem>
                 <MenuItem mnemonicParsing="false" onAction="#saveAsAction" text="Save As" />
                 <SeparatorMenuItem mnemonicParsing="false" />
-                <MenuItem mnemonicParsing="false" onAction="#importHypnogrammAction" text="Import Hypnogramm" />
-                <MenuItem mnemonicParsing="false" onAction="#exportHypnogrammAction" text="Export Hypnogramm" />
+                <MenuItem mnemonicParsing="false" onAction="#importHypnogrammAction" text="Import Hypnogramm">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="I" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                           </accelerator></MenuItem>
+                <MenuItem mnemonicParsing="false" onAction="#exportHypnogrammAction" text="Export Hypnogramm">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="E" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                           </accelerator></MenuItem>
                 <SeparatorMenuItem mnemonicParsing="false" />
                 <MenuItem mnemonicParsing="false" onAction="#closeAction" text="Close" />
               </items>
@@ -157,6 +169,15 @@
                 </ImageView>
               </graphic>
             </ToggleButton>
+                  <ToggleButton fx:id="hypnogramButton" focusTraversable="false" mnemonicParsing="false" onAction="#hypnogramAction" styleClass="toolBarButtons">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true">
+                           <image>
+                              <Image url="@img/hypno.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </ToggleButton>
                   <ChoiceBox fx:id="choiceBox" focusTraversable="false" styleClass="choiceBox" />
                   <ChoiceBox fx:id="choiceBoxModel" focusTraversable="false" styleClass="choiceBox" />
                   <ToggleButton fx:id="classifyButton" focusTraversable="false" mnemonicParsing="false" onAction="#classifyButtonAction" styleClass="toolBarButtons">
@@ -177,20 +198,20 @@
                 </ImageView>
                      </graphic>
                   </ToggleButton>
-                  <ToggleButton fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" styleClass="toolBarButtons">
-                     <graphic>
-                <ImageView fitHeight="15.0" fitWidth="19.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                  <image>
-                    <Image url="@img/configure.png" />
-                  </image>
-                </ImageView>
-                     </graphic>
-                  </ToggleButton>
                   <ToggleButton fx:id="filterButton" focusTraversable="false" mnemonicParsing="false" onAction="#filterButtonAction" styleClass="toolBarButtons">
                      <graphic>
                         <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@img/filter.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </ToggleButton>
+                  <ToggleButton fx:id="dcRemoveButton" focusTraversable="false" mnemonicParsing="false" onAction="#dcRemoveButtonAction" styleClass="toolBarButtons">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@img/dcRemove.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -203,22 +224,13 @@
                            </image></ImageView>
                      </graphic>
                   </ToggleButton>
-                  <ToggleButton fx:id="dcRemoveButton" focusTraversable="false" mnemonicParsing="false" onAction="#dcRemoveButtonAction" styleClass="toolBarButtons">
+                  <ToggleButton fx:id="electrodeConfiguratorButton" focusTraversable="false" mnemonicParsing="false" onAction="#electrodeConfiguratorButtonAction" styleClass="toolBarButtons">
                      <graphic>
-                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@img/dcRemove.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </ToggleButton>
-                  <ToggleButton fx:id="hypnogramButton" focusTraversable="false" mnemonicParsing="false" onAction="#hypnogramAction" styleClass="toolBarButtons">
-                     <graphic>
-                        <ImageView fitHeight="15.0" fitWidth="16.0" mouseTransparent="true" pickOnBounds="true">
-                           <image>
-                              <Image url="@img/hypno.png" />
-                           </image>
-                        </ImageView>
+                <ImageView fitHeight="15.0" fitWidth="19.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                    <Image url="@img/configure.png" />
+                  </image>
+                </ImageView>
                      </graphic>
                   </ToggleButton>
           </items>

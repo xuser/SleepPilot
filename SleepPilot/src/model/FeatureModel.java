@@ -1,6 +1,5 @@
 package model;
 
-import biz.source_code.dsp.filter.IirFilterCoefficients;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -9,9 +8,7 @@ import java.util.LinkedList;
 import help.ChannelNames;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
-import tools.KCdetection;
-import tools.sincWindowDecimator;
+
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -31,18 +28,17 @@ public class FeatureModel implements Serializable {
      * classified sleep stage.
      */
     private float[][] features;
+    private float[] kcPercentage;
+    private float[] standardDeviation;
+    private float[] diffStandardDeviation;
+    private float[] largeJumps;
+    
     private int[] labels;
     private int[] artefacts;
     private int[] arousals;
     private int[] stimulation;
     private double[][] tsneFeatures;
-    private sincWindowDecimator decimator;
 
-    /**
-     * Data holds reference to feature channel epochList (usually in a RawDataModel), for use in instance of
- FeatureExtractioController.
-     */
-    private ArrayList<double[]> epochList;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -80,9 +76,14 @@ public class FeatureModel implements Serializable {
     private String selectedModel;
 
     /**
-     * The path to the eeg epochList.
+     * Path to the eeg data file (Brainvision, Spike2, EDF etc.).
      */
-    private File fileLocation;
+    private File dataFileLocation;
+    
+    /**
+     * Path to the SleepPilot project file.
+     */
+    private File projectFile;
 
     /**
      * Keeps the number of feature vectors.
@@ -138,15 +139,9 @@ public class FeatureModel implements Serializable {
     private int featureChannel;
 
     private int currentEpoch;
-    private FilterCoefficients displayLowpassCoefficients;
-    private FilterCoefficients highpassCoefficients;
-    private FilterCoefficients displayHighpassCoefficients;
-    private FilterCoefficients lowpassCoefficients;
-    private IirFilterCoefficients decimationCoefficients;
     
     private double srate;
 
-    private KCdetection KCdetector;
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -703,17 +698,17 @@ public class FeatureModel implements Serializable {
     }
 
     /**
-     * @return the fileLocation
+     * @return the dataFileLocation
      */
-    public File getFileLocation() {
-        return fileLocation;
+    public File getDataFileLocation() {
+        return dataFileLocation;
     }
 
     /**
-     * @param fileLocation the fileLocation to set
+     * @param dataFileLocation the dataFileLocation to set
      */
-    public void setFileLocation(File fileLocation) {
-        this.fileLocation = fileLocation;
+    public void setDataFileLocation(File dataFileLocation) {
+        this.dataFileLocation = dataFileLocation;
     }
 
     public boolean isFeaturesComputed() {
@@ -788,61 +783,8 @@ public class FeatureModel implements Serializable {
         return currentEpoch;
     }
 
-    public FilterCoefficients getLowpassCoefficients() {
-        return lowpassCoefficients;
-    }
 
-    public FilterCoefficients getHighpassCoefficients() {
-        return highpassCoefficients;
-    }
 
-    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
-        this.highpassCoefficients = highpassCoefficients;
-    }
-
-    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
-        this.lowpassCoefficients = lowpassCoefficients;
-    }
-
-    public FilterCoefficients getDisplayHighpassCoefficients() {
-        return displayHighpassCoefficients;
-    }
-
-    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
-        this.displayHighpassCoefficients = displayHighpassCoefficients;
-    }
-
-    public FilterCoefficients getDisplayLowpassCoefficients() {
-        return displayLowpassCoefficients;
-    }
-
-    public void setDisplayLowpassCoefficients(FilterCoefficients displayLowpasCoefficients) {
-        this.displayLowpassCoefficients = displayLowpasCoefficients;
-    }
-
-    public void setDecimationCoefficients(IirFilterCoefficients decimationCoefficients) {
-        this.decimationCoefficients = decimationCoefficients;
-    }
-
-    public IirFilterCoefficients getDecimationCoefficients() {
-        return decimationCoefficients;
-    }
-
-    public KCdetection getKCdetector() {
-        return KCdetector;
-    }
-
-    public void setKCdetector(KCdetection KCdetector) {
-        this.KCdetector = KCdetector;
-    }
-
-    public void setEpochList(ArrayList<double[]> data) {
-        this.epochList = data;
-    }
-
-    public ArrayList<double[]> getEpochList() {
-        return epochList;
-    }
 
     public void setSrate(double srate) {
         this.srate = srate;
@@ -852,13 +794,45 @@ public class FeatureModel implements Serializable {
         return srate;
     }
 
-    public void setDecimator(sincWindowDecimator decimator) {
-        this.decimator = decimator;
+
+    public float[] getKcPercentage() {
+        return kcPercentage;
     }
 
-    public sincWindowDecimator getDecimator() {
-        return decimator;
+    public void setKcPercentage(float[] kcPercentage) {
+        this.kcPercentage = kcPercentage;
     }
-    
+
+    public void setDiffStandardDeviation(float[] absDiffStandardDeviation) {
+        this.diffStandardDeviation = absDiffStandardDeviation;
+    }
+
+    public float[] getDiffStandardDeviation() {
+        return diffStandardDeviation;
+    }
+
+    public void setLargeJumps(float[] largeJumps) {
+        this.largeJumps = largeJumps;
+    }
+
+    public float[] getLargeJumps() {
+        return largeJumps;
+    }
+
+    public float[] getStandardDeviation() {
+        return standardDeviation;
+    }
+
+    public void setStandardDeviation(float[] standardDeviation) {
+        this.standardDeviation = standardDeviation;
+    }
+
+    public void setProjectFile(File projectFile) {
+        this.projectFile = projectFile;
+    }
+
+    public File getProjectFile() {
+        return projectFile;
+    }
     
 }

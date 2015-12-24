@@ -94,9 +94,7 @@ public class DataController {
                         double sTime = epoch*30;
                         double eTime = (epoch+1)*30;
                         son32Channel.getRealDataByTime(sTime, eTime, buffer);
-//                for (int x = 0; x < newTarget.length; x++) {
-//                    //System.out.println(newTarget[x]);
-//                }
+
                         System.arraycopy(buffer, 0, target, 0, target.length);
                         return target;
                     } catch (NoChannelException ex) {
