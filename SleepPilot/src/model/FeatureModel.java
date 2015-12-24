@@ -1,15 +1,14 @@
 package model;
 
-import biz.source_code.dsp.filter.IirFilterCoefficients;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import help.ChannelNames;
+import java.util.ArrayList;
 import java.util.Arrays;
-import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
-import tools.KCdetection;
+
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -17,7 +16,7 @@ import tools.KCdetection;
  * @author Nils Finke
  *
  */
-public class FeatureExtractionModel implements Serializable {
+public class FeatureModel implements Serializable {
 
     /**
      * This matrix saves continuously for each epoch their permutation
@@ -29,17 +28,17 @@ public class FeatureExtractionModel implements Serializable {
      * classified sleep stage.
      */
     private float[][] features;
+    private float[] kcPercentage;
+    private float[] standardDeviation;
+    private float[] diffStandardDeviation;
+    private float[] largeJumps;
+    
     private int[] labels;
     private int[] artefacts;
     private int[] arousals;
     private int[] stimulation;
     private double[][] tsneFeatures;
 
-    /**
-     * Data holds reference to feature channel data (usually in a RawDataModel), for use in instance of
-     * FeatureExtractioController.
-     */
-    private double[] data;
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -77,9 +76,14 @@ public class FeatureExtractionModel implements Serializable {
     private String selectedModel;
 
     /**
-     * The path to the eeg data.
+     * Path to the eeg data file (Brainvision, Spike2, EDF etc.).
      */
-    private File fileLocation;
+    private File dataFileLocation;
+    
+    /**
+     * Path to the SleepPilot project file.
+     */
+    private File projectFile;
 
     /**
      * Keeps the number of feature vectors.
@@ -87,16 +91,11 @@ public class FeatureExtractionModel implements Serializable {
     private int numberOfFeatures;
 
     /**
-     * Keeps the number of channels from input data.
+     * Keeps the number of channels from input epochList.
      */
     private int numberOfChannels;
 
-    /**
-     * This variable holds the actual positon in the PE matrix.
-     */
-    private int rowPosition = 0;
-
-    /**
+     /**
      * Keeps the status, if the TrainController has finished reading and
      * calculating.
      */
@@ -108,7 +107,7 @@ public class FeatureExtractionModel implements Serializable {
     private boolean classificationDone = false;
 
     /**
-     * Tells whether channel data has been read
+     * Tells whether channel epochList has been read
      */
     private boolean readinDone = false;
 
@@ -140,13 +139,9 @@ public class FeatureExtractionModel implements Serializable {
     private int featureChannel;
 
     private int currentEpoch;
-    private FilterCoefficients displayLowpassCoefficients;
-    private FilterCoefficients highpassCoefficients;
-    private FilterCoefficients displayHighpassCoefficients;
-    private FilterCoefficients lowpassCoefficients;
-    private IirFilterCoefficients decimationCoefficients;
+    
+    private double srate;
 
-    private KCdetection KCdetector;
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -238,35 +233,6 @@ public class FeatureExtractionModel implements Serializable {
         if (artefacts[epoch] == 1) {
             artefacts[epoch] = 0;
             countA--;
-        }
-    }
-
-    /**
-     * This method builds the needed string for using the svm_scale method.
-     *
-     * @return the features for one epoch (values for training)
-     */
-    public String getFeatureValuePE() {
-
-        StringBuilder featureVector = new StringBuilder();
-
-        if (rowPosition < numberOfFeatures) {
-
-            // Get class label.
-            featureVector.append((int) (features[rowPosition][0]));
-
-            // Get feature values.
-            for (int i = 1; i <= numberOfChannels; i++) {
-                featureVector.append(" " + i + ":" + features[rowPosition][i]);
-            }
-
-            rowPosition = rowPosition + 1;
-
-            String featureVectorString = featureVector.toString();
-            return featureVectorString;
-
-        } else {
-            return null;
         }
     }
 
@@ -425,13 +391,6 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     /**
-     * Rewind the row in data matrics. This is needed in scaling of the data.
-     */
-    public void rewindRowPosition() {
-        rowPosition = 0;
-    }
-
-    /**
      * @return	the number of feature vectors in the matrix.
      */
     public int getNumberOfFeatures() {
@@ -439,7 +398,7 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     /**
-     * @return	the number of channels for the input data.
+     * @return	the number of channels for the input epochList.
      */
     public int getNumberOfChannels() {
         return numberOfChannels;
@@ -739,17 +698,17 @@ public class FeatureExtractionModel implements Serializable {
     }
 
     /**
-     * @return the fileLocation
+     * @return the dataFileLocation
      */
-    public File getFileLocation() {
-        return fileLocation;
+    public File getDataFileLocation() {
+        return dataFileLocation;
     }
 
     /**
-     * @param fileLocation the fileLocation to set
+     * @param dataFileLocation the dataFileLocation to set
      */
-    public void setFileLocation(File fileLocation) {
-        this.fileLocation = fileLocation;
+    public void setDataFileLocation(File dataFileLocation) {
+        this.dataFileLocation = dataFileLocation;
     }
 
     public boolean isFeaturesComputed() {
@@ -824,61 +783,56 @@ public class FeatureExtractionModel implements Serializable {
         return currentEpoch;
     }
 
-    public FilterCoefficients getLowpassCoefficients() {
-        return lowpassCoefficients;
+
+
+
+    public void setSrate(double srate) {
+        this.srate = srate;
     }
 
-    public FilterCoefficients getHighpassCoefficients() {
-        return highpassCoefficients;
+    public double getSrate() {
+        return srate;
     }
 
-    public void setHighpassCoefficients(FilterCoefficients highpassCoefficients) {
-        this.highpassCoefficients = highpassCoefficients;
+
+    public float[] getKcPercentage() {
+        return kcPercentage;
     }
 
-    public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
-        this.lowpassCoefficients = lowpassCoefficients;
+    public void setKcPercentage(float[] kcPercentage) {
+        this.kcPercentage = kcPercentage;
     }
 
-    public FilterCoefficients getDisplayHighpassCoefficients() {
-        return displayHighpassCoefficients;
+    public void setDiffStandardDeviation(float[] absDiffStandardDeviation) {
+        this.diffStandardDeviation = absDiffStandardDeviation;
     }
 
-    public void setDisplayHighpassCoefficients(FilterCoefficients displayHighpassCoefficients) {
-        this.displayHighpassCoefficients = displayHighpassCoefficients;
+    public float[] getDiffStandardDeviation() {
+        return diffStandardDeviation;
     }
 
-    public FilterCoefficients getDisplayLowpasCoefficients() {
-        return displayLowpassCoefficients;
+    public void setLargeJumps(float[] largeJumps) {
+        this.largeJumps = largeJumps;
     }
 
-    public void setDisplayLowpasCoefficients(FilterCoefficients displayLowpasCoefficients) {
-        this.displayLowpassCoefficients = displayLowpasCoefficients;
+    public float[] getLargeJumps() {
+        return largeJumps;
     }
 
-    public void setDecimationCoefficients(IirFilterCoefficients decimationCoefficients) {
-        this.decimationCoefficients = decimationCoefficients;
+    public float[] getStandardDeviation() {
+        return standardDeviation;
     }
 
-    public IirFilterCoefficients getDecimationCoefficients() {
-        return decimationCoefficients;
+    public void setStandardDeviation(float[] standardDeviation) {
+        this.standardDeviation = standardDeviation;
     }
 
-    public KCdetection getKCdetector() {
-        return KCdetector;
+    public void setProjectFile(File projectFile) {
+        this.projectFile = projectFile;
     }
 
-    public void setKCdetector(KCdetection KCdetector) {
-        this.KCdetector = KCdetector;
+    public File getProjectFile() {
+        return projectFile;
     }
-
-    public void setData(double[] data) {
-        this.data = data;
-    }
-
-    public double[] getData() {
-        return data;
-    }
-    
     
 }

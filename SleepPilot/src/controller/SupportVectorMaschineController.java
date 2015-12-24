@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.IOException;
 import libsvm.*;
 import tools.Util;
 
@@ -28,15 +27,11 @@ public class SupportVectorMaschineController {
      * @param modelName
      */
     public void svmLoadModel(String modelName) {
-        double[][] scaling = (double[][])Util.load("./Classifiers/out_features_scaling.jo");
+        double[][] scaling = (double[][])Util.load(modelName.replace("[model]", "[scaling]"));
         mean = scaling[0]; std=scaling[1];
         
-        try {
-            model = svm.svm_load_model(modelName);
-        } catch (IOException e) {
-            System.err.println("Error occured during loading the svm model!");
-            e.printStackTrace();
-        }
+        
+        model = (svm_model)Util.load(modelName);
 
         //initialize array of labels
         labels = new double[svm.svm_get_nr_class(model)];
@@ -56,9 +51,12 @@ public class SupportVectorMaschineController {
             nodes[j] = node;
         }
 
-        svm.svm_predict_probability(model, nodes, labels);
-
-        return labels;
+        double out = svm.svm_predict_probability(model, nodes, labels);
+        
+//        System.out.println(out);
+//        System.out.println(Arrays.toString(features));
+//        System.out.println(Arrays.toString(labels));
+        return labels.clone();
     }
 }
 //            Task<Void> task = new Task<Void>() {

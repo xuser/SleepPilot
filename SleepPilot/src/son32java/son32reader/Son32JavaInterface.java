@@ -25,7 +25,8 @@ public interface Son32JavaInterface extends Library{
 //    public Son32JavaInterface INSTANCE = (Son32JavaInterface)Native.loadLibrary(
 //            "D:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
     public Son32JavaInterface INSTANCE = (Son32JavaInterface)Native.loadLibrary(
-            "C:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
+            "./son32.dll", Son32JavaInterface.class);
+//            "C:\\\\SON Library\\son32.dll", Son32JavaInterface.class);
     
      /**
      * Opens a .smr file.

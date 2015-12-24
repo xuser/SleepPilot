@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import model.FeatureExtractionModel;
-import model.DataModel;
+import model.FeatureModel;
 
 /**
  * This controller is used to write the current system state to hard disk.
@@ -19,8 +18,7 @@ public class ModelReaderWriterController extends Thread {
 
     private Thread t;
 
-    private DataModel rawDataModel;
-    private FeatureExtractionModel featureExtractionModel;
+    private FeatureModel featureModel;
     private File file;
 
     /**
@@ -34,10 +32,9 @@ public class ModelReaderWriterController extends Thread {
     private ObjectInputStream ois = null;
     private FileInputStream fis = null;
 
-    public ModelReaderWriterController(DataModel rawDataModel, FeatureExtractionModel featureExtractionModel, File file, boolean readWriteFlag) {
+    public ModelReaderWriterController(FeatureModel featureModel, File file, boolean readWriteFlag) {
 
-        this.rawDataModel = rawDataModel;
-        this.featureExtractionModel = featureExtractionModel;
+        this.featureModel = featureModel;
         this.file = file;
         this.readWriteFlag = readWriteFlag;
 
@@ -53,9 +50,7 @@ public class ModelReaderWriterController extends Thread {
             try {
                 fos = new FileOutputStream(file);
                 oos = new ObjectOutputStream(fos);
-
-                //			oos.writeObject(rawDataModel);
-                oos.writeObject(featureExtractionModel);
+                oos.writeObject(featureModel);
 
             } catch (IOException e) {
                 System.err.println("Error occured during saving models!");
@@ -88,10 +83,11 @@ public class ModelReaderWriterController extends Thread {
                 ois = new ObjectInputStream(fis);
                 Object obj = ois.readObject();
 
-                if (obj instanceof FeatureExtractionModel) {
+                if (obj instanceof FeatureModel) {
 
-                    FeatureExtractionModel fem = (FeatureExtractionModel) obj;
-                    MainController.setFeatureExtractionModel(fem);
+                    FeatureModel fem = (FeatureModel) obj;
+                    fem.setProjectFile(file);
+                    MainController.setFeatureModel(fem);
                     MainController.recreateSystemState(file);
 
                 }

@@ -6,14 +6,14 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import controller.DataController;
-import controller.FeatureExtractionController;
+import controller.FeatureController;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import tsne.TSNE;
 import model.FXViewModel;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 import model.DataModel;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -41,8 +41,8 @@ public class FXScatterPlot implements Initializable {
 
     private FXApplicationController appController;
     private FXViewModel viewModel;
-    private FeatureExtractionModel featureExtractionModel;
-    private FeatureExtractionController featureExtractionController;
+    private FeatureModel featureExtractionModel;
+    private FeatureController featureExtractionController;
     private DataModel dataPointsModel;
     private DataController dataReaderController;
 
@@ -77,7 +77,7 @@ public class FXScatterPlot implements Initializable {
 
     double opacity = 0.7;
 
-    public FXScatterPlot(FXApplicationController appController, DataController dataReaderController, DataModel dataPointsModel, FeatureExtractionModel featureExtractionModel, FeatureExtractionController featureExtractionController, FXViewModel viewModel) {
+    public FXScatterPlot(FXApplicationController appController, DataController dataReaderController, DataModel dataPointsModel, FeatureModel featureExtractionModel, FeatureController featureExtractionController, FXViewModel viewModel) {
         this.featureExtractionModel = featureExtractionModel;
         this.featureExtractionController = featureExtractionController;
         this.viewModel = viewModel;

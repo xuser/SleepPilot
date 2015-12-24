@@ -1,32 +1,23 @@
 package view;
 
 import controller.DataController;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 import model.FXStartModel;
 import model.FXViewModel;
 import model.DataModel;
-import model.FeatureExtractionModel;
+import model.FeatureModel;
 import controller.MainController;
 import controller.ModelReaderWriterController;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -57,18 +48,12 @@ public class FXStartController implements Initializable {
     //MainController mainController;
     private FXPopUp popUp = new FXPopUp();
 
-    private boolean trainMode = false;
-    private LinkedList<Integer> channelNumbersToRead = new LinkedList<Integer>();
-    private String[] channelNames;
-
-    //Necessary for reading the smr information
-    private int channels;
-    private int numberOfChannels;
+    
     private static LinkedList<String> titel = new LinkedList<String>();
     private static LinkedList<Integer> kind = new LinkedList<Integer>();
 
-    private DataModel dataPointsModel;
-    private FeatureExtractionModel featureExtractionModel;
+    private DataModel dataModel;
+    private FeatureModel featureModel;
 
     FXViewModel viewModel = new FXViewModel();
     private FXStartModel startModel = new FXStartModel();
@@ -112,11 +97,11 @@ public class FXStartController implements Initializable {
     @FXML
     Label text3;
 
-    public FXStartController(Stage stage, DataModel dataPointsModel, FeatureExtractionModel featureExtractionModel) {
+    public FXStartController(Stage stage, DataModel dataModel, FeatureModel featureModel) {
 
         primaryStage = stage;
-        this.dataPointsModel = dataPointsModel;
-        this.featureExtractionModel = featureExtractionModel;
+        this.dataModel = dataModel;
+        this.featureModel = featureModel;
 
         // Creating FXML Loader
         FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Start.fxml"));
@@ -160,8 +145,6 @@ public class FXStartController implements Initializable {
                 createModelForm.setVisible(false);
 
                 newProjectForm.setVisible(true);
-
-                trainMode = false;
 
                 FileChooser fileChooser = new FileChooser();
 
@@ -222,8 +205,8 @@ public class FXStartController implements Initializable {
 
                         Runtime.getRuntime().addShutdownHook(new Thread() {
                             public void run() {
-                                if (dataPointsModel.getReader()!=null) {
-                                    dataPointsModel.getReader().close();
+                                if (dataModel.getReader()!=null) {
+                                    dataModel.getReader().close();
                                 }
                             }
                         });
@@ -234,7 +217,7 @@ public class FXStartController implements Initializable {
                             @Override
                             public void run() {
                                 FXViewModel viewModel = new FXViewModel();
-                                FXApplicationController appController = new FXApplicationController(dataReaderController, featureExtractionModel, viewModel, false);
+                                FXApplicationController appController = new FXApplicationController(dataReaderController, featureModel, viewModel, false);
                                 viewModel.setAppController(appController);
                                 primaryStage.close();
                             }
@@ -257,8 +240,6 @@ public class FXStartController implements Initializable {
                 createModelForm.setVisible(false);
 
                 openProjectForm.setVisible(true);
-
-                trainMode = false;
 
                 FileChooser fileChooser = new FileChooser();
 
@@ -303,7 +284,7 @@ public class FXStartController implements Initializable {
 
                 //TODO
                 if (file != null) {
-                    ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(dataPointsModel, featureExtractionModel, file, false);
+                    ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, file, false);
                     modelReaderWriter.start();
                 }
 
@@ -320,8 +301,6 @@ public class FXStartController implements Initializable {
                 openProjectForm.setVisible(false);
 
                 createModelForm.setVisible(true);
-
-                trainMode = true;
 
                 FileChooser fileChooser = new FileChooser();
 
