@@ -18,6 +18,6 @@ SleepPilot.jar must stay were the son32.dll and the Classifiers folder is contai
 Currently, you must run SleepPilot with a 32-bit Java VM on Windows in order to be able to load Spike2 .son files.
 
 ### Bugs & Suggestions ###
-If you find bugs or have suggestions regarding parts of the software, please file a report/request on GitHub or [email](weigenand@inb.uni-luebeck.de) me.
+If you find bugs or have suggestions regarding parts of the software, please file a [report/request](https://github.com/xuser/SleepPilot/issues) on GitHub or [email](weigenand@inb.uni-luebeck.de) me.
 Attach the SleepPilot.log in case the program crashes.
 
