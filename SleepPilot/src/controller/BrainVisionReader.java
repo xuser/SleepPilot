@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2016 Arne Weigenand
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package controller;
 
@@ -33,14 +44,14 @@ public class BrainVisionReader {
     private RandomAccessFile dataFile;
     private DataFormat dataFormat;
     private DataOrientation dataOrientation;
-    private DataType dataType;    
+    private DataType dataType;
     private int samplingIntervall;
     private BinaryFormat binaryFormat;
     private boolean useBigEndianOrder;
     private int skipLines;
     private int skipColumns;
     private float channelResolution;
-    
+
     private int nbchan;
     private int pnts;
     private double srate;
@@ -50,7 +61,6 @@ public class BrainVisionReader {
     private ByteBuffer buf;
     private long nSamples;
     private int bytes;
-    
 
     public BrainVisionReader(File file) {
         this.file = file;
@@ -60,15 +70,15 @@ public class BrainVisionReader {
         /**
          * Has to be set to 0 initially, reflects changes in buffer size
          */
-        nSamples=1;
+        nSamples = 1;
         init();
     }
 
-    public void close() throws IOException{
+    public void close() throws IOException {
         dataFile.close();
-        
+
     }
-    
+
     /**
      * Testfunction: Proof manually, if properties are correct.
      */
@@ -105,12 +115,10 @@ public class BrainVisionReader {
     public final float[] readDataFile(int channel, int from, int to) {
 
         //TODO: check bounds!
-        
         int nSamples = to - from;
         if (this.nSamples != nSamples) {
             prepareBuffers(nSamples);
         }
-        
 
         try {
             FileChannel inChannel = dataFile.getChannel();
@@ -152,8 +160,8 @@ public class BrainVisionReader {
     }
 
     private void readHeaderFromVHDR() {
-        int countChannels=0;
-        
+        int countChannels = 0;
+
         try {
             try (BufferedReader in = new BufferedReader(new FileReader(file))) {
                 String zeile = null;
@@ -280,7 +288,7 @@ public class BrainVisionReader {
                             if (tmp[2].isEmpty()) {
                                 channelResolution = 1;
                             } else {
-                                channelResolution = (float)Double.parseDouble(tmp[2]);
+                                channelResolution = (float) Double.parseDouble(tmp[2]);
                             }
                             countChannels++;
                         }
@@ -294,15 +302,15 @@ public class BrainVisionReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        srate = 1e6/samplingIntervall;
+
+        srate = 1e6 / samplingIntervall;
     }
 
     private void prepareBuffers(int nSamples) {
         this.nSamples = nSamples;
-        
+
         data = new float[nSamples];
-        
+
         if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 
             if (dataFormat.equals(DataFormat.BINARY)) {
@@ -351,7 +359,7 @@ public class BrainVisionReader {
 
         printPropertiesVHDR();
     }
-    
+
     public double getSrate() {
         return srate;
     }
@@ -375,5 +383,5 @@ public class BrainVisionReader {
     public int getSamplingIntervall() {
         return samplingIntervall;
     }
- 
+
 }
