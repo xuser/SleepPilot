@@ -19,4 +19,5 @@ Currently, you must run SleepPilot with a 32-bit Java VM on Windows in order to 
 
 ### Bugs & Suggestions ###
 If you find bugs or have suggestions regarding parts of the software, please file a report/request on GitHub or [email](weigenand@inb.uni-luebeck.de) me.
+Attach the SleepPilot.log in case the program crashes.
 
