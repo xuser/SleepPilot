@@ -149,7 +149,7 @@
             <HBox prefHeight="25.0" prefWidth="4.0" />
             <ToggleButton id="arrousalButton" fx:id="artefactButton" focusTraversable="false" mnemonicParsing="false" onAction="#artefactButtonOnAction" styleClass="toolBarButtons" text="A" />
             <ToggleButton id="arrousalButton1" fx:id="arousalButton" focusTraversable="false" mnemonicParsing="false" onAction="#arousalButtonOnAction" styleClass="toolBarButtons" text="MA" />
-            <ToggleButton id="arrousalButton1" fx:id="stimulationButton" focusTraversable="false" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="E" />
+            <ToggleButton id="arrousalButton1" fx:id="stimulationButton" focusTraversable="false" mnemonicParsing="false" onAction="#stimulationButtonOnAction" styleClass="toolBarButtons" text="D" />
             <HBox prefHeight="25.0" prefWidth="3.999900000002526" />
             <Button fx:id="clearButton" focusTraversable="false" mnemonicParsing="false" onAction="#clearButtonOnAction" styleClass="toolBarButtons" text="C" />
             <HBox prefHeight="25.0" prefWidth="4.0" />
