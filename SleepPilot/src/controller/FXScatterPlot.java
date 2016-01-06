@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import com.google.common.collect.HashBiMap;
 import java.io.IOException;
@@ -8,8 +8,6 @@ import java.util.ResourceBundle;
 import controller.DataController;
 import controller.FeatureController;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import tsne.TSNE;
 import model.FXViewModel;
@@ -36,15 +34,17 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import tools.Util;
+import view.FXApplicationController;
+import view.FXStartController;
 
 public class FXScatterPlot implements Initializable {
 
     private FXApplicationController appController;
     private FXViewModel viewModel;
-    private FeatureModel featureExtractionModel;
-    private FeatureController featureExtractionController;
-    private DataModel dataPointsModel;
-    private DataController dataReaderController;
+    private FeatureModel featureModel;
+    private FeatureController featureController;
+    private DataModel dataModel;
+    private DataController dataController;
 
     public Stage stage;
 
@@ -78,11 +78,11 @@ public class FXScatterPlot implements Initializable {
     double opacity = 0.7;
 
     public FXScatterPlot(FXApplicationController appController, DataController dataReaderController, DataModel dataPointsModel, FeatureModel featureExtractionModel, FeatureController featureExtractionController, FXViewModel viewModel) {
-        this.featureExtractionModel = featureExtractionModel;
-        this.featureExtractionController = featureExtractionController;
+        this.featureModel = featureExtractionModel;
+        this.featureController = featureExtractionController;
         this.viewModel = viewModel;
-        this.dataPointsModel = dataPointsModel;
-        this.dataReaderController = dataReaderController;
+        this.dataModel = dataPointsModel;
+        this.dataController = dataReaderController;
         this.appController = appController;
 
         stage = new Stage();
@@ -119,6 +119,7 @@ public class FXScatterPlot implements Initializable {
             public void handle(WindowEvent we) {
                 viewModel.setScatterPlotActive(false);
                 appController.updateWindows();
+
                 System.out.println("Scatter Plot is closing.");
             }
 
@@ -150,15 +151,14 @@ public class FXScatterPlot implements Initializable {
                     }
                 });
 
-                Platform.runLater(new Runnable() {
+                computeFeatures();
 
+                Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
                         scatterChart.getData().clear();
 
-                        computeFeatures();
-
-                        final double[][] output = featureExtractionModel.getTsneFeatures();
+                        final double[][] output = featureModel.getTsneFeatures();
 
                         seriesRem = new XYChart.Series();
                         seriesRem.setName("REM");
@@ -187,10 +187,10 @@ public class FXScatterPlot implements Initializable {
 
                         plotItemsMap = HashBiMap.create();
 
-                        for (int i = 0; i < featureExtractionModel.getNumberOfEpochs(); i++) {
+                        for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
 
                             XYChart.Data dataItem;
-                            switch (featureExtractionModel.getLabel(i)) {
+                            switch (featureModel.getLabel(i)) {
                                 case 0:
                                     dataItem = new XYChart.Data(output[i][0], output[i][1]);
                                     seriesWake.getData().add(dataItem);
@@ -279,12 +279,13 @@ public class FXScatterPlot implements Initializable {
 
                 }
                 );
-
+                
                 Platform.runLater(new Runnable() {
 
                     @Override
                     public void run() {
                         progressIndicator.setVisible(false);
+                        appController.updateWindows();
                     }
                 });
 
@@ -292,16 +293,10 @@ public class FXScatterPlot implements Initializable {
             }
 
         };
-        
-        Thread thread = new Thread(task);
-        thread.start();
-        
-        try {
-            thread.join();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(FXScatterPlot.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void bringToFront() {
@@ -320,7 +315,7 @@ public class FXScatterPlot implements Initializable {
         seriesN1.getData().remove(xyData);
         seriesWake.getData().remove(xyData);
 
-        int label = featureExtractionModel.getLabel(currentEpoch);
+        int label = featureModel.getLabel(currentEpoch);
         switch (label) {
             case 0:
                 seriesWake.getData().add(xyData);
@@ -374,10 +369,10 @@ public class FXScatterPlot implements Initializable {
     }
 
     public void computeFeatures() {
-        if (!featureExtractionModel.isTsneComputed()) {
-            TSNE tsne = new TSNE(Util.floatToDouble(featureExtractionModel.getFeatures()));
-            featureExtractionModel.setTsneFeatures(tsne.tsne());
-            featureExtractionModel.setTsneComputed(true);
+        if (!featureModel.isTsneComputed()) {
+            TSNE tsne = new TSNE(Util.floatToDouble(featureModel.getFeatures()));
+            featureModel.setTsneFeatures(tsne.tsne());
+            featureModel.setTsneComputed(true);
         }
 
     }

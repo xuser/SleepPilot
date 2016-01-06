@@ -1,5 +1,6 @@
 package view;
 
+import controller.FXScatterPlot;
 import controller.FXEvaluationWindowController;
 import controller.FXHypnogrammController;
 import com.google.common.collect.Range;
@@ -326,6 +327,7 @@ public final class FXApplicationController implements Initializable {
         });
 
         updateWindows();
+
     }
 
     @Override
@@ -859,24 +861,27 @@ public final class FXApplicationController implements Initializable {
             classify();
         }
         classifyButton.setDisable(true);
+
         updateWindows();
     }
 
     @FXML
-    protected void visualizeButtonAction() {
-        if (viewModel.isScatterPlotActive()) {
-            viewModel.setScatterPlotActive(false);
-        } else {
-            viewModel.setScatterPlotActive(true);
-            if (!featureModel.isFeaturesComputed()) {
-                computeFeatures();
+    protected void visualizeButtonAction() {       
+        if (featureModel.isClassificationDone()) {
+            if (viewModel.isScatterPlotActive()) {
+                visualizeButton.setSelected(false);
+                viewModel.setScatterPlotActive(false);
+            } else {
+                visualizeButton.setSelected(true);
+                viewModel.setScatterPlotActive(true);
+                if (!featureModel.isFeaturesComputed()) {
+                    computeFeatures();
+                }
+                scatterPlot.paintScatterChart();
+                scatterPlot.show();
             }
-
-            scatterPlot.paintScatterChart();
-            scatterPlot.show();
         }
-
-        showScatterPlot();
+        updateWindows();
     }
 
     @FXML
@@ -1273,11 +1278,11 @@ public final class FXApplicationController implements Initializable {
                     if (classLabel == 4) {
                         classLabel = 5;
                     }
-                    
+
                     if (classLabel == 5 & MA) {
                         classLabel = 1;
                     }
-                    
+
                     if (classLabel == 2 & KC == 0 & MA) {
                         classLabel = 1;
                     }
@@ -1290,10 +1295,6 @@ public final class FXApplicationController implements Initializable {
                         classLabel = 3;
                     }
 
-//                    //if KCs in REM then it is no REM, but N2 if typical N2 values are present
-//                    if (classLabel == 5 & KC > 0 & N2 < -0.2) {
-//                        classLabel = 2;
-//                    }
                     //set artefacts and arousals to zero (standard)
                     featureModel.setArtefact(i, 0);
                     featureModel.setArousal(i, 0);
@@ -1551,6 +1552,12 @@ public final class FXApplicationController implements Initializable {
         statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         updateProbabilities();
+
+        if (featureModel.isClassificationDone()) {
+            visualizeButton.setDisable(false);
+        } else {
+            visualizeButton.setDisable(true);
+        }
     }
 
     public TIntArrayList returnActiveChannels() {
