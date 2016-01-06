@@ -323,10 +323,9 @@ public final class FXApplicationController implements Initializable {
             public void run() {
                 hypnogram.updateAll();
                 hypnogram.hide();
+                updateWindows();
             }
         });
-
-        updateWindows();
 
     }
 
@@ -1008,7 +1007,7 @@ public final class FXApplicationController implements Initializable {
     private void tooltips() {
         help1.setTooltip(new Tooltip("75µV bars (L)"));
         kComplex.setTooltip(new Tooltip("K-complex measurement tool (K)"));
-        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F5)"));
+        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification"));
         visualizeButton.setTooltip(new Tooltip("Show cluster plot (F6)"));
         electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F12)"));
         filterButton.setTooltip(new Tooltip("Filters on/off (F7)"));
@@ -1021,7 +1020,7 @@ public final class FXApplicationController implements Initializable {
         remButton.setTooltip(new Tooltip("REM (R)"));
         arousalButton.setTooltip(new Tooltip("Movement arousal (M)"));
         artefactButton.setTooltip(new Tooltip("Artefact (A)"));
-        stimulationButton.setTooltip(new Tooltip("Stimulation (S)"));
+        stimulationButton.setTooltip(new Tooltip("Stimulation (D)"));
         clearButton.setTooltip(new Tooltip("Clear (C)"));
         hypnogramButton.setTooltip(new Tooltip("Show hypnogram (H)"));
         choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
@@ -1144,7 +1143,7 @@ public final class FXApplicationController implements Initializable {
             arousalButtonOnAction();
         }
 
-        if (ke.getCode() == KeyCode.S) {
+        if (ke.getCode() == KeyCode.D) {
             stimulationButtonOnAction();
         }
 
@@ -1167,9 +1166,7 @@ public final class FXApplicationController implements Initializable {
         if (ke.getCode() == KeyCode.HOME) {
             goToEpoch(0);
         }
-        if (ke.getCode() == KeyCode.F5) {
-            classifyButtonAction();
-        }
+        
         if (ke.getCode() == KeyCode.F6) {
             visualizeButtonAction();
         }
