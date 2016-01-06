@@ -6,6 +6,7 @@ import tools.Util;
 /**
  * This class starts the support vector maschine and uses the LIBSVM framework.
  *
+ * @author Arne Weigenand
  * @author Nils Finke
  */
 public class SupportVectorMaschineController {
@@ -29,8 +30,8 @@ public class SupportVectorMaschineController {
     public void svmLoadModel(String modelName) {
         double[][] scaling = (double[][])Util.load(modelName.replace("[model]", "[scaling]"));
         mean = scaling[0]; std=scaling[1];
-        
-        
+   
+       
         model = (svm_model)Util.load(modelName);
 
         //initialize array of labels
@@ -47,36 +48,12 @@ public class SupportVectorMaschineController {
         for (int j = 0; j < nFeatures; j++) {
             svm_node node = new svm_node();
             node.index = j;
-            node.value = (features[j]-mean[j])/std[j];
+            node.value = features[j];
             nodes[j] = node;
         }
 
-        double out = svm.svm_predict_probability(model, nodes, labels);
+        svm.svm_predict_probability(model, nodes, labels);
         
-//        System.out.println(out);
-//        System.out.println(Arrays.toString(features));
-//        System.out.println(Arrays.toString(labels));
         return labels.clone();
     }
 }
-//            Task<Void> task = new Task<Void>() {
-//                    @Override
-//                    protected Void call() throws Exception {
-//                        MainController.startClassifier(file, trainMode, channelNumbersToRead, channelNames, startModel.isAutoModeFlag());
-//
-//                        return null;
-//                    }
-//
-//                };
-//
-//                new Thread(task).start();
-
-//        while (supportVectorMaschineThreadStartedFlag == false) {
-//
-//            if (dataPointsModel.isReadingHeaderComplete()) {
-//                double epochs = dataPointsModel.getNumberOf30sEpochs();
-//                double calcEpoch = featureExtractionModel.getNumberOfcalculatedEpoch();
-//                double progress = calcEpoch / epochs;
-//                startController.setProgressBar(progress);
-//            }
-//        }

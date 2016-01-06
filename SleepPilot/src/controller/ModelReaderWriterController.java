@@ -12,6 +12,7 @@ import model.FeatureModel;
 /**
  * This controller is used to write the current system state to hard disk.
  *
+ * @author Arne Weigenand
  * @author Nils Finke
  */
 public class ModelReaderWriterController extends Thread {

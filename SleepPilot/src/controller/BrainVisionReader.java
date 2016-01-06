@@ -39,12 +39,12 @@ public class BrainVisionReader {
     private boolean useBigEndianOrder;
     private int skipLines;
     private int skipColumns;
-    private double channelResolution;
+    private float channelResolution;
     
     private int nbchan;
     private int pnts;
     private double srate;
-    private double[] data;
+    private float[] data;
     private String[] channelNames;
 
     private ByteBuffer buf;
@@ -102,7 +102,7 @@ public class BrainVisionReader {
      * @param epochToRead the epoch which have to be read.
      * @return
      */
-    public final double[] readDataFile(int channel, int from, int to) {
+    public final float[] readDataFile(int channel, int from, int to) {
 
         //TODO: check bounds!
         
@@ -123,7 +123,7 @@ public class BrainVisionReader {
 
             final int increment = (nbchan * bytes) - bytes;
 
-            double value;
+            float value;
             int i = 0;
             while (buf.hasRemaining()) {
                 value = buf.getShort() * channelResolution;
@@ -278,9 +278,9 @@ public class BrainVisionReader {
                             int stringIndex = tmp[0].indexOf("=");
                             channelNames[countChannels] = tmp[0].substring(stringIndex + 1);
                             if (tmp[2].isEmpty()) {
-                                channelResolution = 1.0;
+                                channelResolution = 1;
                             } else {
-                                channelResolution = Double.parseDouble(tmp[2]);
+                                channelResolution = (float)Double.parseDouble(tmp[2]);
                             }
                             countChannels++;
                         }
@@ -301,7 +301,7 @@ public class BrainVisionReader {
     private void prepareBuffers(int nSamples) {
         this.nSamples = nSamples;
         
-        data = new double[nSamples];
+        data = new float[nSamples];
         
         if (dataOrientation.equals(DataOrientation.MULTIPLEXED) && dataType.equals(DataType.TIMEDOMAIN) && skipColumns == 0) {
 
@@ -360,7 +360,7 @@ public class BrainVisionReader {
         return nbchan;
     }
 
-    public double[] getData() {
+    public float[] getData() {
         return data;
     }
 
@@ -377,9 +377,3 @@ public class BrainVisionReader {
     }
  
 }
-//    reader = new DataController.Reader() {
-//                    @Override
-//                    public double[] read(int channel, int epoch, double[] data) {
-//                        return readDataFile(dataFile, channel, epoch, data, binaryFormat);
-//                    }
-//    };

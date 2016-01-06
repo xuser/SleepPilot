@@ -23,7 +23,7 @@ import tools.sincWindowDecimator;
  */
 public class FeatureController {
 
-    private FeatureModel featureModel;
+    private final FeatureModel featureModel;
     public KCdetection kcDetector;
     private sincWindowDecimator decimator;
     public FilterCoefficients highpassCoefficients;
@@ -34,7 +34,7 @@ public class FeatureController {
      * Data holds reference to feature channel epochList (usually in a RawDataModel), for use in instance of
     FeatureExtractioController.
      */
-    private ArrayList<double[]> epochList;
+    private ArrayList<float[]> epochList;
 
     public FeatureController(FeatureModel featureModel) {
         this.featureModel = featureModel;
@@ -46,14 +46,13 @@ public class FeatureController {
         decimator.designFilter((int) FastMath.round(featureModel.getSrate() / 100.), 31);
 
         kcDetector = new KCdetection();
-        kcDetector.setMaxWidth(100);
+        kcDetector.setMaxWidth(90);
         kcDetector.setMinWidth(20);
-        kcDetector.setNegAmplitude(75);
-        kcDetector.setPeakToPeak(75);
+        kcDetector.setPeakToPeak(70);
     }
 
     public void start() {
-        ArrayList<double[]> data = getEpochList();
+        ArrayList<float[]> data = getEpochList();
         if ((int) (featureModel.getSrate()) != (int) 100) {
             for (int i = 0; i < data.size(); i++) {
                 data.set(i, getDecimator().decimate(data.get(i)));
@@ -71,25 +70,8 @@ public class FeatureController {
 
         float[][] features = Signal.computeFeatures(data);
 
-        float[] standardDeviation = new float[features.length];
-        for (int i = 0; i < features.length; i++) {
-            standardDeviation[i] = features[i][0];
-        }
-        featureModel.setStandardDeviation(standardDeviation.clone());
-
-        float[] diffStandardDeviation = new float[features.length];
-        for (int i = 0; i < features.length; i++) {
-            diffStandardDeviation[i] = features[i][1];
-        }
-        featureModel.setDiffStandardDeviation(diffStandardDeviation.clone());
-
-        float[] largeJumps = new float[features.length];
-        for (int i = 0; i < features.length; i++) {
-            largeJumps[i] = features[i][2];
-        }
-        featureModel.setLargeJumps(largeJumps.clone());
-
         featureModel.setFeatures(features);
+        
     }
 
     private void createFilters(double fs) {
@@ -97,7 +79,7 @@ public class FeatureController {
         try {
             double fstop = 0.1;
             double fpass = 0.5;
-            coefficients = IIRDesigner.designDigitalFilter(ApproximationFunctionType.BUTTERWORTH, FilterType.HIGHPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 20.0, fs);
+            coefficients = IIRDesigner.designDigitalFilter(ApproximationFunctionType.BUTTERWORTH, FilterType.HIGHPASS, new double[]{fpass}, new double[]{fstop}, 1.0, 80.0, fs);
         } catch (BadFilterParametersException ex) {
             ex.printStackTrace();
         }
@@ -174,11 +156,11 @@ public class FeatureController {
         return displayHighpassCoefficients;
     }
 
-    public ArrayList<double[]> getEpochList() {
+    public ArrayList<float[]> getEpochList() {
         return epochList;
     }
 
-    public void setEpochList(ArrayList<double[]> data) {
+    public void setEpochList(ArrayList<float[]> data) {
         this.epochList = data;
     }
 

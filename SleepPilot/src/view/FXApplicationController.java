@@ -1,5 +1,7 @@
 package view;
 
+import controller.FXEvaluationWindowController;
+import controller.FXHypnogrammController;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -10,7 +12,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,7 +22,6 @@ import model.DataModel;
 import model.FeatureModel;
 import controller.DataController;
 import controller.FeatureController;
-import controller.MainController;
 import controller.ModelReaderWriterController;
 import controller.SupportVectorMaschineController;
 import gnu.trove.iterator.TIntIterator;
@@ -36,6 +36,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -53,8 +54,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -75,19 +74,19 @@ import tools.Signal;
 import tools.Util;
 import tools.KCdetection;
 
-public class FXApplicationController implements Initializable {
+public final class FXApplicationController implements Initializable {
 
     private File projectFile = null;
     private String classifier;
     private ArrayList<String> classifierList = new ArrayList();
-    private KCdetection kcDetector;
+    private final KCdetection kcDetector;
 
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
 
-    final private double[][] displayBuffer;
-    private double[] epoch;
+    final private float[][] displayBuffer;
+//    private float[] epoch;
 
     private FXPopUp popUp = new FXPopUp();
     private FXViewModel viewModel;
@@ -101,7 +100,7 @@ public class FXApplicationController implements Initializable {
     private final boolean recreateModelMode;
 
     private int currentEpoch = 0;
-    private String[] channelNames;
+    private final String[] channelNames;
 
     private HashMap<String, Double[]> allChannels = new HashMap();
     TIntArrayList activeChannels = new TIntArrayList();
@@ -169,6 +168,10 @@ public class FXApplicationController implements Initializable {
     @FXML
     private Label kComplexLabel;
     @FXML
+    private Label infoLabel;
+    @FXML
+    private ProgressBar progressBar;
+    @FXML
     private TextField toolBarGoto;
 
     @FXML
@@ -187,7 +190,6 @@ public class FXApplicationController implements Initializable {
     private StackPane stackPane;
     @FXML
     private HBox statusBarHBox;
-
     @FXML
     private MenuItem showAdtVisualization;
     @FXML
@@ -203,9 +205,6 @@ public class FXApplicationController implements Initializable {
     private Line line2;
 
     @FXML
-    ProgressBar progressBar;
-
-    @FXML
     ChoiceBox<String> choiceBox;
 
     @FXML
@@ -214,22 +213,6 @@ public class FXApplicationController implements Initializable {
     public FXApplicationController(DataController dataController, FeatureModel featureModel, FXViewModel viewModel, boolean recreateModelMode) {
 
         primaryStage = new Stage();
-        this.dataController = dataController;
-        this.dataModel = dataController.getDataModel();
-
-        this.featureModel = featureModel;
-        featureModel.setSrate(dataModel.getSrate());
-
-        this.featureController = new FeatureController(featureModel);
-        this.viewModel = viewModel;
-
-        this.recreateModelMode = recreateModelMode;
-
-        if (!recreateModelMode) {
-            featureModel.init(dataModel.getNumberOf30sEpochs());
-        } else {
-            currentEpoch = featureModel.getCurrentEpoch();
-        }
 
         // Creating FXML Loader
         FXMLLoader loader = new FXMLLoader(FXStartController.class.getResource("Application.fxml"));
@@ -243,6 +226,13 @@ public class FXApplicationController implements Initializable {
             e.printStackTrace();
         }
 
+        this.dataController = dataController;
+        this.dataModel = dataController.getDataModel();
+
+        this.featureModel = featureModel;
+        featureModel.setSrate(dataModel.getSrate());
+        this.featureController = new FeatureController(featureModel);
+
         // Create stage with mainGrid
         scene = new Scene(mainGrid);
         primaryStage.setScene(scene);
@@ -252,15 +242,26 @@ public class FXApplicationController implements Initializable {
         primaryStage.show();
         primaryStage.setTitle(dataModel.getFile().getName());
 
+        ////////////
+        this.viewModel = viewModel;
+
+        this.recreateModelMode = recreateModelMode;
+
+        if (!recreateModelMode) {
+            featureModel.init(dataModel.getNumberOf30sEpochs());
+        } else {
+            currentEpoch = featureModel.getCurrentEpoch();
+        }
+        ////////////
+
         statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         //Configure lineChart
-        lineChart.setSnapToPixel(true);
+        lineChart.setSnapToPixel(false);
         lineChart.requestFocus();
 
         // Set Choice Box for the channels
         channelNames = dataModel.getChannelNames();
-        
 
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
@@ -290,18 +291,12 @@ public class FXApplicationController implements Initializable {
         kcDetector.setLowpassCoefficients(featureController.getLowpassCoefficients());
 
         loadEpoch(currentEpoch);
-
         showEpoch();
-
-        checkProp();
-
-        updateWindows();
 
         featureModel.setDataFileLocation(dataModel.getFile());
 
         paintSpacing();
 
-        //        ObservableList<String> choices = FXCollections.observableArrayList(Arrays.asList(channelNames));
         choices = FXCollections.observableArrayList();
         updateChoiceBox();
         choiceBox.getSelectionModel().select(0);
@@ -319,12 +314,24 @@ public class FXApplicationController implements Initializable {
         choiceBoxModel.setItems(choicesModel);
         choiceBoxModel.getSelectionModel().select(0);
 
+        scatterPlot = new FXScatterPlot(this, dataController, dataModel, featureModel, featureController, viewModel);
+        hypnogram = new FXHypnogrammController(dataModel, featureModel, viewModel, this);
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                hypnogram.updateAll();
+                hypnogram.hide();
+            }
+        });
+
+        updateWindows();
     }
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
         System.out.println("initialize called");
-        scatterPlot = new FXScatterPlot(this, dataController, dataModel, featureModel, featureController, viewModel);
+
         overlay3.addEventHandler(MouseEvent.ANY, new EventHandler<MouseEvent>() {
 
             @Override
@@ -357,9 +364,7 @@ public class FXApplicationController implements Initializable {
                         line.setEndX(endXPos);
                         line.setEndY(endYPos);
 
-                        if (kComplexFlag) {
-                            calculatePercentageKComplex();
-                        }
+                        calculatePercentageKComplex();
 
                     }
 
@@ -432,40 +437,18 @@ public class FXApplicationController implements Initializable {
 
                     if (valueTextField > dataModel.getNumberOf30sEpochs()) {
                         valueTextField = dataModel.getNumberOf30sEpochs();
-                    }
-
-                    if (valueTextField < 1) {
+                    } else if (valueTextField < 1) {
                         valueTextField = 1;
                     }
 
-                    if ((valueTextField <= dataModel.getNumberOf30sEpochs()) && (valueTextField > 0)) {
+                    currentEpoch = valueTextField - 1;
 
-                        currentEpoch = valueTextField - 1;
+                    goToEpoch(currentEpoch);
 
-                        loadEpoch(currentEpoch);
-                        updateEpoch();
-
-                        toolBarGoto.setText((currentEpoch + 1) + "");
-                        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
-
-                        lineChart.requestFocus();
-                        updateStage();
-                        updateProbabilities();
-
-                        if (viewModel.isHypnogrammActive()) {
-                            hypnogram.changeCurrentEpochMarker(currentEpoch);
-                        }
-
-                        overlay3.getChildren().clear();
-                        lines.clear();
-
-                        if (kComplexFlag) {
-                            calculatePercentageKComplex();
-                        }
-
-                    } else {
-                        toolBarGoto.setText((currentEpoch + 1) + "");
+                    if (kComplexFlag) {
+                        calculatePercentageKComplex();
                     }
+
                 }
 
             }
@@ -522,23 +505,6 @@ public class FXApplicationController implements Initializable {
 
                         }
                 );
-//                selectedItemProperty().addListener(
-//                        new ChangeListener<String>() {
-//
-//                            @Override
-//                            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue
-//                            ) {
-//                                classifier = classifierList.get(newValue);
-//                                System.out.println(classifier);
-//
-//                                featureExtractionModel.setClassificationDone(false);
-//                                featureExtractionModel.setReadinDone(false);
-//                                classifyButton.setDisable(false);
-//                                recompute = true;
-//                            }
-//
-//                        }
-//                );
 
         primaryStage.setOnCloseRequest(
                 new EventHandler<WindowEvent>() {
@@ -555,33 +521,12 @@ public class FXApplicationController implements Initializable {
         kComplexOnAction();
 
         help1OnAction();
-
-    }
-
-    private void refreshZoom(double zoom) {
-
-        if (zoom == 1.) {
-            scale.set(scale.get() * 1.1);
-        }
-
-        if (zoom == -1.) {
-            scale.set(scale.get() / 1.1);
-        }
-
-        updateEpoch();
-
-        lineChart.requestFocus();
-    }
-
-    public void bringToFront() {
-        primaryStage.toFront();
     }
 
     @SuppressWarnings("static-access")
     private void updateProbabilities() {
-        if (featureModel.isClassificationDone()) {
-            double[] probabilities = featureModel.getPredictProbabilities(currentEpoch);
-
+        double[] probabilities = featureModel.getPredictProbabilities(currentEpoch);
+        if (probabilities != null) {
             double total = StatUtils.sum(probabilities);
             int wake = (int) Math.round((probabilities[0] / total * 100));
             int n1 = (int) Math.round((probabilities[1] / total * 100));
@@ -596,359 +541,6 @@ public class FXApplicationController implements Initializable {
         } else {
             statusBarLabel2.setText("Manual Mode");
         }
-    }
-
-    private double roundValues(double value) {
-        BigDecimal myDec = new BigDecimal(value);
-        myDec = myDec.setScale(1, BigDecimal.ROUND_HALF_UP);
-
-        return myDec.doubleValue();
-    }
-
-    private void updateStage() {
-        // (1: W, 2: N1, 3: N2, 4: N3, 5: REM)
-        int label = featureModel.getLabel(currentEpoch);
-        switch (label) {
-            case 0:
-                awakeButton.setSelected(true);
-                s1Button.setSelected(false);
-                s2Button.setSelected(false);
-                s3Button.setSelected(false);
-                remButton.setSelected(false);
-                break;
-            case 1:
-                awakeButton.setSelected(false);
-                s1Button.setSelected(true);
-                s2Button.setSelected(false);
-                s3Button.setSelected(false);
-                remButton.setSelected(false);
-                break;
-            case 2:
-                awakeButton.setSelected(false);
-                s1Button.setSelected(false);
-                s2Button.setSelected(true);
-                s3Button.setSelected(false);
-                remButton.setSelected(false);
-                break;
-            case 3:
-                awakeButton.setSelected(false);
-                s1Button.setSelected(false);
-                s2Button.setSelected(false);
-                s3Button.setSelected(true);
-                remButton.setSelected(false);
-                break;
-            case 5:
-                awakeButton.setSelected(false);
-                s1Button.setSelected(false);
-                s2Button.setSelected(false);
-                s3Button.setSelected(false);
-                remButton.setSelected(true);
-                break;
-            case -1:
-                awakeButton.setSelected(false);
-                s1Button.setSelected(false);
-                s2Button.setSelected(false);
-                s3Button.setSelected(false);
-                remButton.setSelected(false);
-                break;
-        }
-
-        if (featureModel.getArtefact(currentEpoch) == 1) {
-            artefactButton.setSelected(true);
-        } else {
-            artefactButton.setSelected(false);
-        }
-
-        if (featureModel.getArousal(currentEpoch) == 1) {
-            arousalButton.setSelected(true);
-        } else {
-            arousalButton.setSelected(false);
-        }
-
-        if (featureModel.getStimulation(currentEpoch) == 1) {
-            stimulationButton.setSelected(true);
-        } else {
-            stimulationButton.setSelected(false);
-        }
-
-        kcMarkersButton.setSelected(viewModel.isKcMarkersActive());
-        filterButton.setSelected(viewModel.isFiltersActive());
-        dcRemoveButton.setSelected(viewModel.isDcRemoveActive());
-        visualizeButton.setSelected(viewModel.isScatterPlotActive());
-        electrodeConfiguratorButton.setSelected(viewModel.isElectrodeConfiguratorActive());
-        hypnogramButton.setSelected(viewModel.isHypnogrammActive());
-    }
-
-    public TIntArrayList returnActiveChannels() {
-
-        activeChannels.clear();
-
-        for (int i = 0; i < channelNames.length; i++) {
-            Double[] tempProp = allChannels.get(channelNames[i]);
-            if (tempProp[0] == 1.0) {
-                activeChannels.add(i);
-            }
-        }
-
-        return activeChannels;
-
-    }
-
-    private double getZoomFromChannel(int channelNumber) {
-
-        String channel = channelNames[channelNumber];
-
-        Double[] tempProp = allChannels.get(channel);
-        double channelZoom = tempProp[1];
-
-        return channelZoom;
-
-    }
-
-    public void showLabelsForEpoch() {
-
-        overlay.getChildren().clear();
-
-        double offsetSize = 1. / (activeChannels.size() + 1);
-
-        for (int i = 0; i < activeChannels.size(); i++) {
-
-            double realOffset = (i + 1.) * offsetSize;
-
-            Label label = new Label(channelNames[activeChannels.get(i)]);
-            label.setTextFill(Color.GRAY);
-            label.setStyle("-fx-font-family: sans-serif;");
-            label.setLayoutX(1);
-
-            label.layoutYProperty()
-                    .bind(
-                            yAxis.heightProperty()
-                            .multiply(realOffset)
-                            .add(yAxis.layoutYProperty())
-                    );
-
-            overlay.getChildren().add(label);
-
-        }
-
-    }
-
-    public void goToEpoch(int epoch) {
-
-        if (epoch < 0) {
-            epoch = 0;
-        }
-
-        if (epoch > (dataModel.getNumberOf30sEpochs() - 1)) {
-            epoch = dataModel.getNumberOf30sEpochs() - 1;
-        }
-
-        currentEpoch = epoch;
-
-        overlay3.getChildren().clear();
-        lines.clear();
-
-        loadEpoch(currentEpoch);
-        updateEpoch();
-
-        updateStage();
-        updateProbabilities();
-        toolBarGoto.setText((currentEpoch + 1) + "");
-        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
-
-        //TODO
-        if (viewModel.isScatterPlotActive()) {
-            if (scatterPlot.isPainted) {
-                scatterPlot.changeCurrentEpochMarker();
-            }
-        }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogram.changeCurrentEpochMarker(currentEpoch);
-        }
-
-        featureModel.setCurrentEpoch(currentEpoch);
-
-        lineChart.requestFocus();
-    }
-
-    private void paintSpacing() {
-        System.out.println("paintSpacing called");
-        line1.layoutYProperty().bind(scale.multiply(space).multiply(1 / 2.).add(mouseY));
-        line1.endXProperty().bind(overlay3.widthProperty());
-        line2.layoutYProperty().bind(scale.multiply(space).multiply(-1 / 2.).add(mouseY));
-        line2.endXProperty().bind(overlay3.widthProperty());
-    }
-
-    final public void loadEpoch(int numberOfEpoch) {
-        returnActiveChannels();
-        for (int i = 0; i < activeChannels.size(); i++) {
-            dataController
-                    .read(activeChannels.get(i), numberOfEpoch, dataModel.data[activeChannels.get(i)]);
-        }
-
-        if (dataModel.getSrate() != 100) {
-            for (int i = 0; i < activeChannels.size(); i++) {
-                displayBuffer[activeChannels.get(i)] = featureController.getDecimator().decimate(dataModel.data[activeChannels.get(i)]);
-            }
-        } else {
-            for (int i = 0; i < activeChannels.size(); i++) {
-                displayBuffer[activeChannels.get(i)] = dataModel.data[activeChannels.get(i)];
-            }
-        }
-
-        if (viewModel.isKcMarkersActive()) {
-            computeKCfeatures();
-        } else {
-            overlay4.getChildren().clear();
-        }
-
-        if (viewModel.isFiltersActive() == true) {
-            filterEpoch();
-        }
-
-        if ((viewModel.isDcRemoveActive() == true) && (viewModel.isFiltersActive() == false)) {
-            removeDcOffset();
-        }
-    }
-
-    final public void filterEpoch() {
-        for (int i = 0; i < activeChannels.size(); i++) {
-            Signal.filtfilt(displayBuffer[activeChannels.get(i)], featureController.getDisplayHighpassCoefficients());
-        }
-    }
-
-    final public void removeDcOffset() {
-        for (int i = 0; i < activeChannels.size(); i++) {
-            Signal.removeDC(displayBuffer[activeChannels.get(i)]);
-        }
-    }
-
-    final public void showEpoch() {
-
-        lineChart.getData().clear();
-
-//        double[] epoch;
-        double offsetSize = 0;
-        if (!activeChannels.isEmpty()) {
-            offsetSize = 1. / (activeChannels.size() + 1.);
-        }
-
-        for (int i = 0; i < activeChannels.size(); i++) {
-
-            epoch = displayBuffer[activeChannels.get(i)];
-
-            double zoom = getZoomFromChannel(activeChannels.get(i));
-
-            // in local yAxis-coordinates
-            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
-
-            @SuppressWarnings("rawtypes")
-            XYChart.Series series = new XYChart.Series();
-
-            double epochSize = epoch.length;
-            double xAxis = 0;
-
-            for (int j = 0; j < epoch.length; j++) {
-                double tmp = xAxis / epochSize;
-                tmp = tmp * this.xAxis.getUpperBound();
-
-                double value = epoch[j];
-//                double value = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
-
-                value = value * zoom * scale.get();
-                value = value + realOffset;
-
-                XYChart.Data dataItem = new XYChart.Data(tmp, value);
-                series.getData().add(dataItem);
-
-                xAxis++;
-
-            }
-
-            lineChart.getData().add(series);
-        }
-
-        showLabelsForEpoch();
-        lineChart.requestFocus();
-
-    }
-
-    public void updateEpoch() {
-
-        // works on list of XYChart.series
-        returnActiveChannels();
-
-        double offsetSize = 0;
-
-        if (!activeChannels.isEmpty()) {
-            offsetSize = 1. / (activeChannels.size() + 1.);
-        }
-
-//        double[] epoch;
-        double zoom;
-        double realOffset;
-        for (int i = 0; i < activeChannels.size(); i++) {
-            epoch = displayBuffer[activeChannels.get(i)];
-            zoom = getZoomFromChannel(activeChannels.get(i));
-            // in local yAxis-coordinates
-            realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
-
-            int k = 0;
-            for (int j = 0; j < epoch.length; j++) {
-//                epoch[j] = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
-                lineChart.getData().get(i).getData().get(k).setYValue(
-                        epoch[j] * zoom * scale.get() + realOffset
-                );
-                k++;
-            }
-
-        }
-    }
-
-    final public void computeKCfeatures() {
-
-        overlay4.getChildren().clear();
-
-        kcDetector.detect(displayBuffer[featureModel.getFeatureChannel()]);
-        double percentageSum = kcDetector.getPercentageSum();
-        Set< Range< Integer>> kcPlotRanges = kcDetector.getKcRanges();
-
-        kComplexLabel.setVisible(
-                true);
-        kComplexLabel.setText(
-                "K-Complex: " + roundValues(percentageSum) + "%");
-
-        //draw yellow rectangles for every pair of coordinates in kcPlotRanges
-        double start;
-        double stop;
-
-        for (Range<Integer> next : kcPlotRanges) {
-            start = next.lowerEndpoint();
-            stop = next.upperEndpoint();
-
-            Rectangle r = new Rectangle();
-            r.layoutXProperty()
-                    .bind(this.xAxis.widthProperty()
-                            .multiply((start + 1.) / (double) this.displayBuffer[0].length)
-                            .add(this.xAxis.layoutXProperty())
-                    );
-
-            r.setLayoutY(0);
-            r.widthProperty()
-                    .bind(xAxis.widthProperty()
-                            .multiply((stop - start) / (double) this.displayBuffer[0].length));
-
-            r.heightProperty()
-                    .bind(overlay4.heightProperty());
-            r.fillProperty().setValue(Color.LIGHTBLUE);
-            r.opacityProperty().set(0.5);
-
-            overlay4.getChildren().add(r);
-
-        }
-
-        lineChart.requestFocus();
     }
 
     @FXML
@@ -1028,7 +620,7 @@ public class FXApplicationController implements Initializable {
                 )
                 .sum();
 
-        kComplexLabel.setText("K-Complex: " + roundValues(percentageSum) + "%");
+        kComplexLabel.setText("K-Complex: " + Math.round(percentageSum) + "%");
     }
 
     @FXML
@@ -1092,15 +684,8 @@ public class FXApplicationController implements Initializable {
             try {
                 openFile(file);
 
-                updateStage();
-
-                if (viewModel.isHypnogrammActive()) {
-                    //TODO hypnogram.updateHypnogram();
-                }
-
-                if (viewModel.isEvaluationWindowActive()) {
-                    evaluationWindow.reloadEvaluationWindow();
-                }
+                hypnogram.updateAll();
+                updateWindows();
 
                 System.out.println("Finished importing Hypnogramm!");
 
@@ -1110,47 +695,6 @@ public class FXApplicationController implements Initializable {
                 e.printStackTrace();
             }
         }
-
-        if (viewModel.isHypnogrammActive()) {
-            hypnogram.changeCurrentEpochMarker(currentEpoch);
-        }
-
-    }
-
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
-    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
-    private void openFile(File file) throws IOException {
-        BufferedReader in = new BufferedReader(new FileReader(file));
-        String row = null;
-        int epoch = 0;
-
-        while (((row = in.readLine()) != null) && (epoch < dataModel.getNumberOf30sEpochs() - 1)) {
-            String[] rowArray = row.split(" ");
-
-            if (Integer.parseInt(rowArray[0]) == 5) {
-                featureModel.setLabel(epoch, 5);
-            } else {
-                int label = Integer.parseInt(rowArray[0]);
-                featureModel.setLabel(epoch, label);
-            }
-
-            if (Integer.parseInt(rowArray[1]) == 1) {
-                featureModel.addArousalToEpochProperty(epoch);
-            }
-
-            if (Integer.parseInt(rowArray[1]) == 2) {
-                featureModel.addArousalToEpochProperty(epoch);
-            }
-
-            if (Integer.parseInt(rowArray[1]) == 3) {
-                featureModel.addStimulationToEpochProperty(epoch);
-            }
-
-            epoch++;
-        }
-
-        in.close();
-
     }
 
     @FXML
@@ -1197,46 +741,6 @@ public class FXApplicationController implements Initializable {
 
         if (file != null) {
             saveFile(file);
-        }
-    }
-
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
-    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
-    private void saveFile(File file) {
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter(file);
-
-            String content = "Stage" + " "
-                    + "Arousal" + " "
-                    + "Artefact" + " "
-                    + "Stimulation"
-                    + "\n";
-            fileWriter.write(content);
-
-            for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
-                featureModel.getLabel(i);
-
-                content = featureModel.getLabel(i) + " "
-                        + featureModel.getArousal(i) + " "
-                        + featureModel.getArtefact(i) + " "
-                        + featureModel.getStimulation(i) + " "
-                        + "\n";
-                fileWriter.write(content);
-            }
-
-            System.out.println("Finish writing!");
-        } catch (IOException ex) {
-            popUp.createPopup("Could not save Hypnogramm!");
-        } finally {
-            try {
-                if (fileWriter != null) {
-                    fileWriter.flush();
-                    fileWriter.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -1295,7 +799,6 @@ public class FXApplicationController implements Initializable {
     protected void awakeButtonOnAction() {
         featureModel.setLabel(currentEpoch, 0);
         updateWindows();
-        System.out.println("Current Epoch: " + currentEpoch);
     }
 
     @FXML
@@ -1324,23 +827,19 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void artefactButtonOnAction() {
-        featureModel.addArtefactToEpochProperty(currentEpoch);
+        featureModel.setArtefact(currentEpoch, featureModel.getArtefact(currentEpoch) == 1 ? 0 : 1);
         updateWindows();
     }
 
     @FXML
     protected void arousalButtonOnAction() {
-        if ((featureModel.getArousal(currentEpoch) == 0)
-                && (featureModel.getArtefact(currentEpoch) == 0)) {
-            featureModel.addArtefactToEpochProperty(currentEpoch);
-        }
-        featureModel.addArousalToEpochProperty(currentEpoch);
+        featureModel.setArousal(currentEpoch, featureModel.getArousal(currentEpoch) == 1 ? 0 : 1);
         updateWindows();
     }
 
     @FXML
     protected void stimulationButtonOnAction() {
-        featureModel.addStimulationToEpochProperty(currentEpoch);
+        featureModel.setStimulation(currentEpoch, featureModel.getStimulation(currentEpoch) == 1 ? 0 : 1);
         updateWindows();
     }
 
@@ -1352,21 +851,15 @@ public class FXApplicationController implements Initializable {
 
     @FXML
     protected void classifyButtonAction() {
-
-        final long startTime = System.nanoTime();
-        computeFeatures();
+        progressBar.setVisible(true);
 
         if (!featureModel.isClassificationDone()) {
             System.out.println("Classifiy!");
+
             classify();
-            featureModel.setClassificationDone(true);
         }
-        System.out.println("Elapsed time: " + (System.nanoTime() - startTime) / 1e6);
-
-        updateWindows();
-        hypnogramAction();
-
         classifyButton.setDisable(true);
+        updateWindows();
     }
 
     @FXML
@@ -1386,96 +879,6 @@ public class FXApplicationController implements Initializable {
         showScatterPlot();
     }
 
-    public void classify() {
-//        NeuralNetworks nn = new NeuralNetworks(classifier);
-        SupportVectorMaschineController svm = new SupportVectorMaschineController();
-        svm.svmLoadModel(classifier);
-
-        float[] kcPercentage = featureModel.getKcPercentage();
-        float[] standardDeviation = featureModel.getStandardDeviation();
-        float[] diffStandardDeviation = featureModel.getDiffStandardDeviation();
-        float[] largeJumps = featureModel.getLargeJumps();
-
-        double diff_thresh = 100;
-        double std_thresh = 150;
-        double diffStd_thresh = 15;
-
-        double[] output;
-        for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
-
-//            output = nn.net(Util.floatToDouble(featureExtractionModel.getFeatureVector(i)));
-            output = svm.svmPredict(Util.floatToDouble(featureModel.getFeatureVector(i)));
-            int classLabel = Doubles.indexOf(output, Doubles.max(output));
-
-            //convert SVM labels to SleepPilot labels (4 is REM)
-            if (classLabel == 4) {
-                classLabel = 5;
-            }
-
-            //adjust classifier output to be consistent with SleepPilots K-complex detector
-            if (classLabel == 3 & kcPercentage[i] <= 20) {
-                classLabel = 2;
-            }
-            if (classLabel == 2 & kcPercentage[i] > 20) {
-                classLabel = 3;
-            }
-            //if KCs in REM then it is no REM, but N2
-            if (classLabel == 5 & kcPercentage[i] > 0 & output[2] > 0.2) {
-                classLabel = 2;
-            }
-
-//            //tune N1:
-//            if (classLabel != 3 & output[0] > 0.2 & output[1] > 0.1 & output[2] > 0.2 & output[4] > 0.15 & kcPercentage[i] == 0) {
-//                classLabel = 1;
-//            }
-            // sometimes a lot of KCs are equated with MA by classifier
-            if (classLabel == 0 & output[2] > 0.2 & output[3] > 0.1 & kcPercentage[i] > 40) {
-                classLabel = 3;
-            }
-
-            featureModel.setArtefact(i, 0);
-            featureModel.setArousal(i, 0);
-
-            if (classLabel != 0
-                    & (standardDeviation[i] > std_thresh
-                    | largeJumps[i] > diff_thresh
-                    | diffStandardDeviation[i] > diffStd_thresh)) {
-                featureModel.setArtefact(i, 1);
-                featureModel.setArousal(i, 1);
-            }
-
-            featureModel.setPredictProbabilities(i, output.clone());
-            featureModel.setLabel(i, classLabel);
-            System.out.println("Predicted Class Label: " + classLabel);
-
-        }
-        featureModel.setClassificationDone(true);
-
-    }
-
-    private void checkProp() {
-
-        for (int i = 0; i < channelNames.length; i++) {
-            Double[] prop = allChannels.get(channelNames[i]);
-            System.out.println(channelNames[i] + " " + prop[0] + " " + prop[1]);
-        }
-        System.out.println("----------------------------");
-        lineChart.requestFocus();
-    }
-
-    public int getCurrentEpoch() {
-        return currentEpoch;
-    }
-
-    public void clearLineChart() {
-        lineChart.getData().clear();
-        lineChart.requestFocus();
-    }
-
-    public void requestFocus() {
-        lineChart.requestFocus();
-    }
-
     @FXML
     protected void electrodeConfiguratorButtonAction() {
         if (viewModel.isElectrodeConfiguratorActive()) {
@@ -1484,21 +887,6 @@ public class FXApplicationController implements Initializable {
             viewModel.setElectrodeConfiguratorActive(true);
         }
         updateWindows();
-    }
-
-    private void showElectrodeConfigurator() {
-        if (viewModel.isElectrodeConfiguratorActive()) {
-            if (electrodeConfigurator == null) {
-                electrodeConfigurator = new FXElectrodeConfiguratorController(this.dataModel, this.allChannels, this.viewModel);
-            }
-            electrodeConfigurator.show();
-        } else {
-            if (electrodeConfigurator != null) {
-                electrodeConfigurator.hide();
-            }
-        }
-
-        lineChart.requestFocus();
     }
 
     @FXML
@@ -1511,21 +899,6 @@ public class FXApplicationController implements Initializable {
         }
         updateWindows();
 
-    }
-
-    private void showEvaluationWindow() {
-        System.out.println("showEvaluationWindow called");
-        if (viewModel.isEvaluationWindowActive()) {
-            if (evaluationWindow == null) {
-                evaluationWindow = new FXEvaluationWindowController(dataModel, featureModel, viewModel);
-            }
-            evaluationWindow.reloadEvaluationWindow();
-            evaluationWindow.show();
-        } else {
-            if (evaluationWindow != null) {
-                evaluationWindow.hide();
-            }
-        }
     }
 
     @FXML
@@ -1553,34 +926,149 @@ public class FXApplicationController implements Initializable {
         updateWindows();
     }
 
+    @FXML
+    private void dcRemoveButtonAction() {
+        if (viewModel.isDcRemoveActive()) {
+            dcRemoveButton.setSelected(false);
+            viewModel.setDcRemoveActive(false);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+
+        } else {
+            dcRemoveButton.setSelected(true);
+            viewModel.setDcRemoveActive(true);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+        }
+        lineChart.requestFocus();
+    }
+
+    @FXML
+    private void kcMarkersButtonAction() {
+        if (viewModel.isKcMarkersActive()) {
+            kcMarkersButton.setSelected(false);
+            viewModel.setKcMarkersActive(false);
+        } else {
+            kcMarkersButton.setSelected(true);
+            viewModel.setKcMarkersActive(true);
+        }
+        loadEpoch(currentEpoch);
+        updateEpoch();
+        lineChart.requestFocus();
+    }
+
+    @FXML
+    private void filterButtonAction() {
+        if (viewModel.isFiltersActive()) {
+            filterButton.setSelected(false);
+            viewModel.setFiltersActive(false);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+
+        } else {
+            filterButton.setSelected(true);
+            viewModel.setFiltersActive(true);
+            loadEpoch(currentEpoch);
+            updateEpoch();
+        }
+        lineChart.requestFocus();
+    }
+
+    @FXML
+    protected void saveAction() {
+        projectFile = featureModel.getProjectFile();
+        if (projectFile == null) {
+            saveAsAction();
+        } else {
+            Util.saveDir(projectFile,
+                    new File(
+                            new File(
+                                    getClass()
+                                    .getProtectionDomain()
+                                    .getCodeSource()
+                                    .getLocation()
+                                    .getPath()
+                            ).getParentFile(),
+                            "LastDirectory.txt"
+                    )
+            );
+
+            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, projectFile, true);
+            modelReaderWriter.start();
+
+        }
+
+    }
+
+    private void tooltips() {
+        help1.setTooltip(new Tooltip("75µV bars (L)"));
+        kComplex.setTooltip(new Tooltip("K-complex measurement tool (K)"));
+        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F5)"));
+        visualizeButton.setTooltip(new Tooltip("Show cluster plot (F6)"));
+        electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F12)"));
+        filterButton.setTooltip(new Tooltip("Filters on/off (F7)"));
+        kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F9)"));
+        dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F8)"));
+        s1Button.setTooltip(new Tooltip("Sleep stage N1 (1)"));
+        s2Button.setTooltip(new Tooltip("Sleep stage N2 (2)"));
+        s3Button.setTooltip(new Tooltip("Sleep stage N3 (3)"));
+        awakeButton.setTooltip(new Tooltip("Wake (W)"));
+        remButton.setTooltip(new Tooltip("REM (R)"));
+        arousalButton.setTooltip(new Tooltip("Movement arousal (M)"));
+        artefactButton.setTooltip(new Tooltip("Artefact (A)"));
+        stimulationButton.setTooltip(new Tooltip("Stimulation (S)"));
+        clearButton.setTooltip(new Tooltip("Clear (C)"));
+        hypnogramButton.setTooltip(new Tooltip("Show hypnogram (H)"));
+        choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
+        choiceBoxModel.setTooltip(new Tooltip("Select classifier"));
+    }
+
+    private void computeFeatures() {
+        if (!featureModel.isReadinDone()) {
+            dataController.readAll(featureModel.getFeatureChannel());
+            featureModel.setReadinDone(true);
+        }
+
+        if (!featureModel.isFeaturesComputed()) {
+            featureController.setEpochList(dataModel.getEpochList());
+            featureController.start();
+            featureModel.setFeaturesComputed(true);
+        }
+    }
+
+    public final void updateChoiceBox() {
+        choices.clear();
+        returnActiveChannels();
+        for (TIntIterator it = activeChannels.iterator(); it.hasNext();) {
+            choices.add(channelNames[it.next()]);
+        }
+        choiceBox.setItems(choices);
+        choiceBox.getSelectionModel().select(0);
+    }
+
     private void showHypnogram() {
-        if (viewModel.isHypnogrammActive()) {
-            if (hypnogram == null) {
-                hypnogram = new FXHypnogrammController(dataModel, featureModel, viewModel);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                hypnogram.update();
+                hypnogram.changeCurrentEpochMarker();
             }
-            //TODO hypnogram.updateHypnogram();
-            hypnogram.changeCurrentEpochMarker(currentEpoch);
+        });
+
+        if (viewModel.isHypnogrammActive()) {
             hypnogram.show();
         } else {
-            if (hypnogram != null) {
-                hypnogram.hide();
-            }
+            hypnogram.hide();
         }
     }
 
     public void keyAction(KeyEvent ke) {
         if (ke.getCode() == KeyCode.RIGHT) {
             goToEpoch(currentEpoch + 1);
-            if (hypnogram != null) {
-                hypnogram.changeCurrentEpochMarker(currentEpoch);
-            }
         }
 
         if (ke.getCode() == KeyCode.LEFT) {
             goToEpoch(currentEpoch - 1);
-            if (hypnogram != null) {
-                hypnogram.changeCurrentEpochMarker(currentEpoch);
-            }
         }
 
         if (ke.getCode() == KeyCode.H) {
@@ -1696,10 +1184,6 @@ public class FXApplicationController implements Initializable {
 
     public void updateWindows() {
         updateStage();
-        updateProbabilities();
-
-        toolBarGoto.setText((currentEpoch + 1) + "");
-        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
 
         showHypnogram();
         showScatterPlot();
@@ -1709,124 +1193,630 @@ public class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
-    @FXML
-    private void dcRemoveButtonAction() {
-        if (viewModel.isDcRemoveActive()) {
-            dcRemoveButton.setSelected(false);
-            viewModel.setDcRemoveActive(false);
-            loadEpoch(currentEpoch);
-            updateEpoch();
+    private void refreshZoom(double zoom) {
 
-        } else {
-            dcRemoveButton.setSelected(true);
-            viewModel.setDcRemoveActive(true);
-            loadEpoch(currentEpoch);
-            updateEpoch();
+        if (zoom == 1.) {
+            scale.set(scale.get() * 1.1);
         }
+
+        if (zoom == -1.) {
+            scale.set(scale.get() / 1.1);
+        }
+
+        updateEpoch();
+
         lineChart.requestFocus();
     }
 
-    @FXML
-    private void kcMarkersButtonAction() {
-        if (viewModel.isKcMarkersActive()) {
-            kcMarkersButton.setSelected(false);
-            viewModel.setKcMarkersActive(false);
-        } else {
-            kcMarkersButton.setSelected(true);
-            viewModel.setKcMarkersActive(true);
+    public void bringToFront() {
+        primaryStage.toFront();
+    }
+
+    public void classify() {
+        final long startTime = System.nanoTime();
+
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                updateProgress(-1, featureModel.getNumberOfEpochs());
+
+                computeFeatures();
+
+                //scaling of features
+                float[][] features = Util.deepcopy(featureModel.getFeatures());
+                double[][] scaling = (double[][]) Util.load(classifier.replace("[model]", "[scaling]"));
+                double[] mean = scaling[0];
+                double[] std = scaling[1];
+                for (float[] feature : features) {
+                    for (int j = 0; j < feature.length; j++) {
+                        feature[j] = (float) ((feature[j] - mean[j]) / std[j]);
+                    }
+                }
+
+                double[] fidx = (double[]) Util.load("./Classifiers/sparse_features.jo");
+
+                SupportVectorMaschineController svm = new SupportVectorMaschineController();
+                svm.svmLoadModel(classifier);
+
+                float[] kcPercentage = featureModel.getKcPercentage();
+
+                double[] output;
+
+                int N1flag = 0;
+                int Wflag = 0;
+
+                for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
+                    updateProgress(i, featureModel.getNumberOfEpochs());
+
+                    float[] f = featureModel.getFeatureVector(i);
+
+                    //use only subset of feature vector as stored in sparse_features.jo array
+                    float[] f1 = new float[fidx.length];
+                    for (int j = 0; j < f1.length; j++) {
+                        f1[j] = features[i][(int) (fidx[j] - 1)];
+                    }
+//                    
+                    output = svm.svmPredict(Util.floatToDouble(f1));
+                    int classLabel = Doubles.indexOf(output, Doubles.max(output));
+
+                    double W = f[18];
+                    double N2 = f[1];  //(skewness)
+                    double N3 = f[49]; //cepstrum
+                    double MA1 = f[3]; //max value of high passed epoch
+                    double MA2 = f[9]; //energy in HF wavelet band
+                    double KC = kcPercentage[i];
+
+                    //hand selected features for arousals
+                    boolean MA = MA1 > 40 & MA2 > 0.4;
+
+                    //convert SVM labels to SleepPilot labels (4 is REM)
+                    if (classLabel == 4) {
+                        classLabel = 5;
+                    }
+                    
+                    if (classLabel == 5 & MA) {
+                        classLabel = 1;
+                    }
+                    
+                    if (classLabel == 2 & KC == 0 & MA) {
+                        classLabel = 1;
+                    }
+
+                    //adjust classifier output to be consistent with SleepPilots K-complex detector
+                    if (classLabel == 3 & KC <= 20) {
+                        classLabel = 2;
+                    }
+                    if (classLabel == 2 & KC > 20 & !MA) {
+                        classLabel = 3;
+                    }
+
+//                    //if KCs in REM then it is no REM, but N2 if typical N2 values are present
+//                    if (classLabel == 5 & KC > 0 & N2 < -0.2) {
+//                        classLabel = 2;
+//                    }
+                    //set artefacts and arousals to zero (standard)
+                    featureModel.setArtefact(i, 0);
+                    featureModel.setArousal(i, 0);
+
+                    if (classLabel != 0 & MA) {
+                        featureModel.setArtefact(i, 1);
+                        featureModel.setArousal(i, 1);
+                    }
+                    if (classLabel != 0 & MA1 > 80) {
+                        featureModel.setArtefact(i, 1);
+                    }
+
+                    //REM is always after N3, at least in non-pathological cases
+                    if (classLabel == 3) {
+                        N1flag += 1;
+                    }
+
+                    if (classLabel == 5 & N1flag < 2) {
+                        classLabel = 1;
+                    }
+
+                    featureModel.setPredictProbabilities(i, output.clone());
+                    featureModel.setLabel(i, classLabel);
+                    System.out.println("Predicted Class Label: " + classLabel);
+
+                }
+
+                featureModel.setClassificationDone(true);
+
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        progressBar.setVisible(false);
+                        hypnogram.updateAll();
+                        updateWindows();
+                    }
+                });
+
+                System.out.println("Elapsed time: " + (System.nanoTime() - startTime) / 1e6);
+                return null;
+            }
+        };
+
+        progressBar.progressProperty().bind(task.progressProperty());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+
+    }
+
+    private void checkProp() {
+
+        for (int i = 0; i < channelNames.length; i++) {
+            Double[] prop = allChannels.get(channelNames[i]);
+            System.out.println(channelNames[i] + " " + prop[0] + " " + prop[1]);
         }
+        System.out.println("----------------------------");
+        lineChart.requestFocus();
+    }
+
+    public int getCurrentEpoch() {
+        return currentEpoch;
+    }
+
+    public void clearLineChart() {
+        lineChart.getData().clear();
+        lineChart.requestFocus();
+    }
+
+    public void requestFocus() {
+        lineChart.requestFocus();
+    }
+
+    private void showEvaluationWindow() {
+        if (viewModel.isEvaluationWindowActive()) {
+            if (evaluationWindow == null) {
+                evaluationWindow = new FXEvaluationWindowController(dataModel, featureModel, viewModel);
+            }
+            evaluationWindow.reloadEvaluationWindow();
+            evaluationWindow.show();
+        } else {
+            if (evaluationWindow != null) {
+                evaluationWindow.hide();
+            }
+        }
+    }
+
+    private void showElectrodeConfigurator() {
+        if (viewModel.isElectrodeConfiguratorActive()) {
+            if (electrodeConfigurator == null) {
+                electrodeConfigurator = new FXElectrodeConfiguratorController(this.dataModel, this.allChannels, this.viewModel);
+            }
+            electrodeConfigurator.show();
+        } else {
+            if (electrodeConfigurator != null) {
+                electrodeConfigurator.hide();
+            }
+        }
+
+        lineChart.requestFocus();
+    }
+
+    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+    private void openFile(File file) throws IOException {
+        BufferedReader in = new BufferedReader(new FileReader(file));
+        String row = null;
+        int epoch = 0;
+
+        while (((row = in.readLine()) != null) && (epoch < dataModel.getNumberOf30sEpochs() - 1)) {
+            String[] rowArray = row.split(" ");
+
+            if (Integer.parseInt(rowArray[0]) == 5) {
+                featureModel.setLabel(epoch, 5);
+            } else {
+                int label = Integer.parseInt(rowArray[0]);
+                featureModel.setLabel(epoch, label);
+            }
+
+            if (Integer.parseInt(rowArray[1]) == 1) {
+                featureModel.addArousalToEpochProperty(epoch);
+            }
+
+            if (Integer.parseInt(rowArray[1]) == 2) {
+                featureModel.addArousalToEpochProperty(epoch);
+            }
+
+            if (Integer.parseInt(rowArray[1]) == 3) {
+                featureModel.addStimulationToEpochProperty(epoch);
+            }
+
+            epoch++;
+        }
+
+        in.close();
+
+    }
+
+    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
+    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+    private void saveFile(File file) {
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(file);
+
+            String content = "Stage" + " "
+                    + "Arousal" + " "
+                    + "Artefact" + " "
+                    + "Stimulation"
+                    + "\n";
+            fileWriter.write(content);
+
+            for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
+                featureModel.getLabel(i);
+
+                content = featureModel.getLabel(i) + " "
+                        + featureModel.getArousal(i) + " "
+                        + featureModel.getArtefact(i) + " "
+                        + featureModel.getStimulation(i) + " "
+                        + "\n";
+                fileWriter.write(content);
+            }
+
+            System.out.println("Finish writing!");
+        } catch (IOException ex) {
+            popUp.createPopup("Could not save Hypnogramm!");
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void updateStage() {
+        // (1: W, 2: N1, 3: N2, 4: N3, 5: REM)
+        int label = featureModel.getLabel(currentEpoch);
+        switch (label) {
+            case 0:
+                awakeButton.setSelected(true);
+                s1Button.setSelected(false);
+                s2Button.setSelected(false);
+                s3Button.setSelected(false);
+                remButton.setSelected(false);
+                break;
+            case 1:
+                awakeButton.setSelected(false);
+                s1Button.setSelected(true);
+                s2Button.setSelected(false);
+                s3Button.setSelected(false);
+                remButton.setSelected(false);
+                break;
+            case 2:
+                awakeButton.setSelected(false);
+                s1Button.setSelected(false);
+                s2Button.setSelected(true);
+                s3Button.setSelected(false);
+                remButton.setSelected(false);
+                break;
+            case 3:
+                awakeButton.setSelected(false);
+                s1Button.setSelected(false);
+                s2Button.setSelected(false);
+                s3Button.setSelected(true);
+                remButton.setSelected(false);
+                break;
+            case 5:
+                awakeButton.setSelected(false);
+                s1Button.setSelected(false);
+                s2Button.setSelected(false);
+                s3Button.setSelected(false);
+                remButton.setSelected(true);
+                break;
+            case -1:
+                awakeButton.setSelected(false);
+                s1Button.setSelected(false);
+                s2Button.setSelected(false);
+                s3Button.setSelected(false);
+                remButton.setSelected(false);
+                break;
+        }
+
+        if (featureModel.getArtefact(currentEpoch) == 1) {
+            artefactButton.setSelected(true);
+        } else {
+            artefactButton.setSelected(false);
+        }
+
+        if (featureModel.getArousal(currentEpoch) == 1) {
+            arousalButton.setSelected(true);
+        } else {
+            arousalButton.setSelected(false);
+        }
+
+        if (featureModel.getStimulation(currentEpoch) == 1) {
+            stimulationButton.setSelected(true);
+        } else {
+            stimulationButton.setSelected(false);
+        }
+
+        kcMarkersButton.setSelected(viewModel.isKcMarkersActive());
+        filterButton.setSelected(viewModel.isFiltersActive());
+        dcRemoveButton.setSelected(viewModel.isDcRemoveActive());
+        visualizeButton.setSelected(viewModel.isScatterPlotActive());
+        electrodeConfiguratorButton.setSelected(viewModel.isElectrodeConfiguratorActive());
+        hypnogramButton.setSelected(viewModel.isHypnogrammActive());
+
+        toolBarGoto.setText((currentEpoch + 1) + "");
+        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
+
+        updateProbabilities();
+    }
+
+    public TIntArrayList returnActiveChannels() {
+
+        activeChannels.clear();
+
+        for (int i = 0; i < channelNames.length; i++) {
+            Double[] tempProp = allChannels.get(channelNames[i]);
+            if (tempProp[0] == 1.0) {
+                activeChannels.add(i);
+            }
+        }
+
+        return activeChannels;
+
+    }
+
+    private double getZoomFromChannel(int channelNumber) {
+
+        String channel = channelNames[channelNumber];
+
+        Double[] tempProp = allChannels.get(channel);
+        double channelZoom = tempProp[1];
+
+        return channelZoom;
+
+    }
+
+    public void showLabelsForEpoch() {
+
+        overlay.getChildren().clear();
+
+        double offsetSize = 1. / (activeChannels.size() + 1);
+
+        for (int i = 0; i < activeChannels.size(); i++) {
+
+            double realOffset = (i + 1.) * offsetSize;
+
+            Label label = new Label(channelNames[activeChannels.get(i)]);
+            label.setTextFill(Color.GRAY);
+            label.setStyle("-fx-font-family: sans-serif;");
+            label.setLayoutX(1);
+
+            label.layoutYProperty()
+                    .bind(
+                            yAxis.heightProperty()
+                            .multiply(realOffset)
+                            .add(yAxis.layoutYProperty())
+                    );
+
+            overlay.getChildren().add(label);
+
+        }
+
+    }
+
+    public void goToEpoch(int epoch) {
+
+        if (epoch < 0) {
+            epoch = 0;
+        }
+
+        if (epoch > (dataModel.getNumberOf30sEpochs() - 1)) {
+            epoch = dataModel.getNumberOf30sEpochs() - 1;
+        }
+
+        currentEpoch = epoch;
+
+        overlay3.getChildren().clear();
+        lines.clear();
+
         loadEpoch(currentEpoch);
         updateEpoch();
+
+        updateWindows();
+        //11 (N1 vs rest) 19(wach vs rem/rest)! 32/35 (wach vs rem) 50 (N3)
+
+        if (featureModel.isFeaturesComputed()) {
+            float[] f = featureModel.getFeatureVector(currentEpoch);
+            infoLabel.setText(String.format("N3:%5$.2f PE/N1:%3$.2f sk/N2: %1$.2f hf:%2$.2f  hf2:%4$.2f",
+                    f[1], f[3], f[10], f[9], f[49]
+            ));
+        }
+
         lineChart.requestFocus();
     }
 
-    @FXML
-    private void filterButtonAction() {
-        if (viewModel.isFiltersActive()) {
-            filterButton.setSelected(false);
-            viewModel.setFiltersActive(false);
-            loadEpoch(currentEpoch);
-            updateEpoch();
-
-        } else {
-            filterButton.setSelected(true);
-            viewModel.setFiltersActive(true);
-            loadEpoch(currentEpoch);
-            updateEpoch();
-        }
-        lineChart.requestFocus();
+    private void paintSpacing() {
+        System.out.println("paintSpacing called");
+        line1.layoutYProperty().bind(scale.multiply(space).multiply(1 / 2.).add(mouseY));
+        line1.endXProperty().bind(overlay3.widthProperty());
+        line2.layoutYProperty().bind(scale.multiply(space).multiply(-1 / 2.).add(mouseY));
+        line2.endXProperty().bind(overlay3.widthProperty());
     }
 
-    private void tooltips() {
-        help1.setTooltip(new Tooltip("75µV bars (L)"));
-        kComplex.setTooltip(new Tooltip("K-complex measurement tool (K)"));
-        classifyButton.setTooltip(new Tooltip("Perform automatic sleep stage classification (F5)"));
-        visualizeButton.setTooltip(new Tooltip("Show cluster plot (F6)"));
-        electrodeConfiguratorButton.setTooltip(new Tooltip("Select electrodes for display... (F12)"));
-        filterButton.setTooltip(new Tooltip("Filters on/off (F7)"));
-        kcMarkersButton.setTooltip(new Tooltip("Highlight K-complexes on/off (F9)"));
-        dcRemoveButton.setTooltip(new Tooltip("DC remove on/off (F8)"));
-        s1Button.setTooltip(new Tooltip("Sleep stage N1 (1)"));
-        s2Button.setTooltip(new Tooltip("Sleep stage N2 (2)"));
-        s3Button.setTooltip(new Tooltip("Sleep stage N3 (3)"));
-        awakeButton.setTooltip(new Tooltip("Wake (W)"));
-        remButton.setTooltip(new Tooltip("REM (R)"));
-        arousalButton.setTooltip(new Tooltip("Movement arousal (M)"));
-        artefactButton.setTooltip(new Tooltip("Artefact (A)"));
-        stimulationButton.setTooltip(new Tooltip("Stimulation (S)"));
-        clearButton.setTooltip(new Tooltip("Clear (C)"));
-        hypnogramButton.setTooltip(new Tooltip("Show hypnogram (H)"));
-        choiceBox.setTooltip(new Tooltip("Select the channel to classify from"));
-        choiceBoxModel.setTooltip(new Tooltip("Select classifier"));
-    }
-
-    private void computeFeatures() {
-        if (!featureModel.isReadinDone()) {
-            dataController.readAll(featureModel.getFeatureChannel());
-            featureModel.setReadinDone(true);
-        }
-
-        if (!featureModel.isFeaturesComputed()) {
-            featureController.setEpochList(dataModel.getEpochList());
-            featureController.start();
-            featureModel.setFeaturesComputed(true);
-        }
-    }
-
-    public final void updateChoiceBox() {
-        choices.clear();
+    final public void loadEpoch(int numberOfEpoch) {
         returnActiveChannels();
-        for (TIntIterator it = activeChannels.iterator(); it.hasNext();) {
-            choices.add(channelNames[it.next()]);
+        for (int i = 0; i < activeChannels.size(); i++) {
+            dataController
+                    .read(activeChannels.get(i), numberOfEpoch, dataModel.data[activeChannels.get(i)]);
         }
-        choiceBox.setItems(choices);
-        choiceBox.getSelectionModel().select(0);
+
+        if (dataModel.getSrate() != 100) {
+            for (int i = 0; i < activeChannels.size(); i++) {
+                displayBuffer[activeChannels.get(i)] = featureController.getDecimator().decimate(dataModel.data[activeChannels.get(i)]);
+            }
+        } else {
+            for (int i = 0; i < activeChannels.size(); i++) {
+                displayBuffer[activeChannels.get(i)] = dataModel.data[activeChannels.get(i)];
+            }
+        }
+
+        if (viewModel.isKcMarkersActive()) {
+            computeKCfeatures();
+        } else {
+            overlay4.getChildren().clear();
+        }
+
+        if (viewModel.isFiltersActive() == true) {
+            filterEpoch();
+        }
+
+        if ((viewModel.isDcRemoveActive() == true) && (viewModel.isFiltersActive() == false)) {
+            removeDcOffset();
+        }
+
+        featureModel.setCurrentEpoch(currentEpoch);
     }
 
-    @FXML
-    protected void saveAction() {
-        projectFile = featureModel.getProjectFile();
-        if (projectFile == null) {
-            saveAsAction();
-        } else {
-            Util.saveDir(projectFile,
-                    new File(
-                            new File(
-                                    getClass()
-                                    .getProtectionDomain()
-                                    .getCodeSource()
-                                    .getLocation()
-                                    .getPath()
-                            ).getParentFile(),
-                            "LastDirectory.txt"
-                    )
-            );
+    final public void filterEpoch() {
+        for (int i = 0; i < activeChannels.size(); i++) {
+            Signal.filtfilt(displayBuffer[activeChannels.get(i)], featureController.getDisplayHighpassCoefficients());
+        }
+    }
 
-            ModelReaderWriterController modelReaderWriter = new ModelReaderWriterController(featureModel, projectFile, true);
-            modelReaderWriter.start();
+    final public void removeDcOffset() {
+        for (int i = 0; i < activeChannels.size(); i++) {
+            Signal.removeDC(displayBuffer[activeChannels.get(i)]);
+        }
+    }
+
+    final public void showEpoch() {
+
+        lineChart.getData().clear();
+
+        float[] epoch;
+        double offsetSize = 0;
+        if (!activeChannels.isEmpty()) {
+            offsetSize = 1. / (activeChannels.size() + 1.);
+        }
+
+        for (int i = 0; i < activeChannels.size(); i++) {
+
+            epoch = displayBuffer[activeChannels.get(i)];
+
+            double zoom = getZoomFromChannel(activeChannels.get(i));
+
+            // in local yAxis-coordinates
+            double realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+
+            @SuppressWarnings("rawtypes")
+            XYChart.Series series = new XYChart.Series();
+
+            double epochSize = epoch.length;
+            double xAxis = 0;
+
+            for (int j = 0; j < epoch.length; j++) {
+                double tmp = xAxis / epochSize;
+                tmp = tmp * this.xAxis.getUpperBound();
+
+                double value = epoch[j];
+//                double value = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
+
+                value = value * zoom * scale.get();
+                value = value + realOffset;
+
+                XYChart.Data dataItem = new XYChart.Data(tmp, value);
+                series.getData().add(dataItem);
+
+                xAxis++;
+
+            }
+
+            lineChart.getData().add(series);
+        }
+
+        showLabelsForEpoch();
+        lineChart.requestFocus();
+
+    }
+
+    public void updateEpoch() {
+
+        // works on list of XYChart.series
+        returnActiveChannels();
+
+        double offsetSize = 0;
+
+        if (!activeChannels.isEmpty()) {
+            offsetSize = 1. / (activeChannels.size() + 1.);
+        }
+
+        float[] epoch;
+        double zoom;
+        double realOffset;
+        for (int i = 0; i < activeChannels.size(); i++) {
+            epoch = displayBuffer[activeChannels.get(i)];
+            zoom = getZoomFromChannel(activeChannels.get(i));
+            // in local yAxis-coordinates
+            realOffset = (1 - (i + 1.) * offsetSize) * yAxis.getUpperBound();
+
+            int k = 0;
+            for (int j = 0; j < epoch.length; j++) {
+//                epoch[j] = Math.sin(2 * Math.PI * j / 100.) * 75 / 2.; //test signal
+                lineChart.getData().get(i).getData().get(k).setYValue(
+                        epoch[j] * zoom * scale.get() + realOffset
+                );
+                k++;
+            }
+
+        }
+    }
+
+    final public void computeKCfeatures() {
+
+        overlay4.getChildren().clear();
+
+        kcDetector.detect(displayBuffer[featureModel.getFeatureChannel()]);
+        double percentageSum = kcDetector.getPercentageSum();
+        Set< Range< Integer>> kcPlotRanges = kcDetector.getKcRanges();
+
+        kComplexLabel.setVisible(
+                true);
+        kComplexLabel.setText(
+                "K-Complex: " + Math.round(percentageSum) + "%");
+
+        //draw yellow rectangles for every pair of coordinates in kcPlotRanges
+        double start;
+        double stop;
+
+        for (Range<Integer> next : kcPlotRanges) {
+            start = next.lowerEndpoint();
+            stop = next.upperEndpoint();
+
+            Rectangle r = new Rectangle();
+            r.layoutXProperty()
+                    .bind(this.xAxis.widthProperty()
+                            .multiply((start + 1.) / (double) this.displayBuffer[0].length)
+                            .add(this.xAxis.layoutXProperty())
+                    );
+
+            r.setLayoutY(0);
+            r.widthProperty()
+                    .bind(xAxis.widthProperty()
+                            .multiply((stop - start) / (double) this.displayBuffer[0].length));
+
+            r.heightProperty()
+                    .bind(overlay4.heightProperty());
+            r.fillProperty().setValue(Color.LIGHTBLUE);
+            r.opacityProperty().set(0.5);
+
+            overlay4.getChildren().add(r);
 
         }
 
+        lineChart.requestFocus();
     }
 
 }

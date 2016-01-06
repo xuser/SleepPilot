@@ -128,7 +128,7 @@ public class Son32Channel {
      * @param eTime The end time in clock ticks.
      * @param target he target array for the data.
      */
-    private void getRealData(long max, int sTime, int eTime, double[] target){
+    private void getRealData(long max, int sTime, int eTime, float[] target){
         this.parentReader.SONGetRealData((short)this.channelNumber, max,
                 sTime, eTime, target);
     }
@@ -140,7 +140,7 @@ public class Son32Channel {
      * @param sTime No data before this starting time in second will be returned.
      * @param target The target array for the data.
      */
-    public void getRealDataByDP(double sTime, double target[]){
+    public void getRealDataByDP(double sTime, float target[]){
         int sTimeInCT = (int)this.parentReader.getCTFromSec(sTime);
         double timePerConversionInSec = channelDivide
                 *this.parentReader.getTimeBase()
@@ -160,7 +160,7 @@ public class Son32Channel {
      * @param eTime The end time of the intervall.
      * @param target The target array for the data.
      */
-    public void getRealDataByTime(double sTime, double eTime, double[] target){
+    public void getRealDataByTime(double sTime, double eTime, float[] target){
         int sTimeInCT = (int)this.parentReader.getCTFromSec(sTime);
         int eTimeInCT = (int)this.parentReader.getCTFromSec(eTime);
         this.getRealData(target.length, sTimeInCT, eTimeInCT, target);

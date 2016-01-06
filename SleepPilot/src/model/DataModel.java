@@ -8,6 +8,7 @@ import java.util.ArrayList;
  * This class holds the epochList, that has been read by the DataReaderController.
  * Model for the DataReaderController and the FilterController.
  *
+ * @author Arne Weigenand
  * @author Nils Finke
  */
 public class DataModel implements Serializable {
@@ -20,8 +21,8 @@ public class DataModel implements Serializable {
      * This list keeps lists with the epochs (raw epochList). IMPORTANT: The head of
      * the inter list keeps the assosiated epoch.
      */
-    public ArrayList<double[]> epochList = new ArrayList();
-    public double[][] data;
+    public ArrayList<float[]> epochList = new ArrayList();
+    public float[][] data;
 
     // *** Brainvision Format ***
     // [Common Infos]
@@ -90,7 +91,7 @@ public class DataModel implements Serializable {
         return (int) (pnts / (30 * srate));
     }
 
-    public void addEpoch(double[] data) {
+    public void addEpoch(float[] data) {
         this.epochList.add(data);
     }
 
@@ -116,13 +117,13 @@ public class DataModel implements Serializable {
         return reader;
     }
 
-    public ArrayList<double[]> getEpochList() {
+    public ArrayList<float[]> getEpochList() {
         return epochList;
     }
 
     public interface Reader {
 
-        public double[] read(int channel, int epoch, double[] target);
+        public float[] read(int channel, int epoch, float[] target);
 
         public void close();
     }

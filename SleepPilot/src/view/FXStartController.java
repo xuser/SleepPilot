@@ -1,5 +1,6 @@
 package view;
 
+import controller.FXSettingController;
 import controller.DataController;
 import java.io.File;
 import java.io.IOException;
@@ -180,8 +181,6 @@ public class FXStartController implements Initializable {
 
                 fileChooser.getExtensionFilters().addAll(extFilter0, extFilter1, extFilter2, extFilter3);
 
-//				fileChooser.getExtensionFilters().add(extFilter1);
-//				fileChooser.getExtensionFilters().add(extFilter2);
                 // Show open file dialog
                 final File file = fileChooser.showOpenDialog(null);
 

@@ -24,7 +24,7 @@ public class Son32Test {
         try{
             Son32Channel channel = reader.getChannel(3);
             int x = channel.calculateArraySizeByTime(30);
-            double[] target = new double[x];
+            float[] target = new float[x];
             channel.getRealDataByTime(0, 30, target);
             channel.getRealDataByTime(90, 120, target);
                      
@@ -47,7 +47,7 @@ public class Son32Test {
         }
     }
     
-    public static void printChannelData(double[] data){
+    public static void printChannelData(float[] data){
         for(int i=0;i<data.length;i++){
             double val = data[i];
             System.out.format("%.6f%n",val);
@@ -58,7 +58,7 @@ public class Son32Test {
             boolean print){
         try{
             Son32Channel channel = reader.getChannel(0);
-            double[] target = new double[channel.calculateArraySizeByTime(1)];
+            float[] target = new float[channel.calculateArraySizeByTime(1)];
             long sTime = System.nanoTime();
             channel.getRealDataByTime(0, intervall, target);
             long eTime = System.nanoTime();

@@ -1,5 +1,6 @@
 package controller;
 
+import com.sun.jna.NativeLibrary;
 import java.io.BufferedOutputStream;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import model.FeatureModel;
 /**
  * Starts the application and creates necessary initial controllers.
  *
+ * @author Arne Weigenand
  * @author Nils Finke
  */
 public class MainController extends Application {
@@ -38,6 +40,8 @@ public class MainController extends Application {
      */
     @Override
     public void start(final Stage stage) throws Exception {
+        String myLibraryPath = System.getProperty("user.dir");//or another absolute or relative path
+        System.setProperty("java.library.path", myLibraryPath);
 
         if (false) {
             PrintStream outPS
@@ -86,7 +90,7 @@ public class MainController extends Application {
                     @Override
                     public void run() {
                         startController.showPopUp("Cannot find EEG file at " + filePath + ". Move EEG data file to into directory of SleepPilot .as file.");
-                        
+
                     }
                 });
             }

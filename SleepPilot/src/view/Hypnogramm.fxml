@@ -11,17 +11,6 @@
 <?import javafx.scene.text.*?>
 
 <BorderPane prefHeight="347.0" prefWidth="574.0" styleClass="appBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-  <bottom>
-    <ToolBar minHeight="25.0" prefHeight="25.0" prefWidth="516.0" styleClass="menuAndToolBarBackground">
-      <items>
-        <HBox alignment="BOTTOM_CENTER" prefHeight="15.0" prefWidth="556.0">
-          <children>
-            <Label fx:id="toolBarLabel" styleClass="textLabel" text="Label" />
-          </children>
-        </HBox>
-      </items>
-    </ToolBar>
-  </bottom>
   <center>
     <LineChart fx:id="lineChart" animated="false" createSymbols="false" horizontalZeroLineVisible="true" legendVisible="false" prefHeight="332.0" prefWidth="504.0" styleClass="appBackground">
       <xAxis>
