@@ -12,12 +12,13 @@ It should be used for research only.
 
 ### Installation ###
 Download the repository from GitHub and unzip the release folder. Run SleepPilot by clicking on SleepPilot.jar.
-SleepPilot.jar must stay were the son32.dll and the Classifiers folder is contained to function properly.
-SleepPilot requires Java 8.
+SleepPilot.jar must stay with the son32.dll and the Classifiers folder to function properly.
+SleepPilot requires [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
 ### Issues ###
-Currently, you must run SleepPilot with a 32-bit Java VM on Windows in order to be able to load Spike2 .smr files.
-The release folder contains SleepPilot_SMR.bat for that case. You have to adjust the path in SleepPilot_SMR.bat to point to the location of a 32-bit Java JRE.
+Windows users must run SleepPilot with a 32-bit Java VM in order to be able to load Spike2 .smr files.
+The release folder contains SleepPilot_SMR.bat for that. You have to adjust the path in SleepPilot_SMR.bat (edit with Notepad) to point to your 32-bit Java JRE.
+
 
 ### Bugs & Suggestions ###
 If you find bugs or have suggestions regarding parts of the software, please file a [report/request](https://github.com/xuser/SleepPilot/issues) on GitHub or [email](weigenand@inb.uni-luebeck.de) me.
