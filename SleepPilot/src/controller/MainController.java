@@ -55,14 +55,16 @@ public class MainController extends Application {
      */
     @Override
     public void start(final Stage stage) throws Exception {
-        String myLibraryPath = System.getProperty("user.dir");//or another absolute or relative path
-        System.setProperty("java.library.path", myLibraryPath);
+        String dir = System.getProperty("user.dir");
+        System.setProperty("java.library.path", dir);
 
-        if (false) {
+        if (true) {
+            String filename = "SleepPilot.log";
+            String fullPath = dir + File.separator + filename;
             PrintStream outPS
                     = new PrintStream(
                             new BufferedOutputStream(
-                                    new FileOutputStream("./SleepPilot.log")));  // append is false
+                                    new FileOutputStream(fullPath)));  // append is false
             System.setErr(outPS);    // redirect System.err
             System.setOut(outPS);    // and System.out
         }

@@ -1251,7 +1251,10 @@ public final class FXApplicationController implements Initializable {
                     }
                 }
 
-                double[] fidx = (double[]) Util.load("./Classifiers/sparse_features.jo");
+                String dir = System.getProperty("user.dir");
+                String filename = "sparse_features.jo";
+                String fullPath = dir + File.separator + "Classifiers" + File.separator + filename;
+                double[] fidx = (double[]) Util.load(fullPath);
 
                 SupportVectorMaschineController svm = new SupportVectorMaschineController();
                 svm.svmLoadModel(classifier);
@@ -1374,11 +1377,6 @@ public final class FXApplicationController implements Initializable {
         return currentEpoch;
     }
 
-    public void clearLineChart() {
-        lineChart.getData().clear();
-        lineChart.requestFocus();
-    }
-
     public void requestFocus() {
         lineChart.requestFocus();
     }
@@ -1395,6 +1393,7 @@ public final class FXApplicationController implements Initializable {
                 evaluationWindow.hide();
             }
         }
+        lineChart.requestFocus();
     }
 
     private void showElectrodeConfigurator() {
@@ -1412,8 +1411,10 @@ public final class FXApplicationController implements Initializable {
         lineChart.requestFocus();
     }
 
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
-    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+    // First Column: 0 -> W, 1 -> N1, 2 -> N2, 3 -> N3, 5 -> REM
+    // Second Column: 0 -> Nothing, 1 -> Movement arrousal
+    // Third Column:  0 -> Nothing, 1 -> Artefact
+    // Fourth Column: 0 -> Nothing, 1 -> Stimulation
     private void openFile(File file) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader(file));
         String row = null;
@@ -1422,23 +1423,19 @@ public final class FXApplicationController implements Initializable {
         while (((row = in.readLine()) != null) && (epoch < dataModel.getNumberOf30sEpochs() - 1)) {
             String[] rowArray = row.split(" ");
 
-            if (Integer.parseInt(rowArray[0]) == 5) {
-                featureModel.setLabel(epoch, 5);
-            } else {
-                int label = Integer.parseInt(rowArray[0]);
-                featureModel.setLabel(epoch, label);
-            }
+            int label = Integer.parseInt(rowArray[0]);
+            featureModel.setLabel(epoch, label);
 
             if (Integer.parseInt(rowArray[1]) == 1) {
-                featureModel.addArousalToEpochProperty(epoch);
+                featureModel.setArousal(epoch, 1);
             }
 
-            if (Integer.parseInt(rowArray[1]) == 2) {
-                featureModel.addArousalToEpochProperty(epoch);
+            if (Integer.parseInt(rowArray[2]) == 1) {
+                featureModel.setArtefact(epoch, 1);
             }
 
-            if (Integer.parseInt(rowArray[1]) == 3) {
-                featureModel.addStimulationToEpochProperty(epoch);
+            if (Integer.parseInt(rowArray[3]) == 1) {
+                featureModel.setStimulation(epoch, 1);
             }
 
             epoch++;
@@ -1448,8 +1445,10 @@ public final class FXApplicationController implements Initializable {
 
     }
 
-    // First Column: 0 -> W, 1 -> S1, 2 -> S2, 3 -> N, 5 -> REM
-    // Second Column: 0 -> Nothing, 1 -> Movement arrousal, 2 -> Artefact, 3 -> Stimulation
+    // First Column: 0 -> W, 1 -> N1, 2 -> N2, 3 -> N3, 5 -> REM
+    // Second Column: 0 -> Nothing, 1 -> Movement arrousal
+    // Third Column:  0 -> Nothing, 1 -> Artefact
+    // Fourth Column: 0 -> Nothing, 1 -> Stimulation
     private void saveFile(File file) {
         FileWriter fileWriter = null;
         try {

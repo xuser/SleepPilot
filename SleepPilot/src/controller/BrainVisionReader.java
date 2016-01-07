@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 /**
  *
  * @author Arne
+ * @author Nils Finke
  */
 public class BrainVisionReader {
 

@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import help.ChannelNames;
-import java.util.ArrayList;
 import java.util.Arrays;
-
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -29,16 +27,12 @@ public class FeatureModel implements Serializable {
      */
     private float[][] features;
     private float[] kcPercentage;
-    private float[] standardDeviation;
-    private float[] diffStandardDeviation;
-    private float[] largeJumps;
-    
+
     private int[] labels;
     private int[] artefacts;
     private int[] arousals;
     private int[] stimulation;
     private double[][] tsneFeatures;
-
 
     /**
      * This HashMap keeps additional information for some epochs. The key keeps
@@ -52,15 +46,6 @@ public class FeatureModel implements Serializable {
      * 3rd in array: 1 if stimulation, else 0
      */
     private HashMap<Integer, Integer[]> epochProperties = new HashMap<Integer, Integer[]>();
-
-    private int countWake = 0;
-    private int countS1 = 0;
-    private int countS2 = 0;
-    private int countN = 0;
-    private int countREM = 0;
-    private int countA = 0;
-    private int countMA = 0;
-    private int countS = 0;
 
     /**
      * Predict probabilities for the different classes. Each row keeps one array
@@ -79,7 +64,7 @@ public class FeatureModel implements Serializable {
      * Path to the eeg data file (Brainvision, Spike2, EDF etc.).
      */
     private File dataFileLocation;
-    
+
     /**
      * Path to the SleepPilot project file.
      */
@@ -95,7 +80,7 @@ public class FeatureModel implements Serializable {
      */
     private int numberOfChannels;
 
-     /**
+    /**
      * Keeps the status, if the TrainController has finished reading and
      * calculating.
      */
@@ -139,9 +124,8 @@ public class FeatureModel implements Serializable {
     private int featureChannel;
 
     private int currentEpoch;
-    
-    private double srate;
 
+    private double srate;
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -163,77 +147,11 @@ public class FeatureModel implements Serializable {
         predictProbabilities = new double[rows][];
     }
 
-    public void addArtefactToEpochProperty(int epoch) {
-        if (artefacts[epoch] == 0) {
-            artefacts[epoch] = 1;
-            countA++;
-        } else {
-            artefacts[epoch] = 0;
-            countA--;
-        }
-    }
-
-    public void addArousalToEpochProperty(int epoch) {
-        if (arousals[epoch] == 0) {
-            arousals[epoch] = 1;
-            countMA++;
-        } else {
-            arousals[epoch] = 0;
-            countMA--;
-        }
-    }
-
-    public void addStimulationToEpochProperty(int epoch) {
-        if (stimulation[epoch] == 0) {
-            stimulation[epoch] = 1;
-            countS++;
-        } else {
-            stimulation[epoch] = 0;
-            countS--;
-        }
-    }
-
     public void clearProperties(int epoch) {
-
-        int oldLabel = labels[epoch];
-
-        switch (oldLabel) {
-            case 0:
-                countWake--;
-                break;
-            case 1:
-                countS1--;
-                break;
-            case 2:
-                countS2--;
-                break;
-            case 3:
-                countN--;
-                break;
-            case 5:
-                countREM--;
-                break;
-            default:
-                System.err.println("Could not decrement epoch label. Incorrect Value!");
-                break;
-        }
-
         labels[epoch] = -1;
-
-        if (stimulation[epoch] == 1) {
-            stimulation[epoch] = 0;
-            countS--;
-        }
-
-        if (arousals[epoch] == 1) {
-            arousals[epoch] = 0;
-            countMA--;
-        }
-
-        if (artefacts[epoch] == 1) {
-            artefacts[epoch] = 0;
-            countA--;
-        }
+        stimulation[epoch] = 0;
+        arousals[epoch] = 0;
+        artefacts[epoch] = 0;
     }
 
     /**
@@ -277,76 +195,7 @@ public class FeatureModel implements Serializable {
      * @param label the class label to set.
      */
     public void setLabel(int row, int label) {
-
-        int oldLabel = labels[row];
-
-        if (oldLabel == -1) {
-            switch (label) {
-                case 0:
-                    countWake++;
-                    break;
-                case 1:
-                    countS1++;
-                    break;
-                case 2:
-                    countS2++;
-                    break;
-                case 3:
-                    countN++;
-                    break;
-                case 5:
-                    countREM++;
-                    break;
-                default:
-                    System.err.println("Could not set epoch label. Incorrect Value!");
-                    break;
-            }
-        } else if (oldLabel != label) {
-            switch (oldLabel) {
-                case 0:
-                    countWake--;
-                    break;
-                case 1:
-                    countS1--;
-                    break;
-                case 2:
-                    countS2--;
-                    break;
-                case 3:
-                    countN--;
-                    break;
-                case 5:
-                    countREM--;
-                    break;
-                default:
-                    System.err.println("Could not decrement epoch label. Incorrect Value!");
-                    break;
-            }
-
-            switch (label) {
-                case 0:
-                    countWake++;
-                    break;
-                case 1:
-                    countS1++;
-                    break;
-                case 2:
-                    countS2++;
-                    break;
-                case 3:
-                    countN++;
-                    break;
-                case 5:
-                    countREM++;
-                    break;
-                default:
-                    System.err.println("Could not set epoch label. Incorrect Value!");
-                    break;
-            }
-        }
-
         labels[row] = label;
-
     }
 
     public void setLabels(int[] labels) {
@@ -509,62 +358,6 @@ public class FeatureModel implements Serializable {
     }
 
     /**
-     * @return the countWake
-     */
-    public int getCountWake() {
-        return countWake;
-    }
-
-    /**
-     * @return the countS1
-     */
-    public int getCountS1() {
-        return countS1;
-    }
-
-    /**
-     * @return the countS2
-     */
-    public int getCountS2() {
-        return countS2;
-    }
-
-    /**
-     * @return the countN
-     */
-    public int getCountN() {
-        return countN;
-    }
-
-    /**
-     * @return the countREM
-     */
-    public int getCountREM() {
-        return countREM;
-    }
-
-    /**
-     * @return the countA
-     */
-    public int getCountA() {
-        return countA;
-    }
-
-    /**
-     * @return the countMA
-     */
-    public int getCountMA() {
-        return countMA;
-    }
-
-    /**
-     * @return the countS
-     */
-    public int getCountS() {
-        return countS;
-    }
-
-    /**
      * @return the selectedModel
      */
     public String getSelectedModel() {
@@ -618,62 +411,6 @@ public class FeatureModel implements Serializable {
      */
     public void setChannelNames(LinkedList<ChannelNames> channelNames) {
         this.channelNames = channelNames;
-    }
-
-    /**
-     * @param countWake the countWake to set
-     */
-    public void setCountWake(int countWake) {
-        this.countWake = countWake;
-    }
-
-    /**
-     * @param countS1 the countS1 to set
-     */
-    public void setCountS1(int countS1) {
-        this.countS1 = countS1;
-    }
-
-    /**
-     * @param countS2 the countS2 to set
-     */
-    public void setCountS2(int countS2) {
-        this.countS2 = countS2;
-    }
-
-    /**
-     * @param countN the countN to set
-     */
-    public void setCountN(int countN) {
-        this.countN = countN;
-    }
-
-    /**
-     * @param countREM the countREM to set
-     */
-    public void setCountREM(int countREM) {
-        this.countREM = countREM;
-    }
-
-    /**
-     * @param countA the countA to set
-     */
-    public void setCountA(int countA) {
-        this.countA = countA;
-    }
-
-    /**
-     * @param countMA the countMA to set
-     */
-    public void setCountMA(int countMA) {
-        this.countMA = countMA;
-    }
-
-    /**
-     * @param countS the countS to set
-     */
-    public void setCountS(int countS) {
-        this.countS = countS;
     }
 
     /**
@@ -783,9 +520,6 @@ public class FeatureModel implements Serializable {
         return currentEpoch;
     }
 
-
-
-
     public void setSrate(double srate) {
         this.srate = srate;
     }
@@ -793,7 +527,6 @@ public class FeatureModel implements Serializable {
     public double getSrate() {
         return srate;
     }
-
 
     public float[] getKcPercentage() {
         return kcPercentage;
@@ -803,30 +536,6 @@ public class FeatureModel implements Serializable {
         this.kcPercentage = kcPercentage;
     }
 
-    public void setDiffStandardDeviation(float[] absDiffStandardDeviation) {
-        this.diffStandardDeviation = absDiffStandardDeviation;
-    }
-
-    public float[] getDiffStandardDeviation() {
-        return diffStandardDeviation;
-    }
-
-    public void setLargeJumps(float[] largeJumps) {
-        this.largeJumps = largeJumps;
-    }
-
-    public float[] getLargeJumps() {
-        return largeJumps;
-    }
-
-    public float[] getStandardDeviation() {
-        return standardDeviation;
-    }
-
-    public void setStandardDeviation(float[] standardDeviation) {
-        this.standardDeviation = standardDeviation;
-    }
-
     public void setProjectFile(File projectFile) {
         this.projectFile = projectFile;
     }
@@ -834,5 +543,5 @@ public class FeatureModel implements Serializable {
     public File getProjectFile() {
         return projectFile;
     }
-    
+
 }

@@ -128,6 +128,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
             public void handle(WindowEvent we) {
                 view.setElectrodeConfiguratorActive(false);
                 appController.updateWindows();
+                System.out.println("ElectrodeConfigurator is closing.");
             }
 
         });
