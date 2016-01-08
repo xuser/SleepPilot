@@ -102,7 +102,7 @@ public final class FXApplicationController implements Initializable {
     private FXEvaluationWindowController evaluationWindow;
     private FXScatterPlot scatterPlot;
 
-    final private float[][] displayBuffer;
+    private float[][] displayBuffer;
 //    private float[] epoch;
 
     private FXPopUp popUp = new FXPopUp();

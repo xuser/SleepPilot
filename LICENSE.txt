@@ -1,4 +1,4 @@
-Copyright (c) 2014-2016,  Arne Weigenand
+Copyright (c) 2016,  Arne Weigenand
 All rights reserved.
 
 
