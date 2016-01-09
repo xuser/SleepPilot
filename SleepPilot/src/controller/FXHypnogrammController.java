@@ -309,4 +309,8 @@ public class FXHypnogrammController implements Initializable {
         stage.close();
     }
 
+    public boolean isShowing() {
+        return stage.isShowing();
+    }
+
 }

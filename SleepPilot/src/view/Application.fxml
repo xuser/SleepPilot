@@ -118,7 +118,7 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Show">
               <items>
-                <MenuItem mnemonicParsing="false" onAction="#showAdtVisualizationAction" text="Evaluation Window" />
+                <MenuItem mnemonicParsing="false" onAction="#showEvaluationWindowAction" text="Evaluation Window" />
                 <MenuItem mnemonicParsing="false" onAction="#hypnogramAction" text="Hypnogram" />
                 <SeparatorMenuItem mnemonicParsing="false" />
                 <MenuItem mnemonicParsing="false" onAction="#help1MenuItemOnAction" text="Auxiliary Ruler" />

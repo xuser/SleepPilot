@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.image.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="90.0" prefWidth="263.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="306.0" prefWidth="363.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <!-- TODO Add Nodes -->
   <children>
       <GridPane layoutX="18.0" prefHeight="90.0" prefWidth="245.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
@@ -17,11 +19,37 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
         <Label styleClass="textLabel" text="Copyright © 2016 Arne Weigenand, Nils Finke" wrapText="true" GridPane.rowIndex="1" />
         <Label styleClass="textLabel" text="SleepPilot Version 0.9.0 (beta)" />
-            <Hyperlink text="https://github.com/xuser/SleepPilot" GridPane.rowIndex="2" />
+            <ImageView fitHeight="60.0" fitWidth="174.0" pickOnBounds="true" preserveRatio="true" GridPane.rowIndex="4" GridPane.valignment="BOTTOM">
+               <image>
+                  <Image url="@img/Logo_Inst_NeuroBioinformatik_300dpi.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="60.0" fitWidth="148.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="RIGHT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM">
+               <image>
+                  <Image url="@img/Logo_Bernstein.jpg" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="66.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="6" GridPane.valignment="CENTER" GridPane.vgrow="NEVER">
+               <image>
+                  <Image url="@img/BMBF_Logo.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="46.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="RIGHT" GridPane.rowIndex="6">
+               <image>
+                  <Image url="@img/TR_SFB_654_logo.png" />
+               </image>
+            </ImageView>
+            <Label prefHeight="87.0" prefWidth="348.0" text="This work was supported by the Deutsche Forschungsgemeinschaft (SFB 654 and Graduate School 235) and the US-German Collaboration in Computational Neuroscience (BMBF grant 01GQ1008)." wrapText="true" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" GridPane.vgrow="ALWAYS" />
+            <Label text="https://github.com/xuser/SleepPilot" GridPane.rowIndex="2" />
          </children>
       </GridPane>
   </children>

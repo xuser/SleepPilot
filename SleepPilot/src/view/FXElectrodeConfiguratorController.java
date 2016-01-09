@@ -265,4 +265,7 @@ public class FXElectrodeConfiguratorController implements Initializable {
         stage.close();
     }
 
+    public boolean isShowing() {
+        return stage.isShowing();
+    }
 }

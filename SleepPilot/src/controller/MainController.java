@@ -58,7 +58,7 @@ public class MainController extends Application {
         String dir = System.getProperty("user.dir");
         System.setProperty("java.library.path", dir);
 
-        if (true) {
+        if (false) {
             String filename = "SleepPilot.log";
             String fullPath = dir + File.separator + filename;
             PrintStream outPS

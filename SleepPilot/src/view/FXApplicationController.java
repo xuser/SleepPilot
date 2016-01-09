@@ -910,8 +910,8 @@ public final class FXApplicationController implements Initializable {
     }
 
     @FXML
-    protected void showAdtVisualizationAction() {
-        System.out.println("showAdtVisualizationWindow called");
+    protected void showEvaluationWindowAction() {
+        System.out.println("showEvaluationWindow called");
         if (viewModel.isEvaluationWindowActive()) {
             viewModel.setEvaluationWindowActive(false);
         } else {
@@ -1096,7 +1096,7 @@ public final class FXApplicationController implements Initializable {
         }
 
         if (ke.getCode() == KeyCode.E) {
-            showAdtVisualizationAction();
+            showEvaluationWindowAction();
         }
 
         if (ke.getCode() == KeyCode.L) {

@@ -214,7 +214,7 @@ public class DataController {
                 public float[] read(int channel, int epoch, float[] target) {
                     int from = (int) (epoch * dataModel.numberOfSamplesForOneEpoch);
                     int to = (int) (from + dataModel.numberOfSamplesForOneEpoch);
-                    bv.readDataFile(channel, from, to);
+                    bv.read(channel, from, to);
                     System.arraycopy(bv.getData(), 0, target, 0, target.length);
                     return target;
                 }

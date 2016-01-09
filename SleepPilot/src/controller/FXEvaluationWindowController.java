@@ -363,7 +363,6 @@ public class FXEvaluationWindowController implements Initializable {
     }
 
     public void reloadEvaluationWindow() {
-
         updateStats(featureModel);
         updateLabels();
     }
@@ -379,6 +378,10 @@ public class FXEvaluationWindowController implements Initializable {
     public void close() {
         stage.close();
 
+    }
+
+    public boolean isShowing() {
+        return stage.isShowing();
     }
 
     public static class Stats {
@@ -419,4 +422,5 @@ public class FXEvaluationWindowController implements Initializable {
     private static double rnd(double x) {
         return Math.round(x * 10) / 10;
     }
+
 }
