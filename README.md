@@ -21,6 +21,7 @@ Data files must have uniform sampling rate and scaling/resolution across all cha
 In general, no pre-processing of the data is needed. 
 Indeed, it should be kept at a minimum and especially lowpass filtering below 50 Hz must be avoided. 
 SleepPilot applies the highpass and lowpass filters it needs.  
+Select a feature channel in the toolbar, a classifier that best fits your setting and press the play button to start automatic classification.
 
 ### Issues ###
 * Windows users must run SleepPilot with a 32-bit Java VM in order to be able to load Spike2 .smr files. The release folder contains SleepPilot_SMR.bat for that. You have to adjust the path in SleepPilot_SMR.bat (edit with Notepad) to point to your 32-bit Java JRE.
