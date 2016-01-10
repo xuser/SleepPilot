@@ -57,8 +57,8 @@ public class MainController extends Application {
     public void start(final Stage stage) throws Exception {
         String dir = System.getProperty("user.dir");
         System.setProperty("java.library.path", dir);
-
-        if (false) {
+        
+        if (true) {
             String filename = "SleepPilot.log";
             String fullPath = dir + File.separator + filename;
             PrintStream outPS

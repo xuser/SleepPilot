@@ -19,6 +19,7 @@ import ru.mipt.edf.EDFParserResult;
 import son32java.son32reader.Son32Reader;
 import son32java.son32Exceptions.NoChannelException;
 import son32java.son32reader.Son32Channel;
+import tools.Util;
 
 public class DataController {
 
@@ -56,9 +57,8 @@ public class DataController {
         if (file.getName().toLowerCase().endsWith(".edf")) {
             final EDFParserResult edfResult;
             try {
-                String path = file.getPath();
                 InputStream is = new BufferedInputStream(
-                        new FileInputStream(new File(path)));
+                        new FileInputStream(file));
                 edfResult = EDFParser.parseEDF(is);
             } catch (FileNotFoundException | EDFParserException e) {
                 System.out.println(e);
@@ -108,11 +108,12 @@ public class DataController {
                     int lowerBound = (int) Math.floor(sTime * samplingRate);
                     int upperBound = (int) Math.floor(eTime * samplingRate);
                     short[] data = edfResult.getSignal().getDigitalValues()[channel];
+                    Double[] scaling = edfResult.getSignal().getUnitsInDigit();
 
 //                    System.arraycopy(data, lowerBound, target, 0, target.length);
                     for (int i = 0; i < (upperBound - lowerBound); i++) {
                         //just return the requested data
-                        target[i] = (float) data[lowerBound + i];
+                        target[i] = (float) (data[lowerBound + i] * scaling[channel]);
                     }
 
                     return target;

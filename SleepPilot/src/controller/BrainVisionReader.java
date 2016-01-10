@@ -16,7 +16,6 @@
  */
 package controller;
 
-import com.google.common.primitives.Doubles;
 import help.BinaryFormat;
 import help.DataFormat;
 import help.DataOrientation;
@@ -29,8 +28,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -60,7 +59,7 @@ public class BrainVisionReader {
     private float channelResolution;
 
     private int nbchan;
-    private int pnts;
+    private long pnts;
     private double srate;
     private float[] data;
     private String[] channelNames;
@@ -69,7 +68,7 @@ public class BrainVisionReader {
     private long nSamples;
     private int bytes;
     private boolean isAsciiRead;
-    private List<float[]>asciiData;
+    private List<float[]> asciiData;
 
     public BrainVisionReader(File file) {
         this.file = file;
@@ -81,121 +80,6 @@ public class BrainVisionReader {
          */
         nSamples = 1;
         isAsciiRead = false;
-    }
-
-    public void read(int channel, int from, int to) {
-        if (dataFormat.equals(DataFormat.BINARY)) {
-            readBinary(channel, from, to);
-        } else if (dataFormat.equals(DataFormat.ASCII)) {
-            if (isAsciiRead) {
-                asciiData = readAscii(file);
-                isAsciiRead=true;
-            }
-            int j=0;
-            for (int i = from; i < to; i++) {
-                data[j] = asciiData.get(channel)[i];
-                j++;
-            }
-        }
-    }
-
-    /**
-     * Testfunction: Proof manually, if properties are correct.
-     */
-    private void printPropertiesVHDR() {
-
-        System.out.println("DataFormat: " + dataFormat);
-        System.out.println("DataOrientation: " + dataOrientation);
-        System.out.println("DataType: " + dataType);
-        System.out.println("NumberOfChannels: " + nbchan);
-        System.out.println("DataPoints: " + pnts);
-        System.out.println("SamplingIntervall: " + samplingIntervall);
-        System.out.println("BinaryFormat: " + binaryFormat);
-        System.out.println("SkipLines: " + skipLines);
-        System.out.println("SkipColumns: " + skipColumns);
-        System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
-        System.out.println("ChannelResolution: " + channelResolution);
-        String[] tmp = channelNames;
-        System.out.print("ChannelNames:");
-        for (int i = 0; i < tmp.length; i++) {
-            System.out.print(" " + tmp[i]);
-        }
-        System.out.println("SamplingRate in Hertz: " + srate);
-
-    }
-
-    /**
-     * Reads the first data value of channel 1
-     *
-     * @param dataFile file with data content
-     * @param channel
-     * @param epochToRead the epoch which have to be read.
-     * @return
-     */
-    public final float[] readBinary(int channel, int from, int to) {
-
-        //TODO: check bounds!
-        int nSamples = to - from;
-        if (this.nSamples != nSamples) {
-            prepareBuffers(nSamples);
-        }
-
-        try {
-            FileChannel inChannel = dataFile.getChannel();
-            // Set the start position in the file
-
-            buf.clear();
-            if (dataOrientation.equals(DataOrientation.MULTIPLEXED)) {
-                inChannel.position((from * bytes * nbchan) + (channel * bytes));
-            } else if (dataOrientation.equals(DataOrientation.VECTORIZED)) {
-                inChannel.position((nbchan * pnts + from) * bytes);
-
-            }
-            inChannel.read(buf);
-            // Make buffer ready for read
-            buf.flip();
-
-            final int increment = (nbchan * bytes) - bytes;
-            final boolean flag = dataOrientation.equals(DataOrientation.MULTIPLEXED);
-
-            int i = 0;
-            while (buf.hasRemaining()) {
-                if (bytes == 2) {
-                    data[i] = buf.getShort() * channelResolution;
-                } else if (bytes == 4) {
-                    data[i] = buf.getFloat();
-                } else if (bytes == 8) {
-                    data[i] = (float) buf.getDouble();
-                }
-
-                if (flag) {
-                    // This is the next sample in this epoch for the given channel  
-                    if (buf.hasRemaining()) {
-                        buf.position(buf.position() + increment);
-                    }
-                    i++;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
-
-    public final List<float[]> readAscii(File dataFile) {
-        List<float[]> out = null;
-        try (BufferedReader in = new BufferedReader(new FileReader(dataFile))) {
-            out = in.lines()
-                    .map(e -> e.replaceAll(",", "."))
-                    .map(e -> e.split(" "))
-                    .map(e -> Util.doubleToFloat(Arrays.stream(e).mapToDouble(i -> Double.parseDouble(i)).toArray()))
-                    .collect(Collectors.toList()).subList(skipLines, pnts);
-        } catch (FileNotFoundException e) {
-            System.err.println("No file found on current location.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return out;
     }
 
     private void readHeaderFromVHDR() {
@@ -369,6 +253,125 @@ public class BrainVisionReader {
         printPropertiesVHDR();
     }
 
+    /**
+     * Testfunction: Proof manually, if properties are correct.
+     */
+    private void printPropertiesVHDR() {
+
+        System.out.println("DataFormat: " + dataFormat);
+        System.out.println("DataOrientation: " + dataOrientation);
+        System.out.println("DataType: " + dataType);
+        System.out.println("NumberOfChannels: " + nbchan);
+        System.out.println("DataPoints: " + pnts);
+        System.out.println("SamplingIntervall: " + samplingIntervall);
+        System.out.println("BinaryFormat: " + binaryFormat);
+        System.out.println("SkipLines: " + skipLines);
+        System.out.println("SkipColumns: " + skipColumns);
+        System.out.println("UseBigEndianOrdner: " + useBigEndianOrder);
+        System.out.println("ChannelResolution: " + channelResolution);
+        String[] tmp = channelNames;
+        System.out.print("ChannelNames:");
+        for (int i = 0; i < tmp.length; i++) {
+            System.out.print(" " + tmp[i]);
+        }
+        System.out.println("SamplingRate in Hertz: " + srate);
+
+    }
+
+    public void read(int channel, long from, long to) {
+        if (dataFormat.equals(DataFormat.BINARY)) {
+            readBinary(channel, from, to);
+        } else if (dataFormat.equals(DataFormat.ASCII)) {
+            if (isAsciiRead) {
+                asciiData = readAscii(file);
+                isAsciiRead = true;
+            }
+            int j = 0;
+            for (int i = (int) from; i < to; i++) {
+                data[j] = asciiData.get(i)[channel];
+                j++;
+            }
+        }
+    }
+
+    /**
+     * Reads the first data value of channel 1
+     *
+     * @param dataFile file with data content
+     * @param channel
+     * @param epochToRead the epoch which have to be read.
+     * @return
+     */
+    public final float[] readBinary(int channel, long from, long to) {
+
+        //TODO: check bounds!
+        int nSamples = (int) (to - from);
+        if (this.nSamples != nSamples) {
+            prepareBuffers(nSamples);
+        }
+
+        try {
+            FileChannel inChannel = dataFile.getChannel();
+            // Set the start position in the file
+
+            buf.clear();
+            if (dataOrientation.equals(DataOrientation.MULTIPLEXED)) {
+                inChannel.position((from * bytes * nbchan) + (channel * bytes));
+            } else if (dataOrientation.equals(DataOrientation.VECTORIZED)) {
+                inChannel.position((nbchan * pnts + from) * bytes);
+
+            }
+
+            inChannel.read(buf);
+            // Make buffer ready for read
+            buf.flip();
+
+            final int increment = (nbchan * bytes) - bytes;
+            final boolean flag = dataOrientation.equals(DataOrientation.MULTIPLEXED);
+            final int bytes = this.bytes;
+
+            
+            int i = 0;
+            while (buf.hasRemaining()) {
+                if (bytes == 2) {
+                    data[i] = buf.getShort() * channelResolution;
+                } else if (bytes == 4) {
+                    data[i] = buf.getFloat();
+                } else if (bytes == 8) {
+                    data[i] = (float) buf.getDouble();
+                }
+
+                if (flag) {
+                    // This is the next sample in this epoch for the given channel  
+                    if (buf.hasRemaining()) {
+                        buf.position(buf.position() + increment);
+                    }
+                    i++;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    public final List<float[]> readAscii(File dataFile) {
+        List<float[]> out = null;
+        try (BufferedReader in = new BufferedReader(new FileReader(dataFile))) {
+            out = in.lines()
+                    .map(e -> e.replaceAll(",", "."))
+                    .map(e -> e.split(" "))
+                    .map(e -> Util.doubleToFloat(Arrays.stream(e).mapToDouble(i -> Double.parseDouble(i)).toArray()))
+                    .collect(Collectors.toList());
+
+        } catch (FileNotFoundException e) {
+            System.err.println("No file found on current location.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return out.subList(skipLines, out.size());
+    }
+
     private void prepareBuffers(int nSamples) {
         this.nSamples = nSamples;
         data = new float[nSamples];
@@ -400,7 +403,7 @@ public class BrainVisionReader {
         return data;
     }
 
-    public int getPnts() {
+    public long getPnts() {
         return pnts;
     }
 

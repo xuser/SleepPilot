@@ -43,7 +43,7 @@ public class DataModel implements Serializable {
 
     // *** Brainvision Format ***
     // [Common Infos]
-    private int pnts;
+    private long pnts;
     private int nbchan = 0;					// This variable will be used for the Spike2 Format as well
     private double srate;
     private String[] channelNames;
@@ -52,14 +52,14 @@ public class DataModel implements Serializable {
     /**
      * @return the pnts
      */
-    public int getPnts() {
+    public long getPnts() {
         return pnts;
     }
 
     /**
      * @param pnts Total number of data points in dataset
      */
-    public void setPnts(int pnts) {
+    public void setPnts(long pnts) {
         this.pnts = pnts;
     }
 
