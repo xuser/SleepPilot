@@ -62,13 +62,13 @@ public class BrainVisionReader {
     private long pnts;
     private double srate;
     private float[] data;
+    private float[][] asciiData;
+    private boolean isAsciiRead;
     private String[] channelNames;
 
     private ByteBuffer buf;
     private long nSamples;
     private int bytes;
-    private boolean isAsciiRead;
-    private List<float[]> asciiData;
 
     public BrainVisionReader(File file) {
         this.file = file;
@@ -78,6 +78,14 @@ public class BrainVisionReader {
         /**
          * Has to be set to 0 initially, reflects changes in buffer size
          */
+        if (dataFormat.equals(DataFormat.BINARY)) {
+            try {
+                dataFile = new RandomAccessFile(dataFileLocation, "r");
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(BrainVisionReader.class.getName()).log(Level.ALL, null, ex);
+            }
+        }
+
         nSamples = 1;
         isAsciiRead = false;
     }
@@ -93,7 +101,6 @@ public class BrainVisionReader {
                 // Open DataFile
                 if (zeile.startsWith("DataFile=")) {
                     dataFileLocation = file.getParent() + File.separator + zeile.substring(9);
-                    dataFile = new RandomAccessFile(dataFileLocation, "r");
                 }
 
                 // Open MarkerFile
@@ -279,18 +286,21 @@ public class BrainVisionReader {
     }
 
     public void read(int channel, long from, long to) {
+        //TODO: check bounds!
+        int nSamples = (int) (to - from);
+        if (this.nSamples != nSamples) {
+            prepareBuffers(nSamples);
+        }
+
         if (dataFormat.equals(DataFormat.BINARY)) {
             readBinary(channel, from, to);
         } else if (dataFormat.equals(DataFormat.ASCII)) {
-            if (isAsciiRead) {
-                asciiData = readAscii(file);
+            if (!isAsciiRead) {
+                asciiData = readAscii(new File(dataFileLocation));
                 isAsciiRead = true;
             }
             int j = 0;
-            for (int i = (int) from; i < to; i++) {
-                data[j] = asciiData.get(i)[channel];
-                j++;
-            }
+            System.arraycopy(asciiData[channel], (int) from, data, 0, data.length);
         }
     }
 
@@ -303,50 +313,38 @@ public class BrainVisionReader {
      * @return
      */
     public final float[] readBinary(int channel, long from, long to) {
-
-        //TODO: check bounds!
-        int nSamples = (int) (to - from);
-        if (this.nSamples != nSamples) {
-            prepareBuffers(nSamples);
-        }
-
         try {
             FileChannel inChannel = dataFile.getChannel();
             // Set the start position in the file
 
             buf.clear();
             if (dataOrientation.equals(DataOrientation.MULTIPLEXED)) {
-                inChannel.position((from * bytes * nbchan) + (channel * bytes));
+                inChannel.position((from * nbchan + channel) * bytes);
             } else if (dataOrientation.equals(DataOrientation.VECTORIZED)) {
-                inChannel.position((nbchan * pnts + from) * bytes);
-
+                inChannel.position((channel * pnts + from) * bytes);
             }
-
-            inChannel.read(buf);
-            // Make buffer ready for read
-            buf.flip();
 
             final int increment = (nbchan * bytes) - bytes;
             final boolean flag = dataOrientation.equals(DataOrientation.MULTIPLEXED);
             final int bytes = this.bytes;
 
-            
-            int i = 0;
-            while (buf.hasRemaining()) {
-                if (bytes == 2) {
-                    data[i] = buf.getShort() * channelResolution;
-                } else if (bytes == 4) {
-                    data[i] = buf.getFloat();
-                } else if (bytes == 8) {
-                    data[i] = (float) buf.getDouble();
-                }
+            int nRead = 0;
+            if ((nRead = inChannel.read(buf)) != -1) {
+                // Make buffer ready for read
+                buf.rewind();
+                for (int i = 0; i < data.length; i++) {
+                    if (bytes == 2) {
+                        data[i] = buf.getShort() * channelResolution;
+                    } else if (bytes == 4) {
+                        data[i] = buf.getFloat();
+                    } else if (bytes == 8) {
+                        data[i] = (float) buf.getDouble();
+                    }
 
-                if (flag) {
-                    // This is the next sample in this epoch for the given channel  
-                    if (buf.hasRemaining()) {
+                    if (flag) {
+                        // This is the next sample in this epoch for the given channel  
                         buf.position(buf.position() + increment);
                     }
-                    i++;
                 }
             }
         } catch (IOException e) {
@@ -355,40 +353,53 @@ public class BrainVisionReader {
         return data;
     }
 
-    public final List<float[]> readAscii(File dataFile) {
-        List<float[]> out = null;
-        try (BufferedReader in = new BufferedReader(new FileReader(dataFile))) {
+    public final float[][] readAscii(File dataFileLocation) {
+        float[][] out = null;
+        try (BufferedReader in = new BufferedReader(new FileReader(dataFileLocation))) {
             out = in.lines()
                     .map(e -> e.replaceAll(",", "."))
+                    .map(e -> e.replaceAll("\\s+", " "))
                     .map(e -> e.split(" "))
-                    .map(e -> Util.doubleToFloat(Arrays.stream(e).mapToDouble(i -> Double.parseDouble(i)).toArray()))
-                    .collect(Collectors.toList());
+                    .map(e -> Util.doubleToFloat(Arrays.stream(e).skip(skipColumns).mapToDouble(i -> Double.parseDouble(i)).toArray()))
+                    .toArray(float[][]::new);
 
         } catch (FileNotFoundException e) {
             System.err.println("No file found on current location.");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return out.subList(skipLines, out.size());
+        return out;
     }
 
     private void prepareBuffers(int nSamples) {
         this.nSamples = nSamples;
         data = new float[nSamples];
+
         if (dataFormat.equals(DataFormat.BINARY) && dataType.equals(DataType.TIMEDOMAIN)) {
             if (dataOrientation.equals(DataOrientation.MULTIPLEXED)) {
                 buf = ByteBuffer.allocateDirect(bytes * nSamples * nbchan);
             } else if (dataOrientation.equals(DataOrientation.VECTORIZED)) {
                 buf = ByteBuffer.allocateDirect(bytes * nSamples);
             }
+
+            if (useBigEndianOrder) {
+                buf.order(ByteOrder.BIG_ENDIAN);
+            } else {
+                buf.order(ByteOrder.LITTLE_ENDIAN);
+            }
+
+        } else if (dataFormat.equals(DataFormat.ASCII) && dataType.equals(DataType.TIMEDOMAIN)) {
+
         } else {
             System.out.println("Cannot recognize specific BrainVision format");
         }
-        buf.order(ByteOrder.LITTLE_ENDIAN);
+
     }
 
     public void close() throws IOException {
-        dataFile.close();
+        if (dataFormat.equals(DataFormat.BINARY)) {
+            dataFile.close();
+        }
     }
 
     public double getSrate() {
