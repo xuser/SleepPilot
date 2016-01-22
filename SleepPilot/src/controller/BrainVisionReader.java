@@ -84,8 +84,17 @@ public class BrainVisionReader {
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(BrainVisionReader.class.getName()).log(Level.ALL, null, ex);
             }
-        }
 
+            if (pnts == 0) {
+                try {
+                    pnts = (int) (dataFile.length() / bytes / (long) nbchan);
+                } catch (IOException ex) {
+                    Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        printPropertiesVHDR();
+        
         nSamples = 1;
         isAsciiRead = false;
     }
@@ -245,19 +254,10 @@ public class BrainVisionReader {
         //set some standard values, if header is not complete
         srate = 1e6 / samplingIntervall;
 
-        if (pnts == 0) {
-            try {
-                pnts = (int) (dataFile.length() / bytes / (long) nbchan);
-            } catch (IOException ex) {
-                Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
         if (dataType == null) {
             dataType = DataType.TIMEDOMAIN;
         }
 
-        printPropertiesVHDR();
     }
 
     /**

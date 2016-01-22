@@ -125,34 +125,6 @@ public class FeatureModel implements Serializable {
 
     private int currentEpoch;
 
-    private double srate;
-
-    /**
-     * Creates the feature value matrix with the needed size. The first column
-     * holds the classified sleep stage. Test mode: The first column has the
-     * default value 99.00 Traing mode: The first column has the respective
-     * value for the actual sleep stage
-     *
-     * NOTATION: 1	Wake 2	Sleep stage 1 3	Sleep stage 2 4	Sleep stage 3 5	REM
-     * sleep stage 99	Unscored
-     */
-    public void init(int rows) {
-        numberOfEpochs = rows;
-        labels = new int[rows];
-        Arrays.fill(labels, -1);
-
-        artefacts = new int[rows];
-        arousals = new int[rows];
-        stimulation = new int[rows];
-        predictProbabilities = new double[rows][];
-    }
-
-    public void clearProperties(int epoch) {
-        labels[epoch] = -1;
-        stimulation[epoch] = 0;
-        arousals[epoch] = 0;
-        artefacts[epoch] = 0;
-    }
 
     /**
      * @param feature the feature to set
@@ -518,14 +490,6 @@ public class FeatureModel implements Serializable {
 
     public int getCurrentEpoch() {
         return currentEpoch;
-    }
-
-    public void setSrate(double srate) {
-        this.srate = srate;
-    }
-
-    public double getSrate() {
-        return srate;
     }
 
     public float[] getKcPercentage() {

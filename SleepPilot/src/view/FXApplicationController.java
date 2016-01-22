@@ -100,18 +100,17 @@ public final class FXApplicationController implements Initializable {
 
     private FXHypnogrammController hypnogram;
     private FXEvaluationWindowController evaluationWindow;
-    private FXScatterPlot scatterPlot;
+    private final FXScatterPlot scatterPlot;
 
-    private float[][] displayBuffer;
-//    private float[] epoch;
+    private final float[][] displayBuffer;
 
     private FXPopUp popUp = new FXPopUp();
-    private FXViewModel viewModel;
+    private final FXViewModel viewModel;
 
-    private DataController dataController;
-    private DataModel dataModel;
-    private FeatureModel featureModel;
-    private FeatureController featureController;
+    private final DataController dataController;
+    private final DataModel dataModel;
+    private final FeatureModel featureModel;
+    private final FeatureController featureController;
     private FXElectrodeConfiguratorController electrodeConfigurator;
 
     private final boolean recreateModelMode;
@@ -245,41 +244,11 @@ public final class FXApplicationController implements Initializable {
 
         this.dataController = dataController;
         this.dataModel = dataController.getDataModel();
-
-        this.featureModel = featureModel;
-        featureModel.setSrate(dataModel.getSrate());
-        this.featureController = new FeatureController(featureModel);
-
-        // Create stage with mainGrid
-        scene = new Scene(mainGrid);
-        primaryStage.setScene(scene);
-
-        //Properties for stage
-        primaryStage.setResizable(true);
-        primaryStage.show();
-        primaryStage.setTitle(dataModel.getFile().getName());
-
-        ////////////
-        this.viewModel = viewModel;
-
-        this.recreateModelMode = recreateModelMode;
-
-        if (!recreateModelMode) {
-            featureModel.init(dataModel.getNumberOf30sEpochs());
-        } else {
-            currentEpoch = featureModel.getCurrentEpoch();
-        }
-        ////////////
-
-        statusBarLabel1.setText("/" + (dataModel.getNumberOf30sEpochs()));
-
-        //Configure lineChart
-        lineChart.setSnapToPixel(false);
-        lineChart.requestFocus();
-
-        // Set Choice Box for the channels
+        
+        //initialize important variables
         channelNames = dataModel.getChannelNames();
-
+        displayBuffer = dataModel.data.clone();
+          // Set Choice Box for the channels        
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
             if (i < 6) {
@@ -300,19 +269,39 @@ public final class FXApplicationController implements Initializable {
 
         }
 
-        tooltips();
+        // Create stage with mainGrid
+        scene = new Scene(mainGrid);
+        primaryStage.setScene(scene);
 
-        displayBuffer = dataModel.data.clone();
+        //Properties for stage
+        primaryStage.setResizable(true);
+        primaryStage.show();
+        primaryStage.setTitle(dataModel.getFile().getName());
+
+        ////////////
+        this.viewModel = viewModel;
+        this.featureModel = featureModel;
+        this.featureController = new FeatureController(featureModel, dataModel);
+
+        this.recreateModelMode = recreateModelMode;
+
+        
+        
+        
         kcDetector = featureController.kcDetector;
         kcDetector.setHighpassCoefficients(featureController.getDisplayHighpassCoefficients());
         kcDetector.setLowpassCoefficients(featureController.getLowpassCoefficients());
 
+        currentEpoch = featureModel.getCurrentEpoch();
         loadEpoch(currentEpoch);
         showEpoch();
 
-        featureModel.setDataFileLocation(dataModel.getFile());
-
         paintSpacing();
+
+        //Configure lineChart
+        lineChart.setSnapToPixel(false);
+
+      
 
         choices = FXCollections.observableArrayList();
         updateChoiceBox();
@@ -331,14 +320,18 @@ public final class FXApplicationController implements Initializable {
         choiceBoxModel.setItems(choicesModel);
         choiceBoxModel.getSelectionModel().select(0);
 
+        tooltips();
+
         scatterPlot = new FXScatterPlot(this, dataController, dataModel, featureModel, featureController, viewModel);
         hypnogram = new FXHypnogrammController(dataModel, featureModel, viewModel, this);
 
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                hypnogram.updateAll();
-                hypnogram.hide();
+                if (recreateModelMode) {
+                    hypnogram.updateAll();
+                    hypnogram.hide();
+                }
                 updateWindows();
             }
         });
@@ -862,7 +855,7 @@ public final class FXApplicationController implements Initializable {
 
     @FXML
     protected void clearButtonOnAction() {
-        featureModel.clearProperties(currentEpoch);
+        featureController.clearProperties(currentEpoch);
         updateWindows();
     }
 

@@ -17,6 +17,8 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import model.DataModel;
 import model.FeatureModel;
 import org.apache.commons.math3.util.FastMath;
 import org.jdsp.iirfilterdesigner.IIRDesigner;
@@ -40,6 +42,7 @@ import tools.sincWindowDecimator;
 public class FeatureController {
 
     private final FeatureModel featureModel;
+    private DataModel dataModel;
     public KCdetection kcDetector;
     private sincWindowDecimator decimator;
     public FilterCoefficients highpassCoefficients;
@@ -52,14 +55,20 @@ public class FeatureController {
      */
     private ArrayList<float[]> epochList;
 
-    public FeatureController(FeatureModel featureModel) {
+    public FeatureController(FeatureModel featureModel, DataModel dataModel) {
         this.featureModel = featureModel;
+        this.dataModel = dataModel;
+
+        if (featureModel.getLabels()==null) {
+            init(dataModel.getNumberOf30sEpochs());
+        }
+        featureModel.setDataFileLocation(dataModel.getFile());
 
         createFilters(100.);
 
         setDecimator(new sincWindowDecimator());
         sincWindowDecimator decimator = getDecimator();
-        decimator.designFilter((int) FastMath.round(featureModel.getSrate() / 100.), 31);
+        decimator.designFilter((int) FastMath.round(dataModel.getSrate() / 100.), 31);
 
         kcDetector = new KCdetection();
         kcDetector.setMaxWidth(90);
@@ -69,7 +78,7 @@ public class FeatureController {
 
     public void start() {
         ArrayList<float[]> data = getEpochList();
-        if ((int) (featureModel.getSrate()) != (int) 100) {
+        if ((int) (dataModel.getSrate()) != (int) 100) {
             for (int i = 0; i < data.size(); i++) {
                 data.set(i, getDecimator().decimate(data.get(i)));
             }
@@ -180,4 +189,31 @@ public class FeatureController {
         this.epochList = data;
     }
 
+    /**
+     * Creates the feature value matrix with the needed size. The first column
+     * holds the classified sleep stage. Test mode: The first column has the
+     * default value 99.00 Traing mode: The first column has the respective
+     * value for the actual sleep stage
+     *
+     * NOTATION: 1	Wake 2	Sleep stage 1 3	Sleep stage 2 4	Sleep stage 3 5	REM
+     * sleep stage 99	Unscored
+     */
+    public void init(int rows) {
+        featureModel.setNumberOfEpochs(rows);
+        featureModel.setLabels(new int[rows]);
+        Arrays.fill(featureModel.getLabels(), -1);
+
+        featureModel.setArtefacts(new int[rows]);
+        featureModel.setArousals(new int[rows]);
+        featureModel.setStimulation(new int[rows]);
+        featureModel.setPredictProbabilities(new double[rows][]);
+        featureModel.setCurrentEpoch(0);
+    }
+
+    public void clearProperties(int epoch) {
+        featureModel.setLabel(epoch, -1);
+        featureModel.setArousal(epoch, 0);
+        featureModel.setArtefact(epoch, 0);
+        featureModel.setStimulation(epoch, 0);
+    }
 }

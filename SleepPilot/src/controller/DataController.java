@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import model.DataModel;
 import model.DataModel.Reader;
+import ru.mipt.edf.EDFHeader;
 import ru.mipt.edf.EDFParser;
 import ru.mipt.edf.EDFParserException;
 import ru.mipt.edf.EDFParserResult;
@@ -55,17 +56,24 @@ public class DataController {
     public final void init() {
 
         if (file.getName().toLowerCase().endsWith(".edf")) {
-            final EDFParserResult edfResult;
-            try {
-                InputStream is = new BufferedInputStream(
-                        new FileInputStream(file));
-                edfResult = EDFParser.parseEDF(is);
-            } catch (FileNotFoundException | EDFParserException e) {
-                System.out.println(e);
-                //return due to failed file open
-                return;
-            }
-            int numberOfChannels = edfResult.getHeader().getNumberOfChannels();
+//            final EDFParserResult edfResult;
+//            try {
+//                InputStream is = new BufferedInputStream(
+//                        new FileInputStream(file));
+//                edfResult = EDFParser.parseEDF(is);
+//            } catch (FileNotFoundException | EDFParserException e) {
+//                System.out.println(e);
+//                //return due to failed file open
+//                return;
+//            }
+            
+            final EDFParser edfParser = new EDFParser(file);
+            final EDFHeader edfHeader = edfParser.getHeader();
+            
+            
+            int numberOfChannels = edfHeader.getNumberOfChannels();
+            
+            
             /*
              Subtract 1 from the number of channels, because the edf parser
              adds an extra channel for annotation, which does not contain
@@ -73,15 +81,15 @@ public class DataController {
              */
             dataModel.setNbchan(numberOfChannels - 1);
 
-            String[] channelNames = edfResult.getHeader().getChannelLabels();
+            String[] channelNames = edfHeader.getChannelLabels();
             //remove the annotation channel
             Arrays.copyOf(channelNames, channelNames.length - 1);
             dataModel.setChannelNames(channelNames);
 
-            int numberOfSamples = (int) (edfResult.getHeader().getNumberOfRecords() * edfResult.getHeader().getNumberOfSamples()[0]); //sampling rate?
-            double duration = edfResult.getHeader().getDurationOfRecords();     //in seconds?
+            int numberOfSamples = (int) (edfHeader.getNumberOfRecords() * edfHeader.getNumberOfSamples()[0]); //sampling rate?
+            double duration = edfHeader.getDurationOfRecords();     //in seconds?
 
-            double samplingRate = edfResult.getHeader().getNumberOfSamples()[0] / duration;
+            double samplingRate = edfHeader.getNumberOfSamples()[0] / duration;
             dataModel.setSrate(samplingRate);
             dataModel.setPnts(numberOfSamples);
 
@@ -107,14 +115,19 @@ public class DataController {
                     }
                     int lowerBound = (int) Math.floor(sTime * samplingRate);
                     int upperBound = (int) Math.floor(eTime * samplingRate);
-                    short[] data = edfResult.getSignal().getDigitalValues()[channel];
-                    Double[] scaling = edfResult.getSignal().getUnitsInDigit();
-
-//                    System.arraycopy(data, lowerBound, target, 0, target.length);
-                    for (int i = 0; i < (upperBound - lowerBound); i++) {
-                        //just return the requested data
-                        target[i] = (float) (data[lowerBound + i] * scaling[channel]);
+//                    short[] data = edfResult.getSignal().getDigitalValues()[channel];
+//                    Double[] scaling = edfResult.getSignal().getUnitsInDigit();
+                    float[] data=null;
+                    try {
+                        data = edfParser.read(channel, lowerBound, upperBound);
+                    } catch (EDFParserException ex) {
+                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    System.arraycopy(data, 0, target, 0, target.length);
+//                    for (int i = 0; i < (upperBound - lowerBound); i++) {
+//                        //just return the requested data
+//                        target[i] = (float) (data[lowerBound + i] * scaling[channel]);
+//                    }
 
                     return target;
                 }
