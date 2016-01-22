@@ -11,7 +11,7 @@ It should be used for research only.
 * tSNE powered cluster plot for dataset exploration 
  
 ### Installation ###
-Download the repository from GitHub and unzip the release folder. Run SleepPilot by clicking on SleepPilot.jar.
+[Download](https://github.com/xuser/SleepPilot/releases) the repository from GitHub and unzip the release folder. Run SleepPilot by clicking on SleepPilot.jar.
 SleepPilot.jar must stay with the son32.dll and the Classifiers folder to function properly.
 SleepPilot requires [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 Contact me if you can't make it run.
