@@ -96,7 +96,7 @@ public class FXHypnogrammController implements Initializable {
 
         Scene scene = new Scene(addGrid);
 
-        stage.setResizable(true);
+        stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
         stage.setTitle("Hypnogram");

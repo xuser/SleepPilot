@@ -1,11 +1,7 @@
 package controller;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,12 +11,10 @@ import model.DataModel.Reader;
 import ru.mipt.edf.EDFHeader;
 import ru.mipt.edf.EDFParser;
 import ru.mipt.edf.EDFParserException;
-import ru.mipt.edf.EDFParserResult;
 
 import son32java.son32reader.Son32Reader;
 import son32java.son32Exceptions.NoChannelException;
 import son32java.son32reader.Son32Channel;
-import tools.Util;
 
 public class DataController {
 
@@ -56,24 +50,12 @@ public class DataController {
     public final void init() {
 
         if (file.getName().toLowerCase().endsWith(".edf")) {
-//            final EDFParserResult edfResult;
-//            try {
-//                InputStream is = new BufferedInputStream(
-//                        new FileInputStream(file));
-//                edfResult = EDFParser.parseEDF(is);
-//            } catch (FileNotFoundException | EDFParserException e) {
-//                System.out.println(e);
-//                //return due to failed file open
-//                return;
-//            }
-            
+
             final EDFParser edfParser = new EDFParser(file);
             final EDFHeader edfHeader = edfParser.getHeader();
-            
-            
+
             int numberOfChannels = edfHeader.getNumberOfChannels();
-            
-            
+
             /*
              Subtract 1 from the number of channels, because the edf parser
              adds an extra channel for annotation, which does not contain
@@ -82,22 +64,21 @@ public class DataController {
             dataModel.setNbchan(numberOfChannels - 1);
 
             String[] channelNames = edfHeader.getChannelLabels();
+            
             //remove the annotation channel
-            Arrays.copyOf(channelNames, channelNames.length - 1);
-            dataModel.setChannelNames(channelNames);
+            dataModel.setChannelNames(Arrays.copyOf(channelNames, dataModel.getNbchan()));
 
-            int numberOfSamples = (int) (edfHeader.getNumberOfRecords() * edfHeader.getNumberOfSamples()[0]); //sampling rate?
             double duration = edfHeader.getDurationOfRecords();     //in seconds?
-
             double samplingRate = edfHeader.getNumberOfSamples()[0] / duration;
             dataModel.setSrate(samplingRate);
-            dataModel.setPnts(numberOfSamples);
+            dataModel.setPnts((int) (edfHeader.getNumberOfRecords() * edfHeader.getNumberOfSamples()[0]));
 
-            int numberOfSamplesForOneEpoch = (int) (samplingRate * 30);
-            dataModel.numberOfSamplesForOneEpoch = numberOfSamplesForOneEpoch;
-            dataModel.data = new float[numberOfChannels - 1][numberOfSamplesForOneEpoch];
+            dataModel.numberOfSamplesForOneEpoch = (int) (samplingRate * 30);
+            dataModel.data = new float[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
 
             reader = new DataModel.Reader() {
+                int lastEpoch = -1;
+                float[][] data;
 
                 @Override
                 public void close() {
@@ -105,30 +86,17 @@ public class DataController {
 
                 @Override
                 public float[] read(int channel, int epoch, float[] target) {
-                    double sTime = epoch * 30;
-                    double eTime = (epoch + 1) * 30;
+                    long from = epoch * dataModel.numberOfSamplesForOneEpoch;
+                    long to = (epoch + 1) * dataModel.numberOfSamplesForOneEpoch;
 
-                    double intervall = eTime - sTime;
-                    if (target.length < (int) Math.floor(intervall * samplingRate)) {
-                        System.out.println("Target array is to small!");
-                        return target;
+                    if (epoch != lastEpoch) {
+                        try {
+                            data = edfParser.read(channel, from, to);
+                        } catch (EDFParserException ex) {
+                            Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
-                    int lowerBound = (int) Math.floor(sTime * samplingRate);
-                    int upperBound = (int) Math.floor(eTime * samplingRate);
-//                    short[] data = edfResult.getSignal().getDigitalValues()[channel];
-//                    Double[] scaling = edfResult.getSignal().getUnitsInDigit();
-                    float[] data=null;
-                    try {
-                        data = edfParser.read(channel, lowerBound, upperBound);
-                    } catch (EDFParserException ex) {
-                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    System.arraycopy(data, 0, target, 0, target.length);
-//                    for (int i = 0; i < (upperBound - lowerBound); i++) {
-//                        //just return the requested data
-//                        target[i] = (float) (data[lowerBound + i] * scaling[channel]);
-//                    }
-
+                    System.arraycopy(data[channel], 0, target, 0, target.length);
                     return target;
                 }
             };

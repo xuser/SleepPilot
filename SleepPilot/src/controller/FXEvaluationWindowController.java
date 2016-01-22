@@ -126,8 +126,8 @@ public class FXEvaluationWindowController implements Initializable {
 
         statsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        updateStats(featureModel);
-        updateLabels();
+//        updateStats(featureModel);
+//        updateLabels();
 
         statsTable.setEditable(false);
 
@@ -184,8 +184,9 @@ public class FXEvaluationWindowController implements Initializable {
 
     private void updateLabels() {
         list.clear();
+        
         Stats stats = new Stats();
-        stats.setType("W");
+        stats.setType("Wake");
         stats.setPercent("" + rnd(W / (double) SPT1 * 100));
         stats.setMinutes("" + W * 0.5);
         list.add(stats);
@@ -215,55 +216,55 @@ public class FXEvaluationWindowController implements Initializable {
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("TST");
+        stats.setType("Total sleep time (TST, SPT2 - Wake)");
         stats.setPercent("");
         stats.setMinutes("" + TST2 * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("TIB");
+        stats.setType("Time in bed (TIB, lights off - lights on)");
         stats.setPercent("");
         stats.setMinutes("" + TIB * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("SPT1");
+        stats.setType("First N1 to wakeup (SPT1)");
         stats.setPercent("");
         stats.setMinutes("" + SPT1 * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("SPT2");
+        stats.setType("3x N2 to wakeup (SPT2)");
         stats.setPercent("");
         stats.setMinutes("" + SPT2 * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("SOL1");
+        stats.setType("N1 onset latency (SOL1)");
         stats.setPercent("");
         stats.setMinutes("" + firstN1 * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("SOL2");
+        stats.setType("N2 onset latency (SOL2)");
         stats.setPercent("");
         stats.setMinutes("" + firstN2 * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("REML");
+        stats.setType("REM onset latency");
         stats.setPercent("");
         stats.setMinutes("" + firstREM * 0.5);
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("AI [events/h]");
+        stats.setType("Arousal index [events/h]");
         stats.setPercent("");
         stats.setMinutes("" + rnd(AI));
         list.add(stats);
 
         stats = new Stats();
-        stats.setType("SEI");
+        stats.setType("Sleep efficiency index");
         stats.setPercent("" + rnd(SEI));
         stats.setMinutes("");
         list.add(stats);
@@ -299,7 +300,7 @@ public class FXEvaluationWindowController implements Initializable {
             if (((labels[i] == 2 | labels[i] == 3)
                     & (labels[i - 1] == 2 | labels[i - 1] == 3)
                     & (labels[i - 2] == 2 | labels[i - 2] == 3))) {
-                firstN2 = i;
+                firstN2 = i-2;
                 break;
             }
         }
