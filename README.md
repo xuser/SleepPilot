@@ -1,6 +1,6 @@
 # SleepPilot #
 
-SleepPilot is a software for automated sleep stage classification. 
+[SleepPilot](https://github.com/xuser/SleepPilot/releases/download/v0.9.1-beta/SleepPilot_v0.9.1.zip) is a software for automated sleep stage classification. 
 The classifier has been trained on EEG data of 100+ healthy subjects and achieves an accuracy of 88.2% (Cohen's kappa: 0.82) on an independent test set. 
 It should be used for research only. 
 
