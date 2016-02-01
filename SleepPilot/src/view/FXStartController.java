@@ -1,21 +1,22 @@
 package view;
 
+import controller.ClassificationController;
 import controller.FXSettingController;
 import controller.DataController;
+import controller.FeatureController;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
-import model.FXStartModel;
 import model.FXViewModel;
 import model.DataModel;
 import model.FeatureModel;
 import controller.MainController;
 import controller.ModelReaderWriterController;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -30,6 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tools.Util;
@@ -37,8 +39,8 @@ import tools.Util;
 /**
  * ANNOTATION: We have to read Header information here, because we want to show
  * PopUp Messages, if there are not valid channels. It is only possible to show
- these messages from the FX Thread. This is the reason, why we cant print
- messages later on during reading teh file in the DataController.
+ * these messages from the FX Thread. This is the reason, why we cant print
+ * messages later on during reading teh file in the DataController.
  *
  *
  * @author Nils Finke
@@ -49,15 +51,13 @@ public class FXStartController implements Initializable {
     //MainController mainController;
     private FXPopUp popUp = new FXPopUp();
 
-    
-    private static LinkedList<String> titel = new LinkedList<String>();
-    private static LinkedList<Integer> kind = new LinkedList<Integer>();
+    private static LinkedList<String> titel = new LinkedList();
+    private static LinkedList<Integer> kind = new LinkedList();
 
     private DataModel dataModel;
     private FeatureModel featureModel;
 
     FXViewModel viewModel = new FXViewModel();
-    private FXStartModel startModel = new FXStartModel();
 
     private FXSettingController settings;
 
@@ -67,8 +67,6 @@ public class FXStartController implements Initializable {
     private AnchorPane mainGrid;
 
     private Scene scene;
-
-    private RandomAccessFile smrFile;
 
     @FXML
     ProgressBar progressBar;
@@ -175,7 +173,7 @@ public class FXStartController implements Initializable {
 
                 FileChooser.ExtensionFilter extFilter2 = new FileChooser.ExtensionFilter(
                         "Spike2 files (*.smr)", "*.smr", "*.SMR");
-                
+
                 FileChooser.ExtensionFilter extFilter3 = new FileChooser.ExtensionFilter(
                         "EDF and EDF+ Files (*.edf)", "*.EDF");
 
@@ -204,12 +202,12 @@ public class FXStartController implements Initializable {
 
                         Runtime.getRuntime().addShutdownHook(new Thread() {
                             public void run() {
-                                if (dataModel.getReader()!=null) {
+                                if (dataModel.getReader() != null) {
                                     dataModel.getReader().close();
                                 }
                             }
                         });
-                        
+
                         //Create application controller
                         System.out.println("AppController starting!");
                         Platform.runLater(new Runnable() {
@@ -301,48 +299,9 @@ public class FXStartController implements Initializable {
 
                 createModelForm.setVisible(true);
 
-                FileChooser fileChooser = new FileChooser();
-
-                //Open directory from existing directory 
-                File dir = null;
-                dir = tools.Util.loadDir(
-                        new File(
-                                new File(
-                                        getClass()
-                                        .getProtectionDomain()
-                                        .getCodeSource()
-                                        .getLocation().getPath())
-                                .getParentFile(),
-                                "LastDirectory.txt"
-                        )
-                );
-
-                if (dir != null) {
-                    fileChooser.setInitialDirectory(dir);
-                }
-
-                // Set extension filter
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(
-                        "Text files (*.txt)", "*.txt", "*.TXT");
-                fileChooser.getExtensionFilters().add(extFilter);
-
-                // Show open file dialog
-                final File file = fileChooser.showOpenDialog(null);
-
-                Util.saveDir(file,
-                        new File(
-                                new File(
-                                        getClass()
-                                        .getProtectionDomain()
-                                        .getCodeSource()
-                                        .getLocation()
-                                        .getPath()
-                                ).getParentFile(),
-                                "LastDirectory.txt"
-                        )
-                );
+                FXSettingController batch = new FXSettingController();
+                
             }
-
         });
 
     }

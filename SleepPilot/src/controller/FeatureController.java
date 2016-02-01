@@ -16,18 +16,33 @@
  */
 package controller;
 
+import com.google.common.math.DoubleMath;
+import com.google.common.primitives.Doubles;
+import gnu.trove.list.array.TDoubleArrayList;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import model.DataModel;
 import model.FeatureModel;
+import org.apache.commons.math.stat.descriptive.moment.Kurtosis;
+import org.apache.commons.math.stat.descriptive.moment.Skewness;
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.jdsp.iirfilterdesigner.IIRDesigner;
 import org.jdsp.iirfilterdesigner.exceptions.BadFilterParametersException;
 import org.jdsp.iirfilterdesigner.model.ApproximationFunctionType;
 import org.jdsp.iirfilterdesigner.model.FilterCoefficients;
 import org.jdsp.iirfilterdesigner.model.FilterType;
+import tools.Entropies;
 import tools.KCdetection;
+import tools.Math2;
 import tools.Signal;
+import static tools.Signal.filtfilt;
+import tools.Util;
 import tools.sincWindowDecimator;
 
 /**
@@ -49,6 +64,7 @@ public class FeatureController {
     public FilterCoefficients lowpassCoefficients;
     public FilterCoefficients displayHighpassCoefficients;
     public FilterCoefficients displayLowpassCoefficients;
+    
     /**
      * Data holds reference to feature channel epochList (usually in a
      * RawDataModel), for use in instance of FeatureExtractioController.
@@ -59,7 +75,7 @@ public class FeatureController {
         this.featureModel = featureModel;
         this.dataModel = dataModel;
 
-        if (featureModel.getLabels()==null) {
+        if (featureModel.getLabels() == null) {
             init(dataModel.getNumberOf30sEpochs());
         }
         featureModel.setDataFileLocation(dataModel.getFile());
@@ -77,7 +93,7 @@ public class FeatureController {
     }
 
     public void start() {
-        ArrayList<float[]> data = getEpochList();
+        ArrayList<float[]> data = dataModel.getEpochList();
         if ((int) (dataModel.getSrate()) != (int) 100) {
             for (int i = 0; i < data.size(); i++) {
                 data.set(i, getDecimator().decimate(data.get(i)));
@@ -93,10 +109,96 @@ public class FeatureController {
         }
         featureModel.setKcPercentage(kcPercentage);
 
-        float[][] features = Signal.computeFeatures(data);
+        float[][] features = computeFeatures(data);
 
         featureModel.setFeatures(features);
+    }
 
+    public static float[][] computeFeatures(List<float[]> data) {
+        /**
+         * generate sublists from data array (which contains all data of a
+         * channel. This way data can stay in array form and efficiently be
+         * processed in parallel without copying.
+         */
+
+        FilterCoefficients coefficients = null;
+        try {
+            double fstop = 0.1;
+            double fpass = 0.5;
+            double fs = 100;
+            coefficients = IIRDesigner.designDigitalFilter(ApproximationFunctionType.BUTTERWORTH,
+                    FilterType.HIGHPASS,
+                    new double[]{fpass},
+                    new double[]{fstop},
+                    1.0, 20.0, fs);
+        } catch (BadFilterParametersException ex) {
+            ex.printStackTrace();
+        }
+        final FilterCoefficients coeffs = coefficients;
+
+        List<float[]> featureList = data.stream()
+                .parallel()
+                .map(e -> Util.doubleToFloat(computeFeatures(e, coeffs)))
+                .collect(Collectors.toList());
+
+        return featureList.toArray(new float[featureList.size()][]);
+    }
+
+    public static double[] computeFeatures(float[] y, FilterCoefficients filterCoefficients) {
+        double[] x = Util.floatToDouble(y);
+
+        TDoubleArrayList features = new TDoubleArrayList();
+
+        int wlen = 100, noutput = 100;
+
+        float[][] stft = new float[noutput][wlen];
+
+        filtfilt(x, filterCoefficients);
+
+        features.add(FastMath.sqrt(StatUtils.variance(x)));
+        Skewness skew = new Skewness();
+        features.add(skew.evaluate(x));
+        Kurtosis kurt = new Kurtosis();
+        features.add(kurt.evaluate(x));
+
+        x = Math2.zscore(x);
+
+        double[] d = Math2.diff(Math2.diff(x));
+        features.add(Doubles.max(Math2.abs(d)));
+
+        List<float[]> wdec = Entropies.wavedecomposition(Util.doubleToFloat(x));
+
+        features.add(wdec.stream().mapToDouble(e -> FastMath.log(DoubleMath.mean(Math2.abs(Util.floatToDouble(e))))).toArray());
+
+        features.add(Entropies.wpentropy(Util.doubleToFloat(x), 6, 1));
+        features.add(wdec.stream().mapToDouble(e -> Entropies.wpentropy(e, 6, 1)).toArray());
+
+        features.add(Signal.lineSpectralPairs(x, 10));
+        features.add(Arrays.copyOf(
+                Util.floatToDouble(
+                        tools.Signal.logAbsStft(Util.doubleToFloat(x), wlen, noutput, stft)
+                ), 10)
+        );
+
+        double[] x_pos = new double[x.length];
+        double[] x_neg = new double[x.length];
+        for (int i = 0; i < x.length; i++) {
+            x_pos[i] = (x[i] >= 0) ? x[i] : 0;
+            x_neg[i] = (x[i] <= 0) ? x[i] : 0;
+        }
+
+        features.add(Arrays.copyOf(
+                Util.floatToDouble(
+                        tools.Signal.logAbsStft(Util.doubleToFloat(x_pos), wlen, noutput, stft)
+                ), 10)
+        );
+
+        features.add(Arrays.copyOf(
+                Util.floatToDouble(
+                        tools.Signal.logAbsStft(Util.doubleToFloat(x_neg), wlen, noutput, stft)
+                ), 10)
+        );
+        return features.toArray();
     }
 
     private void createFilters(double fs) {
@@ -181,13 +283,13 @@ public class FeatureController {
         return displayHighpassCoefficients;
     }
 
-    public ArrayList<float[]> getEpochList() {
-        return epochList;
-    }
-
-    public void setEpochList(ArrayList<float[]> data) {
-        this.epochList = data;
-    }
+//    public ArrayList<float[]> getEpochList() {
+//        return epochList;
+//    }
+//
+//    public void setEpochList(ArrayList<float[]> data) {
+//        this.epochList = data;
+//    }
 
     /**
      * Creates the feature value matrix with the needed size. The first column
@@ -215,5 +317,43 @@ public class FeatureController {
         featureModel.setArousal(epoch, 0);
         featureModel.setArtefact(epoch, 0);
         featureModel.setStimulation(epoch, 0);
+    }
+
+    public void saveFile(File file) {
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(file);
+
+            String content = "Stage" + " "
+                    + "Arousal" + " "
+                    + "Artefact" + " "
+                    + "Stimulation"
+                    + "\n";
+            fileWriter.write(content);
+
+            for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
+                featureModel.getLabel(i);
+
+                content = featureModel.getLabel(i) + " "
+                        + featureModel.getArousal(i) + " "
+                        + featureModel.getArtefact(i) + " "
+                        + featureModel.getStimulation(i) + " "
+                        + "\n";
+                fileWriter.write(content);
+            }
+
+            System.out.println("Finish writing!");
+        } catch (IOException ex) {
+//            popUp.createPopup("Could not save Hypnogramm!");
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

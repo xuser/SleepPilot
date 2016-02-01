@@ -30,7 +30,7 @@
         </ImageView>
       </graphic>
     </Button>
-    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" disable="true" graphicTextGap="20.0" layoutX="476.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="Train System">
+    <Button fx:id="createModel" alignment="CENTER" contentDisplay="TOP" graphicTextGap="20.0" layoutX="476.0" layoutY="48.0" minHeight="136.0" minWidth="186.0" mnemonicParsing="false" prefHeight="170.0" prefWidth="187.0" styleClass="startButtons" text="Batch Processing">
       <graphic>
         <ImageView fitHeight="68.0" fitWidth="68.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" smooth="true">
           <image>
@@ -75,7 +75,7 @@
     <ProgressBar fx:id="progressBar" disable="false" focusTraversable="false" layoutX="184.0" layoutY="128.0" prefWidth="332.0" progress="0.0" styleClass="popupWithProgress" />
     <Label fx:id="text1" layoutX="67.0" layoutY="244.0" styleClass="textLabel" text="Start Auto-Score Mode" />
     <Label fx:id="text2" layoutX="280.0" layoutY="244.0" styleClass="textLabel" text="Open an existing project" />
-    <Label fx:id="text3" layoutX="489.0" layoutY="244.0" styleClass="textLabel" text="Advanced: Train the system" />
+    <Label fx:id="text3" layoutX="489.0" layoutY="244.0" styleClass="textLabel" text="Advanced: Analyse many files" />
     <Button id="settings" fx:id="setting" disable="true" layoutX="659.0" layoutY="7.0" minHeight="30.0" minWidth="32.0" mnemonicParsing="false" onAction="#settingOnAction" prefHeight="30.0" prefWidth="32.0" styleClass="settingButton" text="">
       <graphic>
         <ImageView fitHeight="25.0" fitWidth="25.0" mouseTransparent="true" pickOnBounds="true" preserveRatio="true" visible="false">

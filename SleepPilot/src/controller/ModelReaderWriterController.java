@@ -33,8 +33,6 @@ import model.FeatureModel;
  */
 public class ModelReaderWriterController extends Thread {
 
-    private Thread t;
-
     private FeatureModel featureModel;
     private File file;
 
@@ -133,16 +131,4 @@ public class ModelReaderWriterController extends Thread {
             System.out.println("Finished reading model from hard disk.");
         }
     }
-
-    /**
-     * This method starts the Data Read/Write Thread.
-     */
-    public void start() {
-        System.out.println("Starting Data Reader/Writer Thread");
-        if (t == null) {
-            t = new Thread(this, "DataReadWrite");
-            t.start();
-        }
-    }
-
 }

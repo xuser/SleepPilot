@@ -3,10 +3,6 @@ package model;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedList;
-
-import help.ChannelNames;
-import java.util.Arrays;
 
 /**
  * This class is the respective model for the FeatureExtractionController.
@@ -116,15 +112,9 @@ public class FeatureModel implements Serializable {
      */
     private int numberOfEpochs;
 
-    /**
-     * The channel name of the samples in the training file.
-     */
-    private LinkedList<ChannelNames> channelNames = new LinkedList<ChannelNames>();
-
     private int featureChannel;
 
     private int currentEpoch;
-
 
     /**
      * @param feature the feature to set
@@ -296,20 +286,6 @@ public class FeatureModel implements Serializable {
     }
 
     /**
-     * @return the channelNames, which have been calculated.
-     */
-    public LinkedList<ChannelNames> getChannelName() {
-        return channelNames;
-    }
-
-    /**
-     * @param channelName the channelName, which have been calculated.
-     */
-    public void setChannelName(ChannelNames channelName) {
-        channelNames.add(channelName);
-    }
-
-    /**
      * Set the array with the predict probabilities for the current epoch.
      *
      * @param row the epoch for the predict probabilities.
@@ -369,20 +345,6 @@ public class FeatureModel implements Serializable {
      */
     public void setPredictProbabilities(double[][] predictProbabilities) {
         this.predictProbabilities = predictProbabilities;
-    }
-
-    /**
-     * @return the channelNames
-     */
-    public LinkedList<ChannelNames> getChannelNames() {
-        return channelNames;
-    }
-
-    /**
-     * @param channelNames the channelNames to set
-     */
-    public void setChannelNames(LinkedList<ChannelNames> channelNames) {
-        this.channelNames = channelNames;
     }
 
     /**

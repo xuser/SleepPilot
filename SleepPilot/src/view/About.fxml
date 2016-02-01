@@ -27,7 +27,7 @@
         </rowConstraints>
          <children>
         <Label styleClass="textLabel" text="Copyright © 2016 Arne Weigenand, Nils Finke" wrapText="true" GridPane.rowIndex="1" />
-        <Label styleClass="textLabel" text="SleepPilot Version 0.9.0 (beta)" />
+        <Label styleClass="textLabel" text="SleepPilot Version 0.9.1 (beta)" />
             <ImageView fitHeight="60.0" fitWidth="174.0" pickOnBounds="true" preserveRatio="true" GridPane.rowIndex="4" GridPane.valignment="BOTTOM">
                <image>
                   <Image url="@img/Logo_Inst_NeuroBioinformatik_300dpi.png" />

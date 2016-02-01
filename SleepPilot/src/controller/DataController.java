@@ -1,7 +1,9 @@
 package controller;
 
+import bv.BrainVisionReader;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,8 +20,7 @@ import son32java.son32reader.Son32Channel;
 
 public class DataController {
 
-    private DataModel dataModel;
-    private File file;
+    private final DataModel dataModel;
     private Reader reader;
 
     /**
@@ -28,26 +29,29 @@ public class DataController {
      * @throws IOException
      */
     public DataController(File file) throws IOException {
-        this.file = file;
         dataModel = new DataModel();
         dataModel.setFile(file);
 
         init();
     }
 
-    public void readAll(int channel) {
+    public ArrayList<float[]> readAll(int channel) {
         dataModel.epochList.clear();
         for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
             float[] target = new float[dataModel.numberOfSamplesForOneEpoch];
             dataModel.addEpoch(read(channel, i, target));
         }
+        return dataModel.getEpochList();
     }
 
     public float[] read(int channel, int epoch, float[] target) {
-        return reader.read(channel, epoch, target);
+        target = reader.read(channel, epoch, target);
+        return target;
     }
 
     public final void init() {
+
+        File file = dataModel.getFile();
 
         if (file.getName().toLowerCase().endsWith(".edf")) {
 
@@ -64,7 +68,7 @@ public class DataController {
             dataModel.setNbchan(numberOfChannels - 1);
 
             String[] channelNames = edfHeader.getChannelLabels();
-            
+
             //remove the annotation channel
             dataModel.setChannelNames(Arrays.copyOf(channelNames, dataModel.getNbchan()));
 

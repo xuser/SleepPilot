@@ -22,7 +22,6 @@ import controller.FXHypnogrammController;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
-import com.google.common.primitives.Doubles;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,7 +39,7 @@ import model.FeatureModel;
 import controller.DataController;
 import controller.FeatureController;
 import controller.ModelReaderWriterController;
-import controller.SupportVectorMaschineController;
+import controller.ClassificationController;
 import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
@@ -750,7 +749,7 @@ public final class FXApplicationController implements Initializable {
         );
 
         if (file != null) {
-            saveFile(file);
+            featureController.saveFile(file);
         }
     }
 
@@ -1043,7 +1042,6 @@ public final class FXApplicationController implements Initializable {
         }
 
         if (!featureModel.isFeaturesComputed()) {
-            featureController.setEpochList(dataModel.getEpochList());
             featureController.start();
             featureModel.setFeaturesComputed(true);
         }
@@ -1231,107 +1229,8 @@ public final class FXApplicationController implements Initializable {
             protected Void call() throws Exception {
                 updateProgress(-1, featureModel.getNumberOfEpochs());
 
-                computeFeatures();
-
-                //scaling of features
-                float[][] features = Util.deepcopy(featureModel.getFeatures());
-                double[][] scaling = (double[][]) Util.load(classifier.replace("[model]", "[scaling]"));
-                double[] mean = scaling[0];
-                double[] std = scaling[1];
-                for (float[] feature : features) {
-                    for (int j = 0; j < feature.length; j++) {
-                        feature[j] = (float) ((feature[j] - mean[j]) / std[j]);
-                    }
-                }
-
-                String dir = System.getProperty("user.dir");
-                String filename = "sparse_features.jo";
-                String fullPath = dir + File.separator + "Classifiers" + File.separator + filename;
-                double[] fidx = (double[]) Util.load(fullPath);
-
-                SupportVectorMaschineController svm = new SupportVectorMaschineController();
-                svm.svmLoadModel(classifier);
-
-                float[] kcPercentage = featureModel.getKcPercentage();
-
-                double[] output;
-
-                int N1flag = 0;
-                int Wflag = 0;
-
-                for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
-                    updateProgress(i, featureModel.getNumberOfEpochs());
-
-                    float[] f = featureModel.getFeatureVector(i);
-
-                    //use only subset of feature vector as stored in sparse_features.jo array
-                    float[] f1 = new float[fidx.length];
-                    for (int j = 0; j < f1.length; j++) {
-                        f1[j] = features[i][(int) (fidx[j] - 1)];
-                    }
-//                    
-                    output = svm.svmPredict(Util.floatToDouble(f1));
-                    int classLabel = Doubles.indexOf(output, Doubles.max(output));
-
-                    double W = f[18];
-                    double N2 = f[1];  //(skewness)
-                    double N3 = f[49]; //cepstrum
-                    double MA1 = f[3]; //max value of high passed epoch
-                    double MA2 = f[9]; //energy in HF wavelet band
-                    double KC = kcPercentage[i];
-
-                    //hand selected features for arousals
-                    boolean MA = MA1 > 40 & MA2 > 0.4;
-
-                    //convert SVM labels to SleepPilot labels (4 is REM)
-                    if (classLabel == 4) {
-                        classLabel = 5;
-                    }
-
-                    if (classLabel == 5 & MA) {
-                        classLabel = 1;
-                    }
-
-                    if (classLabel == 2 & KC == 0 & MA) {
-                        classLabel = 1;
-                    }
-
-                    //adjust classifier output to be consistent with SleepPilots K-complex detector
-                    if (classLabel == 3 & KC <= 20) {
-                        classLabel = 2;
-                    }
-                    if (classLabel == 2 & KC > 20 & !MA) {
-                        classLabel = 3;
-                    }
-
-                    //set artefacts and arousals to zero (standard)
-                    featureModel.setArtefact(i, 0);
-                    featureModel.setArousal(i, 0);
-
-                    if (classLabel != 0 & MA) {
-                        featureModel.setArtefact(i, 1);
-                        featureModel.setArousal(i, 1);
-                    }
-                    if (classLabel != 0 & MA1 > 80) {
-                        featureModel.setArtefact(i, 1);
-                    }
-
-                    //REM is always after N3, at least in non-pathological cases
-                    if (classLabel == 3) {
-                        N1flag += 1;
-                    }
-
-                    if (classLabel == 5 & N1flag < 2) {
-                        classLabel = 1;
-                    }
-
-                    featureModel.setPredictProbabilities(i, output.clone());
-                    featureModel.setLabel(i, classLabel);
-                    System.out.println("Predicted Class Label: " + classLabel);
-
-                }
-
-                featureModel.setClassificationDone(true);
+                computeFeatures();            
+                ClassificationController.classify(classifier, featureModel);
 
                 Platform.runLater(new Runnable() {
 
@@ -1436,48 +1335,6 @@ public final class FXApplicationController implements Initializable {
 
         in.close();
 
-    }
-
-    // First Column: 0 -> W, 1 -> N1, 2 -> N2, 3 -> N3, 5 -> REM
-    // Second Column: 0 -> Nothing, 1 -> Movement arrousal
-    // Third Column:  0 -> Nothing, 1 -> Artefact
-    // Fourth Column: 0 -> Nothing, 1 -> Stimulation
-    private void saveFile(File file) {
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter(file);
-
-            String content = "Stage" + " "
-                    + "Arousal" + " "
-                    + "Artefact" + " "
-                    + "Stimulation"
-                    + "\n";
-            fileWriter.write(content);
-
-            for (int i = 0; i < dataModel.getNumberOf30sEpochs(); i++) {
-                featureModel.getLabel(i);
-
-                content = featureModel.getLabel(i) + " "
-                        + featureModel.getArousal(i) + " "
-                        + featureModel.getArtefact(i) + " "
-                        + featureModel.getStimulation(i) + " "
-                        + "\n";
-                fileWriter.write(content);
-            }
-
-            System.out.println("Finish writing!");
-        } catch (IOException ex) {
-            popUp.createPopup("Could not save Hypnogramm!");
-        } finally {
-            try {
-                if (fileWriter != null) {
-                    fileWriter.flush();
-                    fileWriter.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     private void updateStage() {
