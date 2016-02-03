@@ -1,9 +1,7 @@
 package view;
 
-import controller.ClassificationController;
-import controller.FXSettingController;
+import controller.FXBatchController;
 import controller.DataController;
-import controller.FeatureController;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -16,7 +14,6 @@ import model.DataModel;
 import model.FeatureModel;
 import controller.MainController;
 import controller.ModelReaderWriterController;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -31,7 +28,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Polygon;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tools.Util;
@@ -58,8 +54,6 @@ public class FXStartController implements Initializable {
     private FeatureModel featureModel;
 
     FXViewModel viewModel = new FXViewModel();
-
-    private FXSettingController settings;
 
     // JavaFx components
     private Stage primaryStage;
@@ -296,11 +290,10 @@ public class FXStartController implements Initializable {
 
                 newProjectForm.setVisible(false);
                 openProjectForm.setVisible(false);
-
                 createModelForm.setVisible(true);
 
-                FXSettingController batch = new FXSettingController();
-                
+                FXBatchController batch = new FXBatchController();
+
             }
         });
 
@@ -308,7 +301,7 @@ public class FXStartController implements Initializable {
 
     @FXML
     protected void settingOnAction() {
-//        settings = new FXSettingController(startModel);
+//        settings = new FXBatchController(startModel);
     }
 
     @FXML
@@ -338,6 +331,7 @@ public class FXStartController implements Initializable {
 
     public void showPopUp(String message) {
         popUp.showPopupMessage(message, primaryStage);
+        
     }
 
     public void startMainApp() {

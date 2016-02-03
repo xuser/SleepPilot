@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,13 +19,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.DataModel;
 import model.FeatureModel;
+import view.FXPopUp;
 import view.FXStartController;
 
-public class FXSettingController implements Initializable {
+public class FXBatchController implements Initializable {
+
+    private static final Logger log = Logger.getLogger(FXBatchController.class.getName());
 
     private Stage stage;
     private File folder;
@@ -34,43 +40,8 @@ public class FXSettingController implements Initializable {
     @FXML
     private ListView<String> fileList;
 
-    public FXSettingController() {
-
-        ObservableList<String> classifierList = FXCollections.observableArrayList();
-        classifierList.addAll(ClassificationController.getClassifiers(new File("./Classifiers").getAbsoluteFile()));
-
-        ObservableList<String> channelList = FXCollections.observableArrayList();
-
-        DirectoryChooser fileChooser = new DirectoryChooser();
-
-        fileChooser.setTitle("Select folder with data for batch processing");
-
-        // Show open file dialog
-        final File file = fileChooser.showDialog(null);
-
-        folder = file.getAbsoluteFile();
-        
-        ObservableList<String> batchFiles = FXCollections.observableArrayList();
-        
-        for (File files : folder.listFiles()) {
-            if (files.getName().contains(".vhdr")
-                    | files.getName().contains(".smr")
-                    | files.getName().contains(".edf")) {
-
-                DataController reader = null;
-                try {
-                    reader = new DataController(files);
-                } catch (IOException ex) {
-                    Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                DataModel eeg = reader.getDataModel();
-                channelList.clear();
-                channelList.addAll(eeg.getChannelNames());
-                batchFiles.add(new String(files.getName()));
-            }
-        }
-        
+    public FXBatchController() {
+        log.info("Starting FXBatchController");
 
         stage = new Stage();
         AnchorPane addGrid = new AnchorPane();
@@ -83,21 +54,85 @@ public class FXSettingController implements Initializable {
         try {
             addGrid = loader.load();
         } catch (IOException e) {
-            System.err.println("Error during loading StartSetting.fxml file!");
-            //e.printStackTrace();
+            log.log(Level.SEVERE, "Error during loading StartSetting.fxml file!", e);
         }
 
         Scene scene = new Scene(addGrid);
 
         stage.setResizable(false);
         stage.setScene(scene);
-        stage.show();
+        stage.hide();
         stage.setTitle("Batch Processing...");
 
-        choiceBoxClassifiers.setItems(classifierList);
-        choiceBoxChannels.setItems(channelList);
-        fileList.setItems(batchFiles);
+        log.info("Begin other stuff.");
+        ObservableList<String> channelList = FXCollections.observableArrayList();
 
+        log.info("Starting File Chooser");
+        FileChooser fileChooser = new FileChooser();
+
+        fileChooser.setTitle("Select folder with data for batch processing");
+
+        // Show open file dialog
+        File file = fileChooser.showOpenDialog(null);
+        if (file == null) {
+            showPopUp("Could not select folder.");
+        } else {
+            log.info("Selected file:" + file.getName());
+        }
+
+        if (file.isFile()) {
+            file = file.getParentFile();
+        }
+        log.info("Selected folder:" + file.getName());
+
+        folder = file.getAbsoluteFile();
+
+        stage.show();
+
+        ObservableList<String> batchFiles = FXCollections.observableArrayList();
+
+        for (File files : folder.listFiles()) {
+            if (files.getName().contains(".vhdr")
+                    | files.getName().contains(".smr")
+                    | files.getName().contains(".edf")) {
+
+                DataController reader = null;
+                try {
+                    reader = new DataController(files);
+                } catch (IOException ex) {
+                    log.log(Level.SEVERE, files.getName(), ex);
+                    showPopUp("Error reading " + files.getPath());
+                }
+
+                DataModel eeg = reader.getDataModel();
+                channelList.clear();
+                channelList.addAll(eeg.getChannelNames());
+                batchFiles.add(new String(files.getName()));
+            }
+        }
+
+        if (batchFiles.isEmpty()) {
+            showPopUp("Could not find any files of type .smr, .edf or .vhdr");
+        } else {
+            fileList.setItems(batchFiles);
+        }
+        
+        if (channelList.isEmpty()) {
+            showPopUp("Could not find any channels");
+        } else {
+            choiceBoxChannels.setItems(channelList);
+        }
+
+        ObservableList<String> classifierList = FXCollections.observableArrayList();
+
+        try {
+            classifierList.addAll(ClassificationController.getClassifiers(new File("Classifiers").getAbsoluteFile()));
+        } catch (Exception e) {
+            log.log(Level.SEVERE,null,e);
+            showPopUp("Could not find folder " + new File("Classifiers").getAbsolutePath());
+        }
+        
+        choiceBoxClassifiers.setItems(classifierList);
     }
 
     @Override
@@ -121,8 +156,10 @@ public class FXSettingController implements Initializable {
                 DataController reader = null;
                 try {
                     reader = new DataController(files);
+
                 } catch (IOException ex) {
-                    Logger.getLogger(FXStartController.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FXStartController.class
+                            .getName()).log(Level.SEVERE, null, ex);
                 }
 
                 DataModel eeg = reader.getDataModel();
@@ -144,4 +181,11 @@ public class FXSettingController implements Initializable {
 
         stage.close();
     }
+
+    public void showPopUp(String message) {
+        FXPopUp popUp = new FXPopUp();
+        popUp.showPopupMessage(message, stage);
+        log.info(message);
+    }
+
 }

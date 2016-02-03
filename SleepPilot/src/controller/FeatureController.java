@@ -343,7 +343,7 @@ public class FeatureController {
             }
 
             System.out.println("Finish writing!");
-        } catch (IOException ex) {
+        } catch (IOException ex) {            
 //            popUp.createPopup("Could not save Hypnogramm!");
         } finally {
             try {
