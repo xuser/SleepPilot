@@ -1,12 +1,12 @@
-package controller;
+package view;
 
+import controller.ClassificationController;
+import controller.DataController;
+import controller.FeatureController;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +23,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.DataModel;
 import model.FeatureModel;
-import view.FXPopUp;
-import view.FXStartController;
 
 public class FXBatchController implements Initializable {
 

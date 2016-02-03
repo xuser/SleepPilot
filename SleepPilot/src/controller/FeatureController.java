@@ -40,6 +40,7 @@ import org.jdsp.iirfilterdesigner.model.FilterType;
 import tools.Entropies;
 import tools.KCdetection;
 import tools.Math2;
+import tools.Resampler;
 import tools.Signal;
 import static tools.Signal.filtfilt;
 import tools.Util;
@@ -60,6 +61,7 @@ public class FeatureController {
     private DataModel dataModel;
     public KCdetection kcDetector;
     private sincWindowDecimator decimator;
+    private Resampler resampler;
     public FilterCoefficients highpassCoefficients;
     public FilterCoefficients lowpassCoefficients;
     public FilterCoefficients displayHighpassCoefficients;
@@ -82,9 +84,7 @@ public class FeatureController {
 
         createFilters(100.);
 
-        setDecimator(new sincWindowDecimator());
-        sincWindowDecimator decimator = getDecimator();
-        decimator.designFilter((int) FastMath.round(dataModel.getSrate() / 100.), 31);
+        setResampler(new Resampler((int)dataModel.getSrate(), 100));
 
         kcDetector = new KCdetection();
         kcDetector.setMaxWidth(90);
@@ -96,7 +96,7 @@ public class FeatureController {
         ArrayList<float[]> data = dataModel.getEpochList();
         if ((int) (dataModel.getSrate()) != (int) 100) {
             for (int i = 0; i < data.size(); i++) {
-                data.set(i, getDecimator().decimate(data.get(i)));
+                data.set(i, getResampler().resample(data.get(i)));
             }
         }
 
@@ -243,14 +243,6 @@ public class FeatureController {
         setLowpassCoefficients(coefficients3);
     }
 
-    public sincWindowDecimator getDecimator() {
-        return decimator;
-    }
-
-    public void setDecimator(sincWindowDecimator decimator) {
-        this.decimator = decimator;
-    }
-
     public void setLowpassCoefficients(FilterCoefficients lowpassCoefficients) {
         this.lowpassCoefficients = lowpassCoefficients;
     }
@@ -356,4 +348,13 @@ public class FeatureController {
             }
         }
     }
+
+    public Resampler getResampler() {
+        return resampler;
+    }
+
+    public void setResampler(Resampler resampler) {
+        this.resampler = resampler;
+    }
+    
 }

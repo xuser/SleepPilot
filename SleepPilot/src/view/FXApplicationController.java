@@ -26,7 +26,6 @@ import com.google.common.collect.TreeRangeSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -334,6 +333,8 @@ public final class FXApplicationController implements Initializable {
                 updateWindows();
             }
         });
+        
+//        popUp.
 
     }
 
@@ -1524,7 +1525,7 @@ public final class FXApplicationController implements Initializable {
 
         if (dataModel.getSrate() != 100) {
             for (int i = 0; i < activeChannels.size(); i++) {
-                displayBuffer[activeChannels.get(i)] = featureController.getDecimator().decimate(dataModel.data[activeChannels.get(i)]);
+                displayBuffer[activeChannels.get(i)] = featureController.getResampler().resample(dataModel.data[activeChannels.get(i)]);
             }
         } else {
             for (int i = 0; i < activeChannels.size(); i++) {

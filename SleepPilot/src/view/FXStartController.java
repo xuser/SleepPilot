@@ -1,6 +1,5 @@
 package view;
 
-import controller.FXBatchController;
 import controller.DataController;
 import java.io.File;
 import java.io.IOException;
