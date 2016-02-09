@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import controller.ClassificationController;
 import controller.DataController;
@@ -23,6 +23,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.DataModel;
 import model.FeatureModel;
+import view.FXPopUp;
+import view.FXStartController;
 
 public class FXBatchController implements Initializable {
 

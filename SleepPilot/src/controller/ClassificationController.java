@@ -48,10 +48,6 @@ public class ClassificationController {
      * @param modelName
      */
     private void svmLoadModel(String modelName) {
-        double[][] scaling = (double[][]) Util.load(modelName.replace("[model]", "[scaling]"));
-        mean = scaling[0];
-        std = scaling[1];
-
         model = (svm_model) Util.load(modelName);
 
         //initialize array of labels
@@ -89,27 +85,34 @@ public class ClassificationController {
     }
 
     public static void classify(String classifier, FeatureModel featureModel) {
-
+        
         //scaling of features
-        float[][] features = Util.deepcopy(featureModel.getFeatures());
+        float[][] features_scaled = Util.deepcopy(featureModel.getFeatures());
         double[][] scaling = (double[][]) Util.load(classifier.replace("[model]", "[scaling]"));
 
         double[] mean = scaling[0];
         double[] std = scaling[1];
-        for (float[] feature : features) {
+        for (float[] feature : features_scaled) {
             for (int j = 0; j < feature.length; j++) {
                 feature[j] = (float) ((feature[j] - mean[j]) / std[j]);
             }
         }
 
+        //load classifier 1 for arousals
+        ClassificationController svmArousal = new ClassificationController();
+        svmArousal.svmLoadModel(classifier.replace("[model]", "[arousal]"));
+                
+        //load classifier 2 for sleep stages
+        ClassificationController svm = new ClassificationController();
+        svm.svmLoadModel(classifier);
+        
+        //load indices indicating the features of the feature vector of classifier 2
         String dir = System.getProperty("user.dir");
         String filename = "sparse_features.jo";
         String fullPath = dir + File.separator + "Classifiers" + File.separator + filename;
         double[] fidx = (double[]) Util.load(fullPath);
 
-        ClassificationController svm = new ClassificationController();
-        svm.svmLoadModel(classifier);
-
+        
         float[] kcPercentage = featureModel.getKcPercentage();
 
         double[] output;
@@ -118,26 +121,32 @@ public class ClassificationController {
         int Wflag = 0;
 
         for (int i = 0; i < featureModel.getNumberOfEpochs(); i++) {
-            float[] f = featureModel.getFeatureVector(i);
+            //get unscaled features
+            float[] features_unscaled = featureModel.getFeatureVector(i);
 
             //use only subset of feature vector as stored in sparse_features.jo array
             float[] f1 = new float[fidx.length];
             for (int j = 0; j < f1.length; j++) {
-                f1[j] = features[i][(int) (fidx[j] - 1)];
+                //use scaled features here
+                f1[j] = features_scaled[i][(int) (fidx[j] - 1)];
             }
-//                    
+              
             output = svm.svmPredict(Util.floatToDouble(f1));
             int classLabel = Doubles.indexOf(output, Doubles.max(output));
 
-            double W = f[18];
-            double N2 = f[1];  //(skewness)
-            double N3 = f[49]; //cepstrum
-            double MA1 = f[3]; //max value of high passed epoch
-            double MA2 = f[9]; //energy in HF wavelet band
+            double W = features_unscaled[18];
+            double N2 = features_unscaled[1];  //(skewness)
+            double N3 = features_unscaled[49]; //cepstrum
+            double MA1 = features_unscaled[3]; //max value of high passed epoch
+            double MA2 = features_unscaled[9]; //energy in HF wavelet band
             double KC = kcPercentage[i];
 
             //hand selected features for arousals
-            boolean MA = MA1 > 40 & MA2 > 0.4;
+//            boolean MA = MA1 > 40 & MA2 > 0.4;
+            
+            double[] MAtmp =  svmArousal.svmPredict(Util.floatToDouble(features_scaled[i]));
+            boolean MA = MAtmp[1] > MAtmp[0];
+            
 
             //convert SVM labels to SleepPilot labels (4 is REM)
             if (classLabel == 4) {

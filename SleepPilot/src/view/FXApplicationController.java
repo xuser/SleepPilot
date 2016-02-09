@@ -16,6 +16,7 @@
  */
 package view;
 
+import controller.FXBatchController;
 import controller.FXScatterPlot;
 import controller.FXEvaluationWindowController;
 import controller.FXHypnogrammController;
@@ -44,6 +45,7 @@ import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.logging.*;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -242,11 +244,11 @@ public final class FXApplicationController implements Initializable {
 
         this.dataController = dataController;
         this.dataModel = dataController.getDataModel();
-        
+
         //initialize important variables
         channelNames = dataModel.getChannelNames();
         displayBuffer = dataModel.data.clone();
-          // Set Choice Box for the channels        
+        // Set Choice Box for the channels        
         //Set properties for the channels
         for (int i = 0; i < channelNames.length; i++) {
             if (i < 6) {
@@ -283,9 +285,6 @@ public final class FXApplicationController implements Initializable {
 
         this.recreateModelMode = recreateModelMode;
 
-        
-        
-        
         kcDetector = featureController.kcDetector;
         kcDetector.setHighpassCoefficients(featureController.getDisplayHighpassCoefficients());
         kcDetector.setLowpassCoefficients(featureController.getLowpassCoefficients());
@@ -298,8 +297,6 @@ public final class FXApplicationController implements Initializable {
 
         //Configure lineChart
         lineChart.setSnapToPixel(false);
-
-      
 
         choices = FXCollections.observableArrayList();
         updateChoiceBox();
@@ -333,9 +330,10 @@ public final class FXApplicationController implements Initializable {
                 updateWindows();
             }
         });
-        
-//        popUp.
 
+        if (((int) (dataModel.getSrate()) % 50) != 0) {
+            showPopUp("Sampling rate not supported. Must be a multiple of 50 Hz and > 100 Hz.");
+        }
     }
 
     @Override
@@ -1230,7 +1228,7 @@ public final class FXApplicationController implements Initializable {
             protected Void call() throws Exception {
                 updateProgress(-1, featureModel.getNumberOfEpochs());
 
-                computeFeatures();            
+                computeFeatures();
                 ClassificationController.classify(classifier, featureModel);
 
                 Platform.runLater(new Runnable() {
@@ -1687,6 +1685,14 @@ public final class FXApplicationController implements Initializable {
         }
 
         lineChart.requestFocus();
+    }
+
+    public void showPopUp(String message) {
+        FXPopUp popUp = new FXPopUp();
+        popUp.showPopupMessage(message, primaryStage);
+        Logger log = Logger.getLogger(FXBatchController.class.getName());
+        log.setLevel(Level.ALL);
+        log.info(message);
     }
 
 }
