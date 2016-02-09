@@ -1,6 +1,6 @@
 # SleepPilot #
 
-[SleepPilot](https://github.com/xuser/SleepPilot/releases/download/v0.9.1-beta/SleepPilot_v0.9.1.zip) is a software for automated sleep stage classification. 
+[SleepPilot](https://github.com/xuser/SleepPilot/releases/download/v0.9.3-beta/SleepPilot_v0.9.3.zip) is a software for automated sleep stage classification. 
 The classifier has been trained on EEG data of 100+ healthy subjects and achieves an accuracy of 88.2% (Cohen's kappa: 0.82) on an independent test set. 
 It should be used for research only. 
 
@@ -12,7 +12,7 @@ It should be used for research only.
 * batch mode for clustering of many datasets
  
 ### Installation ###
-[Download](https://github.com/xuser/SleepPilot/releases/download/v0.9.1-beta/SleepPilot_v0.9.1.zip) the latest release and unzip. Run SleepPilot by clicking on SleepPilot.jar.
+[Download](https://github.com/xuser/SleepPilot/releases/download/v0.9.3-beta/SleepPilot_v0.9.3.zip) the latest release and unzip. Run SleepPilot by clicking on SleepPilot.jar.
 SleepPilot.jar must stay with the son32.dll and the Classifiers folder to function properly.
 SleepPilot requires [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 Contact me if you can't make it run.
