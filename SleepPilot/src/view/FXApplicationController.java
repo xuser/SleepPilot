@@ -238,8 +238,7 @@ public final class FXApplicationController implements Initializable {
         try {
             mainGrid = loader.load();
         } catch (IOException e) {
-            System.err.println("Error during loading Application.fxml file!");
-            e.printStackTrace();
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error during loading Application.fxml file!", e);
         }
 
         this.dataController = dataController;
@@ -441,6 +440,8 @@ public final class FXApplicationController implements Initializable {
                     } catch (NumberFormatException e) {
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         valueTextField = currentEpoch + 1;
+                        
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Error during handling enter key.", e);
                     }
 
                     if (valueTextField > dataModel.getNumberOf30sEpochs()) {
@@ -662,7 +663,6 @@ public final class FXApplicationController implements Initializable {
             addGrid = loader.load();
         } catch (IOException e) {
             System.err.println("Error during loading About.fxml file!");
-            //e.printStackTrace();
         }
 
         Scene scene = new Scene(addGrid);
@@ -698,9 +698,8 @@ public final class FXApplicationController implements Initializable {
                 System.out.println("Finished importing Hypnogramm!");
 
             } catch (IOException e) {
-                System.err.println("Error during importing Hypnogramm!");
                 popUp.createPopup("Error during importing Hypnogramm!");
-                e.printStackTrace();
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error during importing Hypnogramm!", e);
             }
         }
     }
@@ -1690,7 +1689,7 @@ public final class FXApplicationController implements Initializable {
     public void showPopUp(String message) {
         FXPopUp popUp = new FXPopUp();
         popUp.showPopupMessage(message, primaryStage);
-        Logger log = Logger.getLogger(FXBatchController.class.getName());
+        Logger log = Logger.getLogger(this.getClass().getName());
         log.setLevel(Level.ALL);
         log.info(message);
     }
