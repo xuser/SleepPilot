@@ -440,7 +440,7 @@ public final class FXApplicationController implements Initializable {
                     } catch (NumberFormatException e) {
                         toolBarGoto.setText((currentEpoch + 1) + "");
                         valueTextField = currentEpoch + 1;
-                        
+
                         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Error during handling enter key.", e);
                     }
 
@@ -1310,7 +1310,15 @@ public final class FXApplicationController implements Initializable {
         String row = null;
         int epoch = 0;
 
+        int k = 0;
         while (((row = in.readLine()) != null) && (epoch < dataModel.getNumberOf30sEpochs() - 1)) {
+
+            if (k == 0) {
+                // 
+                k = 1;
+                continue;
+            }
+            
             String[] rowArray = row.split(" ");
 
             int label = Integer.parseInt(rowArray[0]);

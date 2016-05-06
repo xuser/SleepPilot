@@ -142,10 +142,10 @@ public class ClassificationController {
             double KC = kcPercentage[i];
 
             //hand selected features for arousals
-//            boolean MA = MA1 > 40 & MA2 > 0.4;
+            boolean MA3 = MA1 > 40 & MA2 > 0.4;
             
             double[] MAtmp =  svmArousal.svmPredict(Util.floatToDouble(features_scaled[i]));
-            boolean MA = MAtmp[1] > MAtmp[0];
+            boolean MA = (MAtmp[1] > MAtmp[0]) | MA3;
             
 
             //convert SVM labels to SleepPilot labels (4 is REM)

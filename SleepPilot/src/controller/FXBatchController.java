@@ -174,7 +174,10 @@ public class FXBatchController implements Initializable {
                 ClassificationController.classify(classifier, fm);
                 File testf = new File(files.getAbsolutePath().replaceFirst("\\.[^.]*$", ".txt"));
                 fc.saveFile(testf);
-
+                
+                testf = new File(files.getAbsolutePath().replaceFirst("\\.[^.]*$", ".as"));
+                ModelReaderWriterController io = new ModelReaderWriterController(fm,testf, true);
+                io.start();
             }
 
         }

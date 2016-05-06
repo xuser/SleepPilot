@@ -125,7 +125,6 @@ public class DataController {
         } else if (file.getName().toLowerCase().endsWith(".smr")) {
 
             Son32Reader smr = new Son32Reader(file.getPath(), 1);
-            Son32Channel son32Channel;
             /**
              * Read necessary information from SMR reader
              */
@@ -138,16 +137,15 @@ public class DataController {
                 }
                 dataModel.setChannelNames(channelNames);
 
-                son32Channel = smr.getChannel(0);
-                dataModel.setSrate(son32Channel.getSamplingRateHz());
+                dataModel.setSrate(smr.getChannel(0).getSamplingRateHz());
 
                 //get the last time for the channel in clock ticks
-                long maxTime = son32Channel.getChanMaxTime();
+                long maxTime = smr.getChannel(0).getChanMaxTime();
                 //convert the max time from clock ticks to sec
                 maxTime = (long) smr.getSecFromCT(maxTime);
                 dataModel.setPnts((int) (maxTime * dataModel.getSrate())); //gibt es hier eine andere Art (mit ticks) um auf Pnts zu kommen? 
 
-                dataModel.numberOfSamplesForOneEpoch = son32Channel.calculateArraySizeByTime(30);
+                dataModel.numberOfSamplesForOneEpoch = smr.getChannel(0).calculateArraySizeByTime(30);
                 dataModel.data = new float[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
 
             } catch (NoChannelException ex) {
@@ -155,24 +153,18 @@ public class DataController {
             }
 
             reader = new DataModel.Reader() {
-
-                Son32Channel son32Channel;
-                float[] buffer = new float[dataModel.numberOfSamplesForOneEpoch];
-
                 @Override
                 public void close() {
-                    smr.SONCloseFile();
+                    smr.close();
                 }
 
                 @Override
                 public float[] read(int channel, int epoch, float[] target) {
 
                     try {
-                        son32Channel = smr.getChannel(channel);
                         double sTime = epoch * 30;
                         double eTime = (epoch + 1) * 30;
-                        son32Channel.getRealDataByTime(sTime, eTime, buffer);
-
+                        float[] buffer = smr.read(channel,sTime, eTime);
                         System.arraycopy(buffer, 0, target, 0, target.length);
                         return target;
                     } catch (NoChannelException ex) {
