@@ -1,8 +1,5 @@
 package controller;
 
-import controller.ClassificationController;
-import controller.DataController;
-import controller.FeatureController;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -76,6 +73,7 @@ public class FXBatchController implements Initializable {
         File file = fileChooser.showOpenDialog(null);
         if (file == null) {
             showPopUp("Could not select folder.");
+            return;
         } else {
             log.info("Selected file:" + file.getName());
         }
