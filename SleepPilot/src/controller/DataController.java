@@ -17,6 +17,7 @@
 package controller;
 
 import bv.BrainVisionReader;
+import cntFile.cntFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,13 +27,14 @@ import java.util.logging.Logger;
 
 import model.DataModel;
 import model.DataModel.Reader;
+import neuroJExceptions.BadChannelException;
+import neuroJExceptions.BadIntervallException;
 import ru.mipt.edf.EDFHeader;
 import ru.mipt.edf.EDFParser;
 import ru.mipt.edf.EDFParserException;
 
 import son32java.son32reader.Son32Reader;
 import son32java.son32Exceptions.NoChannelException;
-import son32java.son32reader.Son32Channel;
 
 public class DataController {
 
@@ -164,7 +166,7 @@ public class DataController {
                     try {
                         double sTime = epoch * 30;
                         double eTime = (epoch + 1) * 30;
-                        float[] buffer = smr.read(channel,sTime, eTime);
+                        float[] buffer = smr.read(channel, sTime, eTime);
                         System.arraycopy(buffer, 0, target, 0, target.length);
                         return target;
                     } catch (NoChannelException ex) {
@@ -185,7 +187,6 @@ public class DataController {
             dataModel.setNbchan(bv.getNbchan());
             dataModel.setChannelNames(bv.getChannelNames());
             dataModel.setSrate(bv.getSrate());
-
             dataModel.numberOfSamplesForOneEpoch = (int) (30 * bv.getSrate());
             dataModel.data = new float[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
 
@@ -214,6 +215,60 @@ public class DataController {
                 }
             };
             dataModel.setReader(reader);
+
+        } else if (file.getName().toLowerCase().endsWith(".cnt")) {
+            cntFile cnt1 = null;
+            try {
+                //make new cntFile
+                cnt1 = new cntFile(file.getCanonicalPath());
+            } catch (IOException ex) {
+                System.out.println(ex);
+            }
+
+            final cntFile cnt = cnt1;
+
+            dataModel.setPnts(cnt.getNumberOfSamples());
+            dataModel.setNbchan(cnt.getNumberOfChannels());
+            dataModel.setChannelNames(cnt.getChannelNames());
+            dataModel.setSrate(cnt.getSamplingRate());
+
+            dataModel.numberOfSamplesForOneEpoch = (int) (30 * dataModel.getSrate());
+            dataModel.data = new float[dataModel.getNbchan()][dataModel.numberOfSamplesForOneEpoch];
+
+            /**
+             * Implement interface so that SleepPilot can use generic "read"
+             * command for loading epochs
+             */
+            reader = new DataModel.Reader() {
+
+                @Override
+                public void close() {
+                    cnt.close();
+                }
+
+                @Override
+                public float[] read(int channel, int epoch, float[] target) {
+                    int from = (int) (epoch * 30);
+                    int to = (int) (from + 30);
+
+                    try {
+                        float[] tmp = cnt.readRawIntervallData(channel, (double) from, (double) to);
+                        System.arraycopy(tmp, 0, target, 0, target.length);
+                    } catch (IOException ex) {
+                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BadChannelException ex) {
+                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BadIntervallException ex) {
+                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ArrayIndexOutOfBoundsException ex) {
+                        Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    return target;
+                }
+            };
+            dataModel.setReader(reader);
+
         }
     }
 
